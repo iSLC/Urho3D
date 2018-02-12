@@ -43,46 +43,43 @@ public:
     using Iterator = RandomAccessIterator<char>;
     using ConstIterator = RandomAccessConstIterator<char>;
 
+    /// Position for "not found."
+    static constexpr unsigned NPOS = 0xffffffff;
+    /// Initial dynamic allocation size.
+    static constexpr unsigned MIN_CAPACITY = 20;
+
     /// Construct empty.
     String() noexcept :
+        buffer_(localBuffer_),
         length_(0),
-        capacity_(0),
-        buffer_(&endZero)
+        localBuffer_{0}
     {
     }
 
     /// Construct from another string.
     String(const String& str) :
-        length_(0),
-        capacity_(0),
-        buffer_(&endZero)
+        String()
     {
         *this = str;
     }
 
     /// Construct from a C string.
     String(const char* str) :   // NOLINT(google-explicit-constructor)
-        length_(0),
-        capacity_(0),
-        buffer_(&endZero)
+        String()
     {
         *this = str;
     }
 
     /// Construct from a C string.
     String(char* str) :         // NOLINT(google-explicit-constructor)
-        length_(0),
-        capacity_(0),
-        buffer_(&endZero)
+        String()
     {
-        *this = (const char*)str;
+        *this = static_cast< const char* >(str);
     }
 
     /// Construct from a char array and length.
     String(const char* str, unsigned length) :
-        length_(0),
-        capacity_(0),
-        buffer_(&endZero)
+        String()
     {
         Resize(length);
         CopyChars(buffer_, str, length);
@@ -90,18 +87,14 @@ public:
 
     /// Construct from a null-terminated wide character array.
     explicit String(const wchar_t* str) :
-        length_(0),
-        capacity_(0),
-        buffer_(&endZero)
+        String()
     {
         SetUTF8FromWChar(str);
     }
 
     /// Construct from a null-terminated wide character array.
     explicit String(wchar_t* str) :
-        length_(0),
-        capacity_(0),
-        buffer_(&endZero)
+        String()
     {
         SetUTF8FromWChar(str);
     }
@@ -138,9 +131,7 @@ public:
 
     /// Construct from a convertable value.
     template <class T> explicit String(const T& value) :
-        length_(0),
-        capacity_(0),
-        buffer_(&endZero)
+        String()
     {
         *this = value.ToString();
     }
@@ -148,8 +139,7 @@ public:
     /// Destruct.
     ~String()
     {
-        if (capacity_)
-            delete[] buffer_;
+        ReleaseBuffer();
     }
 
     /// Assign a string.
@@ -402,7 +392,7 @@ public:
     unsigned Length() const { return length_; }
 
     /// Return buffer capacity.
-    unsigned Capacity() const { return capacity_; }
+    unsigned Capacity() const { return buffer_ == localBuffer_ ? MIN_CAPACITY : capacity_; }
 
     /// Return whether the string is empty.
     bool Empty() const { return length_ == 0; }
@@ -479,10 +469,9 @@ public:
     /// Compare two C strings.
     static int Compare(const char* lhs, const char* rhs, bool caseSensitive);
 
-    /// Position for "not found."
-    static const unsigned NPOS = 0xffffffff;
-    /// Initial dynamic allocation size.
-    static const unsigned MIN_CAPACITY = 8;
+    /// Check whether the managed memory buffer is local.
+    bool IsLocal() const { return buffer_ == localBuffer_; }
+
     /// Empty string.
     static const String EMPTY;
 
@@ -514,15 +503,23 @@ private:
     /// Replace a substring with another substring.
     void Replace(unsigned pos, unsigned length, const char* srcStart, unsigned srcLength);
 
-    /// String length.
-    unsigned length_;
-    /// Capacity, zero if buffer not allocated.
-    unsigned capacity_;
-    /// String buffer, null if not allocated.
-    char* buffer_;
+    /// Release the managed memory buffer, if necessary.
+    void ReleaseBuffer()
+    {
+        if (!IsLocal())
+            delete[] buffer_;
+    }
 
-    /// End zero for empty strings.
-    static char endZero;
+    /// String buffer.
+    char *          buffer_;
+    /// String length.
+    unsigned        length_;
+    union {
+        /// Buffer capacity.
+        unsigned    capacity_;
+        /// Local buffer.
+        char        localBuffer_[MIN_CAPACITY];
+    };
 };
 
 /// Add a string to a C string.

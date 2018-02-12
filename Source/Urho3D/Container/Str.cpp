@@ -35,22 +35,16 @@
 namespace Urho3D
 {
 
-char String::endZero = 0;
-
 const String String::EMPTY;
 
 String::String(const WString& str) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     SetUTF8FromWChar(str.CString());
 }
 
 String::String(int value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%d", value);
@@ -58,9 +52,7 @@ String::String(int value) :
 }
 
 String::String(short value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%d", value);
@@ -68,9 +60,7 @@ String::String(short value) :
 }
 
 String::String(long value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%ld", value);
@@ -78,9 +68,7 @@ String::String(long value) :
 }
 
 String::String(long long value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%lld", value);
@@ -88,9 +76,7 @@ String::String(long long value) :
 }
 
 String::String(unsigned value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%u", value);
@@ -98,9 +84,7 @@ String::String(unsigned value) :
 }
 
 String::String(unsigned short value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%u", value);
@@ -108,9 +92,7 @@ String::String(unsigned short value) :
 }
 
 String::String(unsigned long value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%lu", value);
@@ -118,9 +100,7 @@ String::String(unsigned long value) :
 }
 
 String::String(unsigned long long value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%llu", value);
@@ -128,9 +108,7 @@ String::String(unsigned long long value) :
 }
 
 String::String(float value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%g", value);
@@ -138,9 +116,7 @@ String::String(float value) :
 }
 
 String::String(double value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     char tempBuffer[CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%.15g", value);
@@ -148,9 +124,7 @@ String::String(double value) :
 }
 
 String::String(bool value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     if (value)
         *this = "true";
@@ -159,18 +133,13 @@ String::String(bool value) :
 }
 
 String::String(char value) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
-    Resize(1);
     buffer_[0] = value;
 }
 
 String::String(char value, unsigned length) :
-    length_(0),
-    capacity_(0),
-    buffer_(&endZero)
+    String()
 {
     Resize(length);
     for (unsigned i = 0; i < length; ++i)
@@ -417,35 +386,21 @@ String::Iterator String::Erase(const String::Iterator& start, const String::Iter
 
 void String::Resize(unsigned newLength)
 {
-    if (!capacity_)
+    if (Capacity() < newLength + 1)
     {
-        // If zero length requested, do not allocate buffer yet
-        if (!newLength)
-            return;
+        unsigned newCapacity = MIN_CAPACITY;
+        // Increase the capacity with half each time it is exceeded
+        while (newCapacity < newLength + 1)
+            newCapacity += (newCapacity + 1) >> 1;
 
-        // Calculate initial capacity
-        capacity_ = newLength + 1;
-        if (capacity_ < MIN_CAPACITY)
-            capacity_ = MIN_CAPACITY;
+        auto* newBuffer = new char[newCapacity];
+        // Move the existing data to the new buffer, then delete the old buffer
+        if (length_)
+            CopyChars(newBuffer, buffer_, length_);
+        ReleaseBuffer();
 
-        buffer_ = new char[capacity_];
-    }
-    else
-    {
-        if (newLength && capacity_ < newLength + 1)
-        {
-            // Increase the capacity with half each time it is exceeded
-            while (capacity_ < newLength + 1)
-                capacity_ += (capacity_ + 1) >> 1;
-
-            auto* newBuffer = new char[capacity_];
-            // Move the existing data to the new buffer, then delete the old buffer
-            if (length_)
-                CopyChars(newBuffer, buffer_, length_);
-            delete[] buffer_;
-
-            buffer_ = newBuffer;
-        }
+        buffer_ = newBuffer;
+        capacity_ = newCapacity;
     }
 
     buffer_[newLength] = 0;
@@ -454,7 +409,9 @@ void String::Resize(unsigned newLength)
 
 void String::Reserve(unsigned newCapacity)
 {
-    if (newCapacity < length_ + 1)
+    if (newCapacity < MIN_CAPACITY && IsLocal())
+        return;
+    else if (newCapacity < length_ + 1)
         newCapacity = length_ + 1;
     if (newCapacity == capacity_)
         return;
@@ -462,11 +419,10 @@ void String::Reserve(unsigned newCapacity)
     auto* newBuffer = new char[newCapacity];
     // Move the existing data to the new buffer, then delete the old buffer
     CopyChars(newBuffer, buffer_, length_ + 1);
-    if (capacity_)
-        delete[] buffer_;
+    ReleaseBuffer();
 
-    capacity_ = newCapacity;
     buffer_ = newBuffer;
+    capacity_ = newCapacity;
 }
 
 void String::Compact()
@@ -482,9 +438,38 @@ void String::Clear()
 
 void String::Swap(String& str)
 {
-    Urho3D::Swap(length_, str.length_);
-    Urho3D::Swap(capacity_, str.capacity_);
-    Urho3D::Swap(buffer_, str.buffer_);
+    if (IsLocal() && str.IsLocal())
+    {
+        char tmp[MIN_CAPACITY];
+        CopyChars(tmp, buffer_, length_ + 1);
+        CopyChars(buffer_, str.buffer_, str.length_ + 1);
+        CopyChars(str.buffer_, tmp, length_ + 1);
+        Urho3D::Swap(length_, str.length_);
+    }
+    else if (IsLocal())
+    {
+        unsigned cap = str.capacity_;
+        CopyChars(str.localBuffer_, localBuffer_, length_ + 1);
+        buffer_ = str.buffer_;
+        capacity_ = cap;
+        str.capacity_ = MIN_CAPACITY;
+        Urho3D::Swap(length_, str.length_);
+    }
+    else if (str.IsLocal())
+    {
+        unsigned cap = capacity_;
+        CopyChars(localBuffer_, str.localBuffer_, str.length_ + 1);
+        str.buffer_ = buffer_;
+        str.capacity_ = cap;
+        capacity_ = MIN_CAPACITY;
+        Urho3D::Swap(length_, str.length_);
+    }
+    else
+    {
+        Urho3D::Swap(buffer_, str.buffer_);
+        Urho3D::Swap(length_, str.length_);
+        Urho3D::Swap(capacity_, str.capacity_);
+    }
 }
 
 String String::Substring(unsigned pos) const

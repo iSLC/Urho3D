@@ -273,7 +273,7 @@ private:
 template <typename T> CustomVariantValueImpl<T> MakeCustomValue(const T& value) { return CustomVariantValueImpl<T>(value); }
 
 /// Size of variant value. 16 bytes on 32-bit platform, 32 bytes on 64-bit platform.
-static const unsigned VARIANT_VALUE_SIZE = sizeof(void*) * 4;
+static const unsigned VARIANT_VALUE_SIZE = 32;//sizeof(void*) * 4;
 
 /// Union for the possible variant values. Objects exceeding the VARIANT_VALUE_SIZE are allocated on the heap.
 union VariantValue
@@ -303,7 +303,7 @@ union VariantValue
     VariantVector variantVector_;
     VariantMap variantMap_;
     PODVector<unsigned char> buffer_;
-    ResourceRef resourceRef_;
+    ResourceRef* resourceRef_;
     ResourceRefList resourceRefList_;
     CustomVariantValue* customValueHeap_;
     CustomVariantValue customValueStack_;
@@ -706,7 +706,7 @@ public:
     Variant& operator =(const ResourceRef& rhs)
     {
         SetType(VAR_RESOURCEREF);
-        value_.resourceRef_ = rhs;
+        *value_.resourceRef_ = rhs;
         return *this;
     }
 
@@ -893,7 +893,7 @@ public:
     /// Test for equality with a resource reference. To return true, both the type and value must match.
     bool operator ==(const ResourceRef& rhs) const
     {
-        return type_ == VAR_RESOURCEREF ? value_.resourceRef_ == rhs : false;
+        return type_ == VAR_RESOURCEREF ? *value_.resourceRef_ == rhs : false;
     }
 
     /// Test for equality with a resource reference list. To return true, both the type and value must match.
@@ -1217,7 +1217,7 @@ public:
     /// Return a resource reference or empty on type mismatch.
     const ResourceRef& GetResourceRef() const
     {
-        return type_ == VAR_RESOURCEREF ? value_.resourceRef_ : emptyResourceRef;
+        return type_ == VAR_RESOURCEREF ? *value_.resourceRef_ : emptyResourceRef;
     }
 
     /// Return a resource reference list or empty on type mismatch.

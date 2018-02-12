@@ -97,7 +97,7 @@ Variant& Variant::operator =(const Variant& rhs)
         break;
 
     case VAR_RESOURCEREF:
-        value_.resourceRef_ = rhs.value_.resourceRef_;
+        *value_.resourceRef_ = *rhs.value_.resourceRef_;
         break;
 
     case VAR_RESOURCEREFLIST:
@@ -192,7 +192,7 @@ bool Variant::operator ==(const Variant& rhs) const
         return value_.buffer_ == rhs.value_.buffer_;
 
     case VAR_RESOURCEREF:
-        return value_.resourceRef_ == rhs.value_.resourceRef_;
+        return *value_.resourceRef_ == *rhs.value_.resourceRef_;
 
     case VAR_RESOURCEREFLIST:
         return value_.resourceRefList_ == rhs.value_.resourceRefList_;
@@ -327,8 +327,8 @@ void Variant::FromString(VariantType type, const char* value)
         if (values.Size() == 2)
         {
             SetType(VAR_RESOURCEREF);
-            value_.resourceRef_.type_ = values[0];
-            value_.resourceRef_.name_ = values[1];
+            value_.resourceRef_->type_ = values[0];
+            value_.resourceRef_->name_ = values[1];
         }
         break;
     }
@@ -562,7 +562,7 @@ bool Variant::IsZero() const
         return value_.voidPtr_ == nullptr;
 
     case VAR_RESOURCEREF:
-        return value_.resourceRef_.name_.Empty();
+        return value_.resourceRef_->name_.Empty();
 
     case VAR_RESOURCEREFLIST:
     {
@@ -636,7 +636,7 @@ void Variant::SetType(VariantType newType)
         break;
 
     case VAR_RESOURCEREF:
-        value_.resourceRef_.~ResourceRef();
+        delete value_.resourceRef_;
         break;
 
     case VAR_RESOURCEREFLIST:
@@ -696,7 +696,7 @@ void Variant::SetType(VariantType newType)
         break;
 
     case VAR_RESOURCEREF:
-        new(&value_.resourceRef_) ResourceRef();
+        value_.resourceRef_ = new ResourceRef();
         break;
 
     case VAR_RESOURCEREFLIST:
