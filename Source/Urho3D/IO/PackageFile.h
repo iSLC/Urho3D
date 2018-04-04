@@ -38,7 +38,7 @@ struct PackageEntry
     unsigned checksum_;
 };
 
-/// Stores files of a directory tree sequentially for convenient access.
+/// A common base class for objects that implement loading of file packages.
 class URHO3D_API PackageFile : public Object
 {
     URHO3D_OBJECT(PackageFile, Object);
@@ -46,17 +46,15 @@ class URHO3D_API PackageFile : public Object
 public:
     /// Construct.
     explicit PackageFile(Context* context);
-    /// Construct and open.
-    PackageFile(Context* context, const String& fileName, unsigned startOffset = 0);
     /// Destruct.
     ~PackageFile() override;
 
     /// Open the package file. Return true if successful.
-    bool Open(const String& fileName, unsigned startOffset = 0);
+    virtual bool Open(const String& fileName, unsigned startOffset = 0) { return false; }
     /// Check if a file exists within the package file. This will be case-insensitive on Windows and case-sensitive on other platforms.
-    bool Exists(const String& fileName) const;
+    virtual bool Exists(const String& fileName) const;
     /// Return the file entry corresponding to the name, or null if not found. This will be case-insensitive on Windows and case-sensitive on other platforms.
-    const PackageEntry* GetEntry(const String& fileName) const;
+    virtual const PackageEntry* GetEntry(const String& fileName) const;
 
     /// Return all file entries.
     const HashMap<String, PackageEntry>& GetEntries() const { return entries_; }
@@ -85,7 +83,7 @@ public:
     /// Return list of file names in the package.
     const Vector<String> GetEntryNames() const { return entries_.Keys(); }
 
-private:
+protected:
     /// File entries.
     HashMap<String, PackageEntry> entries_;
     /// File name.
@@ -100,6 +98,23 @@ private:
     unsigned checksum_;
     /// Compressed flag.
     bool compressed_;
+};
+
+/// A basic file package format that stores files of a directory tree sequentially for convenient access.
+class URHO3D_API UrhoPackageFile : public PackageFile
+{
+    URHO3D_OBJECT(UrhoPackageFile, PackageFile);
+
+public:
+    /// Construct.
+    explicit UrhoPackageFile(Context* context);
+    /// Construct and open.
+    UrhoPackageFile(Context* context, const String& fileName, unsigned startOffset = 0);
+    /// Destruct.
+    ~UrhoPackageFile() override;
+
+    /// Open the package file. Return true if successful.
+    bool Open(const String& fileName, unsigned startOffset = 0) override;
 };
 
 }

@@ -75,6 +75,8 @@ ResourceCache::ResourceCache(Context* context) :
     isRouting_(false),
     finishBackgroundResourcesMs_(5)
 {
+    // Register the basic package file factory
+    RegisterPackageFileFactory<UrhoPackageFile>("Urho");
     // Register Resource library object factories
     RegisterResourceLibrary(context_);
 
@@ -153,10 +155,35 @@ bool ResourceCache::AddPackageFile(PackageFile* package, unsigned priority)
     return true;
 }
 
-bool ResourceCache::AddPackageFile(const String& fileName, unsigned priority)
+bool ResourceCache::AddUrhoPackageFile(const String& fileName, unsigned priority)
 {
-    SharedPtr<PackageFile> package(new PackageFile(context_));
+    SharedPtr<UrhoPackageFile> package(new UrhoPackageFile(context_));
     return package->Open(fileName) && AddPackageFile(package, priority);
+}
+
+SharedPtr<PackageFile> ResourceCache::CreatePackageFile(StringHash typeId)
+{
+    HashMap<StringHash, SharedPtr<PackageFileFactory> >::ConstIterator i = packageFileFactories_.Find(typeId);
+    if (i != packageFileFactories_.End())
+        return i->second_->CreatePackageFile();
+    else
+        return SharedPtr<PackageFile>();
+}
+
+SharedPtr<PackageFile> ResourceCache::CreatePackageFile(StringHash typeId, const String& fileName, unsigned startOffset)
+{
+    SharedPtr<PackageFile> packageFile = CreatePackageFile(typeId);
+    if (packageFile)
+        packageFile->Open(fileName, startOffset);
+    return packageFile;
+}
+
+void ResourceCache::RegisterPackageFileFactory(PackageFileFactory* factory)
+{
+    if (!factory)
+        return;
+
+    packageFileFactories_[factory->GetTypeIdHash()] = factory;
 }
 
 bool ResourceCache::AddManualResource(Resource* resource)

@@ -397,35 +397,20 @@ void RegisterFileSystem(asIScriptEngine* engine)
     engine->RegisterGlobalFunction("bool IsAbsolutePath(const String&in)", asFUNCTION(IsAbsolutePath), asCALL_CDECL);
 }
 
-static PackageFile* ConstructPackageFile()
+void RegisterPackageFile(asIScriptEngine* engine)
 {
-    return new PackageFile(GetScriptContext());
+    RegisterPackageFile<PackageFile>(engine, "PackageFile");
 }
 
-static PackageFile* ConstructAndOpenPackageFile(const String& fileName, unsigned startOffset)
+static UrhoPackageFile* ConstructAndOpenUrhoPackageFile(const String& fileName, unsigned startOffset)
 {
-    return new PackageFile(GetScriptContext(), fileName, startOffset);
+    return new UrhoPackageFile(GetScriptContext(), fileName, startOffset);
 }
 
-static const CScriptArray* PackageFileGetEntryNames(PackageFile* packageFile)
+static void RegisterUrhoPackageFile(asIScriptEngine* engine)
 {
-    return VectorToArray<String>(packageFile->GetEntryNames(), "Array<String>");
-}
-
-static void RegisterPackageFile(asIScriptEngine* engine)
-{
-    RegisterObject<PackageFile>(engine, "PackageFile");
-    engine->RegisterObjectBehaviour("PackageFile", asBEHAVE_FACTORY, "PackageFile@+ f()", asFUNCTION(ConstructPackageFile), asCALL_CDECL);
-    engine->RegisterObjectBehaviour("PackageFile", asBEHAVE_FACTORY, "PackageFile@+ f(const String&in, uint startOffset = 0)", asFUNCTION(ConstructAndOpenPackageFile), asCALL_CDECL);
-    engine->RegisterObjectMethod("PackageFile", "bool Open(const String&in, uint startOffset = 0) const", asMETHOD(PackageFile, Open), asCALL_THISCALL);
-    engine->RegisterObjectMethod("PackageFile", "bool Exists(const String&in) const", asMETHOD(PackageFile, Exists), asCALL_THISCALL);
-    engine->RegisterObjectMethod("PackageFile", "const String& get_name() const", asMETHOD(PackageFile, GetName), asCALL_THISCALL);
-    engine->RegisterObjectMethod("PackageFile", "uint get_numFiles() const", asMETHOD(PackageFile, GetNumFiles), asCALL_THISCALL);
-    engine->RegisterObjectMethod("PackageFile", "uint get_totalSize() const", asMETHOD(PackageFile, GetTotalSize), asCALL_THISCALL);
-    engine->RegisterObjectMethod("PackageFile", "uint get_totalDataSize() const", asMETHOD(PackageFile, GetTotalDataSize), asCALL_THISCALL);
-    engine->RegisterObjectMethod("PackageFile", "uint get_checksum() const", asMETHOD(PackageFile, GetChecksum), asCALL_THISCALL);
-    engine->RegisterObjectMethod("PackageFile", "bool compressed() const", asMETHOD(PackageFile, IsCompressed), asCALL_THISCALL);
-    engine->RegisterObjectMethod("PackageFile", "Array<String>@ GetEntryNames() const", asFUNCTION(PackageFileGetEntryNames), asCALL_CDECL_OBJLAST);
+    RegisterPackageFile<UrhoPackageFile>(engine, "UrhoPackageFile");
+    engine->RegisterObjectBehaviour("UrhoPackageFile", asBEHAVE_FACTORY, "UrhoPackageFile@+ f(const String&in, uint startOffset = 0)", asFUNCTION(ConstructAndOpenUrhoPackageFile), asCALL_CDECL);
 }
 
 void RegisterIOAPI(asIScriptEngine* engine)
@@ -434,6 +419,7 @@ void RegisterIOAPI(asIScriptEngine* engine)
     RegisterSerialization(engine);
     RegisterFileSystem(engine);
     RegisterPackageFile(engine);
+    RegisterUrhoPackageFile(engine);
 }
 
 }

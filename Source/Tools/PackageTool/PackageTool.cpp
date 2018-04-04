@@ -162,7 +162,7 @@ void Run(const Vector<String>& arguments)
     }
     else
     {
-        SharedPtr<PackageFile> packageFile(new PackageFile(context_, packageName));
+        SharedPtr<UrhoPackageFile> packageFile(new UrhoPackageFile(context_, packageName));
         bool outputCompressionRatio = false;
         switch (arguments[0][1])
         {

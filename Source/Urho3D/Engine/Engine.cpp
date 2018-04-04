@@ -354,7 +354,7 @@ bool Engine::InitializeResourceCache(const VariantMap& parameters, bool removeOl
                 String packageName = resourcePrefixPaths[j] + resourcePaths[i] + ".pak";
                 if (fileSystem->FileExists(packageName))
                 {
-                    if (cache->AddPackageFile(packageName))
+                    if (cache->AddUrhoPackageFile(packageName))
                         break;
                     else
                         return false;   // The root cause of the error should have already been logged
@@ -394,7 +394,7 @@ bool Engine::InitializeResourceCache(const VariantMap& parameters, bool removeOl
             String packageName = resourcePrefixPaths[j] + resourcePackages[i];
             if (fileSystem->FileExists(packageName))
             {
-                if (cache->AddPackageFile(packageName))
+                if (cache->AddUrhoPackageFile(packageName))
                     break;
                 else
                     return false;
@@ -448,7 +448,7 @@ bool Engine::InitializeResourceCache(const VariantMap& parameters, bool removeOl
                         continue;
 
                     String autoPackageName = autoLoadPath + "/" + pak;
-                    if (!cache->AddPackageFile(autoPackageName, 0))
+                    if (!cache->AddUrhoPackageFile(autoPackageName, 0))
                         return false;
                 }
             }

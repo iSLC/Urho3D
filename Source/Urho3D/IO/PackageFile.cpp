@@ -38,19 +38,65 @@ PackageFile::PackageFile(Context* context) :
 {
 }
 
-PackageFile::PackageFile(Context* context, const String& fileName, unsigned startOffset) :
-    Object(context),
-    totalSize_(0),
-    totalDataSize_(0),
-    checksum_(0),
-    compressed_(false)
+PackageFile::~PackageFile() = default;
+
+bool PackageFile::Exists(const String& fileName) const
+{
+    bool found = entries_.Find(fileName) != entries_.End();
+
+#ifdef _WIN32
+    // On Windows perform a fallback case-insensitive search
+    if (!found)
+    {
+        for (HashMap<String, PackageEntry>::ConstIterator i = entries_.Begin(); i != entries_.End(); ++i)
+        {
+            if (!i->first_.Compare(fileName, false))
+            {
+                found = true;
+                break;
+            }
+        }
+    }
+#endif
+
+    return found;
+}
+
+const PackageEntry* PackageFile::GetEntry(const String& fileName) const
+{
+    HashMap<String, PackageEntry>::ConstIterator i = entries_.Find(fileName);
+    if (i != entries_.End())
+        return &i->second_;
+
+#ifdef _WIN32
+    // On Windows perform a fallback case-insensitive search
+    else
+    {
+        for (HashMap<String, PackageEntry>::ConstIterator j = entries_.Begin(); j != entries_.End(); ++j)
+        {
+            if (!j->first_.Compare(fileName, false))
+                return &j->second_;
+        }
+    }
+#endif
+
+    return nullptr;
+}
+
+UrhoPackageFile::UrhoPackageFile(Context* context) :
+    PackageFile(context)
+{
+}
+
+UrhoPackageFile::UrhoPackageFile(Context* context, const String& fileName, unsigned startOffset) :
+    PackageFile(context)
 {
     Open(fileName, startOffset);
 }
 
-PackageFile::~PackageFile() = default;
+UrhoPackageFile::~UrhoPackageFile() = default;
 
-bool PackageFile::Open(const String& fileName, unsigned startOffset)
+bool UrhoPackageFile::Open(const String& fileName, unsigned startOffset)
 {
     SharedPtr<File> file(new File(context_, fileName));
     if (!file->IsOpen())
@@ -108,49 +154,6 @@ bool PackageFile::Open(const String& fileName, unsigned startOffset)
     }
 
     return true;
-}
-
-bool PackageFile::Exists(const String& fileName) const
-{
-    bool found = entries_.Find(fileName) != entries_.End();
-
-#ifdef _WIN32
-    // On Windows perform a fallback case-insensitive search
-    if (!found)
-    {
-        for (HashMap<String, PackageEntry>::ConstIterator i = entries_.Begin(); i != entries_.End(); ++i)
-        {
-            if (!i->first_.Compare(fileName, false))
-            {
-                found = true;
-                break;
-            }
-        }
-    }
-#endif
-
-    return found;
-}
-
-const PackageEntry* PackageFile::GetEntry(const String& fileName) const
-{
-    HashMap<String, PackageEntry>::ConstIterator i = entries_.Find(fileName);
-    if (i != entries_.End())
-        return &i->second_;
-
-#ifdef _WIN32
-    // On Windows perform a fallback case-insensitive search
-    else
-    {
-        for (HashMap<String, PackageEntry>::ConstIterator j = entries_.Begin(); j != entries_.End(); ++j)
-        {
-            if (!j->first_.Compare(fileName, false))
-                return &j->second_;
-        }
-    }
-#endif
-
-    return nullptr;
 }
 
 }

@@ -831,7 +831,7 @@ void Connection::ProcessPackageDownload(int msgID, MemoryBuffer& msg)
 
                 // Instantiate the package and add to the resource system, as we will need it to load the scene
                 download.file_->Close();
-                GetSubsystem<ResourceCache>()->AddPackageFile(download.file_->GetName(), 0);
+                GetSubsystem<ResourceCache>()->AddUrhoPackageFile(download.file_->GetName(), 0);
 
                 // Then start the next download if there are more
                 downloads_.Erase(i);
@@ -1428,7 +1428,7 @@ bool Connection::RequestNeededPackages(unsigned numPackages, MemoryBuffer& msg)
             if (!fileName.Find(checksumString) && !fileName.Substring(9).Compare(name, false))
             {
                 // Name matches. Check file size and actual checksum to be sure
-                SharedPtr<PackageFile> newPackage(new PackageFile(context_, packageCacheDir + fileName));
+                SharedPtr<UrhoPackageFile> newPackage(new UrhoPackageFile(context_, packageCacheDir + fileName));
                 if (newPackage->GetTotalSize() == fileSize && newPackage->GetChecksum() == checksum)
                 {
                     // Add the package to the resource system now, as we will need it to load the scene

@@ -478,6 +478,41 @@ template <class T> void RegisterSerializable(asIScriptEngine* engine, const char
     RegisterSubclass<Object, T>(engine, "Serializable", className);
 }
 
+template <class T> static bool PackageFileOpen(const String& fileName, unsigned startOffset, T* packageFile)
+{
+    return packageFile->Open(fileName, startOffset);
+}
+
+template <class T> static bool PackageFileExists(const String& fileName, T* packageFile)
+{
+    return packageFile->Exists(fileName);
+}
+template <class T> static const CScriptArray* PackageFileGetEntryNames(T* packageFile)
+{
+    return VectorToArray<String>(packageFile->GetEntryNames(), "Array<String>");
+}
+
+/// Template function for registering a class derived from PackageFile.
+template <class T> void RegisterPackageFile(asIScriptEngine* engine, const char* className)
+{
+    RegisterObject<T>(engine, className);
+    RegisterSubclass<PackageFile, T>(engine, "PackageFile", className);
+    // Do not register factory for the base class
+    if (strcmp("PackageFile", className) != 0)
+    {
+        RegisterObjectConstructor<T>(engine, className);
+    }
+    engine->RegisterObjectMethod(className, "bool Open(const String&in, uint startOffset = 0) const", asFUNCTION(PackageFileOpen<T>), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(className, "bool Exists(const String&in) const", asFUNCTION(PackageFileExists<T>), asCALL_CDECL_OBJLAST);
+    engine->RegisterObjectMethod(className, "const String& get_name() const", asMETHOD(T, GetName), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "uint get_numFiles() const", asMETHOD(T, GetNumFiles), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "uint get_totalSize() const", asMETHOD(T, GetTotalSize), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "uint get_totalDataSize() const", asMETHOD(T, GetTotalDataSize), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "uint get_checksum() const", asMETHOD(T, GetChecksum), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "bool compressed() const", asMETHOD(T, IsCompressed), asCALL_THISCALL);
+    engine->RegisterObjectMethod(className, "Array<String>@ GetEntryNames() const", asFUNCTION(PackageFileGetEntryNames<T>), asCALL_CDECL_OBJLAST);
+}
+
 /// Template function for registering a class derived from Animatable.
 template <class T> void RegisterAnimatable(asIScriptEngine* engine, const char* className)
 {

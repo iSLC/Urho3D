@@ -34,6 +34,7 @@ namespace Urho3D
 class BackgroundLoader;
 class FileWatcher;
 class PackageFile;
+class PackageFileFactory;
 
 /// Sets to priority so that a package or file is pushed to the end of the vector.
 static const unsigned PRIORITY_LAST = 0xffffffff;
@@ -93,7 +94,13 @@ public:
     /// Add a package file for loading resources from. Optional priority parameter which will control search order.
     bool AddPackageFile(PackageFile* package, unsigned priority = PRIORITY_LAST);
     /// Add a package file for loading resources from by name. Optional priority parameter which will control search order.
-    bool AddPackageFile(const String& fileName, unsigned priority = PRIORITY_LAST);
+    bool AddUrhoPackageFile(const String& fileName, unsigned priority = PRIORITY_LAST);
+    /// Create a factory type by type hash. Return pointer to it or null if no factory found.
+    SharedPtr<PackageFile> CreatePackageFile(StringHash typeId);
+    /// Create a factory type by type hash and open it. Return pointer to it or null if no factory found.
+    SharedPtr<PackageFile> CreatePackageFile(StringHash typeId, const String& fileName, unsigned startOffset = 0);
+    /// Register a factory for a package file type.
+    void RegisterPackageFileFactory(PackageFileFactory* factory);
     /// Add a manually created resource. Must be uniquely named within its type.
     bool AddManualResource(Resource* resource);
     /// Remove a resource load directory.
@@ -158,6 +165,10 @@ public:
     /// Return added package files.
     const Vector<SharedPtr<PackageFile> >& GetPackageFiles() const { return packages_; }
 
+    /// Add a package file for loading resources from by name. Optional priority parameter which will control search order.
+    template <class T> bool AddPackageFile(const String& fileName, unsigned priority = PRIORITY_LAST);
+    /// Template version of registering a package file factory with package type identification.
+    template <class T> void RegisterPackageFileFactory(const String& typeID);
     /// Template version of returning a resource by name.
     template <class T> T* GetResource(const String& name, bool sendEventOnFailure = true);
     /// Template version of returning an existing resource by name.
@@ -238,6 +249,8 @@ private:
     Vector<SharedPtr<PackageFile> > packages_;
     /// Dependent resources. Only used with automatic reload to eg. trigger reload of a cube texture when any of its faces change.
     HashMap<StringHash, HashSet<StringHash> > dependentResources_;
+    /// Package file factories.
+    HashMap<StringHash, SharedPtr<PackageFileFactory> > packageFileFactories_;
     /// Resource background loader.
     SharedPtr<BackgroundLoader> backgroundLoader_;
     /// Resource routers.
@@ -253,6 +266,65 @@ private:
     /// How many milliseconds maximum per frame to spend on finishing background loaded resources.
     int finishBackgroundResourcesMs_;
 };
+
+/// Base class for package file factories.
+class URHO3D_API PackageFileFactory : public RefCounted
+{
+public:
+    /// Construct.
+    explicit PackageFileFactory(Context* context, const String& typeId) :
+        context_(context),
+        typeId_(typeId),
+        typeIdHash_(typeId)
+    {
+        assert(context_);
+    }
+
+    /// Create a package file. Implemented in templated subclasses.
+    virtual SharedPtr<PackageFile> CreatePackageFile() = 0;
+
+    /// Return execution context.
+    Context* GetContext() const { return context_; }
+
+    /// Return type identification of packages created by this factory.
+    const String& GetTypeId() const { return typeId_; }
+
+    /// Return type identification hash of packages created by this factory.
+    StringHash GetTypeIdHash() const { return typeIdHash_; }
+
+protected:
+    /// Execution context.
+    Context* context_;
+    /// Type identification.
+    String typeId_;
+    /// Type identification hash.
+    StringHash typeIdHash_;
+};
+
+/// Template implementation of the package file factory.
+template <class T> class PackageFileFactoryImpl : public PackageFileFactory
+{
+public:
+    /// Construct.
+    explicit PackageFileFactoryImpl(Context* context, const String& typeId) :
+        PackageFileFactory(context, typeId)
+    {
+    }
+
+    /// Create a package of the specific type.
+    SharedPtr<PackageFile> CreatePackageFile() override { return SharedPtr<PackageFile>(new T(context_)); }
+};
+
+template <class T> bool ResourceCache::AddPackageFile(const String& fileName, unsigned priority)
+{
+    SharedPtr<T> package(new T(context_));
+    return package->Open(fileName) && AddPackageFile(package, priority);
+}
+
+template <class T> void ResourceCache::RegisterPackageFileFactory(const String& typeID)
+{
+    RegisterPackageFileFactory(new PackageFileFactoryImpl<T>(context_, typeID));
+}
 
 template <class T> T* ResourceCache::GetExistingResource(const String& name)
 {
