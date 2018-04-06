@@ -34,6 +34,8 @@ struct PackageEntry
     unsigned offset_;
     /// File size.
     unsigned size_;
+    /// File information.
+    unsigned info_;
     /// File checksum.
     unsigned checksum_;
 };
