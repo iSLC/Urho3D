@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@ namespace Urho3D
 /// Tooltip %UI element.
 class URHO3D_API ToolTip : public UIElement
 {
-    URHO3D_OBJECT(ToolTip, UIElement)
+    URHO3D_OBJECT(ToolTip, UIElement);
 
 public:
     /// Construct.
@@ -39,6 +39,7 @@ public:
     /// Destruct.
     ~ToolTip() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Perform UI element update.
@@ -51,9 +52,11 @@ public:
     void AddAltTarget(UIElement* target);
 
     /// Set the delay in seconds until the tooltip shows once hovering. Set zero to use the default from the UI subsystem.
+    /// @property
     void SetDelay(float delay);
 
     /// Return the delay in seconds until the tooltip shows once hovering.
+    /// @property
     float GetDelay() const { return delay_; }
 
 private:

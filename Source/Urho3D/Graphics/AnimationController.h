@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ class Animation;
 struct Bone;
 
 /// Control data for an animation.
+/// @fakeref
 struct URHO3D_API AnimationControl
 {
     /// Construct with defaults.
@@ -91,6 +92,7 @@ public:
     /// Destruct.
     ~AnimationController() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Handle enabled/disabled state change.
@@ -125,7 +127,7 @@ public:
     bool SetLooped(const String& name, bool enable);
     /// Set animation speed. Return true on success.
     bool SetSpeed(const String& name, float speed);
-    /// Set animation autofade at end (non-looped animations only.) Zero time disables. Return true on success.
+    /// Set animation autofade at end (non-looped animations only). Zero time disables. Return true on success.
     bool SetAutoFade(const String& name, float fadeOutTime);
     /// Set whether an animation auto-removes on completion.
     bool SetRemoveOnCompletion(const String& name, bool removeOnCompletion);

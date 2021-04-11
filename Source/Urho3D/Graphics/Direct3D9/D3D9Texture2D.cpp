@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -400,7 +400,7 @@ bool Texture2D::GetData(unsigned level, void* dest) const
             URHO3D_SAFE_RELEASE(resolveSurface);
             return false;
         }
-        
+
         if (resolveSurface)
             hr = device->GetRenderTargetData(resolveSurface, offscreenSurface);
         else
@@ -559,7 +559,7 @@ bool Texture2D::Create()
     IDirect3DDevice9* device = graphics_->GetImpl()->GetDevice();
     // If creating a depth-stencil texture, and it is not supported, create a depth-stencil surface instead
     // Multisampled surfaces need also to be created this way
-    if (usage_ == TEXTURE_DEPTHSTENCIL && (multiSample_ > 1 || !graphics_->GetImpl()->CheckFormatSupport((D3DFORMAT)format_, 
+    if (usage_ == TEXTURE_DEPTHSTENCIL && (multiSample_ > 1 || !graphics_->GetImpl()->CheckFormatSupport((D3DFORMAT)format_,
         d3dUsage, D3DRTYPE_TEXTURE)))
     {
         HRESULT hr = device->CreateDepthStencilSurface(

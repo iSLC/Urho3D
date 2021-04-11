@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -74,10 +74,15 @@ void ToolTip::Update(float timeStep)
             SharedPtr<UIElement> target = it->Lock();
             if (!target)
                 it = altTargets_.Erase(it);
-            else if (hovering = target->IsHovering() && target->IsVisibleEffective())
-                break;
             else
-                ++it;
+            {
+                hovering = target->IsHovering() && target->IsVisibleEffective();
+
+                if (hovering)
+                    break;
+                else
+                    ++it;
+            }
         }
     }
 

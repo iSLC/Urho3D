@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -70,6 +70,7 @@ public:
 };
 
 /// Point octree query.
+/// @nobind
 class URHO3D_API PointOctreeQuery : public OctreeQuery
 {
 public:
@@ -91,6 +92,7 @@ public:
 };
 
 /// %Sphere octree query.
+/// @nobind
 class URHO3D_API SphereOctreeQuery : public OctreeQuery
 {
 public:
@@ -112,6 +114,7 @@ public:
 };
 
 /// Bounding box octree query.
+/// @nobind
 class URHO3D_API BoxOctreeQuery : public OctreeQuery
 {
 public:
@@ -133,6 +136,7 @@ public:
 };
 
 /// %Frustum octree query.
+/// @nobind
 class URHO3D_API FrustumOctreeQuery : public OctreeQuery
 {
 public:
@@ -207,7 +211,7 @@ struct URHO3D_API RayQueryResult
     Vector3 position_;
     /// Hit normal in world space. Negation of ray direction if per-triangle data not available.
     Vector3 normal_;
-    /// Hit texture position
+    /// Hit texture position.
     Vector2 textureUV_;
     /// Distance from ray origin.
     float distance_{};
@@ -220,6 +224,7 @@ struct URHO3D_API RayQueryResult
 };
 
 /// Raycast octree query.
+/// @nobind
 class URHO3D_API RayOctreeQuery
 {
 public:
@@ -254,6 +259,7 @@ public:
     RayQueryLevel level_;
 };
 
+/// @nobind
 class URHO3D_API AllContentOctreeQuery : public OctreeQuery
 {
 public:

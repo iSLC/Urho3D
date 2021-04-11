@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,14 +40,17 @@ public:
     ~Localization() override;
 
     /// Return the number of languages.
+    /// @property
     int GetNumLanguages() const { return (int)languages_.Size(); }
 
     /// Return the index number of current language. The index is determined by the order of loading.
+    /// @property
     int GetLanguageIndex() const { return languageIndex_; }
 
     /// Return the index number of language. The index is determined by the order of loading.
     int GetLanguageIndex(const String& language);
     /// Return the name of current language.
+    /// @property
     String GetLanguage();
     /// Return the name of language.
     String GetLanguage(int index);
@@ -60,7 +63,7 @@ public:
     /// Clear all loaded strings.
     void Reset();
     /// Load strings from JSONFile. The file should be UTF8 without BOM.
-    void LoadJSONFile(const String& name, const String language = String::EMPTY);
+    void LoadJSONFile(const String& name, const String& language = String::EMPTY);
     /// Load strings from JSONValue.
     void LoadMultipleLanguageJSON(const JSONValue& source);
     /// Load strings from JSONValue for specific language.

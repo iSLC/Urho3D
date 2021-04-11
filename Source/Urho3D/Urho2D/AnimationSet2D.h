@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,7 @@ public:
     /// Destruct.
     ~AnimationSet2D() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
@@ -61,6 +62,7 @@ public:
     bool EndLoad() override;
 
     /// Get number of animations.
+    /// @property
     unsigned GetNumAnimations() const;
     /// Return animation name.
     String GetAnimation(unsigned index) const;

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -145,7 +145,7 @@ void Run(const Vector<String>& arguments)
         for (unsigned i = fileNames.Size() - 1; i < fileNames.Size(); --i)
         {
             String extension = GetExtension(fileNames[i]);
-            for (unsigned j = 0; j < ignoreExtensions_[j].Length(); ++j)
+            for (unsigned j = 0; ignoreExtensions_[j].Length(); ++j)
             {
                 if (extension == ignoreExtensions_[j])
                 {

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2019 the Urho3D project.
+# Copyright (c) 2008-2020 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,10 @@ endif ()
 if (NOT EXCEPTIONS)
     add_definitions (-DAS_NO_EXCEPTIONS)
 endif ()
-# Add compiler define to build the library with the normal function/method macros
-add_definitions (-DAS_IS_BUILDING)
+
+if (URHO3D_FORCE_AS_MAX_PORTABILITY)
+    add_definitions (-DAS_MAX_PORTABILITY)
+endif ()
 
 # Define source files
 define_source_files (GLOB_CPP_PATTERNS source/*.cpp GLOB_H_PATTERNS include/*.h source/*.h)

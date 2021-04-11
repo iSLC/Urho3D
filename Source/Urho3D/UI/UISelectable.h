@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -39,19 +39,24 @@ public:
     ~UISelectable() override = default;
 
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Return UI rendering batches.
     void GetBatches(PODVector<UIBatch>& batches, PODVector<float>& vertexData, const IntRect& currentScissor) override;
 
     /// Set selection background color. Color with 0 alpha (default) disables.
+    /// @property
     void SetSelectionColor(const Color& color);
     /// Set hover background color. Color with 0 alpha (default) disables.
+    /// @property
     void SetHoverColor(const Color& color);
 
     /// Return selection background color.
+    /// @property
     const Color& GetSelectionColor() const { return selectionColor_; }
     /// Return hover background color.
+    /// @property
     const Color& GetHoverColor() const { return hoverColor_; }
 
 protected:

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -167,25 +167,35 @@ public:
     JSONValue& operator =(const JSONValue& rhs);
 
     /// Return value type.
+    /// @property
     JSONValueType GetValueType() const;
     /// Return number type.
+    /// @property
     JSONNumberType GetNumberType() const;
     /// Return value type's name.
+    /// @property
     String GetValueTypeName() const;
     /// Return number type's name.
+    /// @property
     String GetNumberTypeName() const;
 
     /// Check is null.
+    /// @property{get_isNull}
     bool IsNull() const { return GetValueType() == JSON_NULL; }
     /// Check is boolean.
+    /// @property{get_isBool}
     bool IsBool() const { return GetValueType() == JSON_BOOL; }
     /// Check is number.
+    /// @property{get_isNumber}
     bool IsNumber() const { return GetValueType() == JSON_NUMBER; }
     /// Check is string.
+    /// @property{get_isString}
     bool IsString() const { return GetValueType() == JSON_STRING; }
     /// Check is array.
+    /// @property{get_isArray}
     bool IsArray() const { return GetValueType() == JSON_ARRAY; }
     /// Check is object.
+    /// @property{get_isObject}
     bool IsObject() const { return GetValueType() == JSON_OBJECT; }
 
     /// Return boolean value.
@@ -198,10 +208,10 @@ public:
     float GetFloat(float defaultValue = 0.0f) const { return IsNumber() ? (float)numberValue_ : defaultValue; }
     /// Return double value.
     double GetDouble(double defaultValue = 0.0) const { return IsNumber() ? numberValue_ : defaultValue; }
-    /// Return string value.
-    const String& GetString(String defaultValue = String::EMPTY) const { return IsString() ? *stringValue_ : defaultValue;}
-    /// Return C string value.
-    const char* GetCString(const char* defaultValue = nullptr) const { return IsString() ? stringValue_->CString() : defaultValue;}
+    /// Return string value. The 'defaultValue' may potentially be returned as is, so it is the responsibility of the caller to ensure the 'defaultValue' remains valid while the return value is being referenced.
+    const String& GetString(const String& defaultValue = String::EMPTY) const { return IsString() ? *stringValue_ : defaultValue;}
+    /// Return C string value. Default to empty string literal.
+    const char* GetCString(const char* defaultValue = "") const { return IsString() ? stringValue_->CString() : defaultValue;}
     /// Return JSON array value.
     const JSONArray& GetArray() const { return IsArray() ? *arrayValue_ : emptyArray; }
     /// Return JSON object value.
@@ -223,6 +233,7 @@ public:
     /// Resize array.
     void Resize(unsigned newSize);
     /// Return size of array or number of keys in object.
+    /// @property
     unsigned Size() const;
 
     // JSON object functions
@@ -293,17 +304,24 @@ public:
 private:
     /// type.
     unsigned type_;
+
+    // https://github.com/doxygen/doxygen/issues/7623
     union
     {
         /// Boolean value.
+        /// @nobind
         bool boolValue_;
         /// Number value.
+        /// @nobind
         double numberValue_;
         /// String value.
+        /// @nobind
         String* stringValue_;
         /// Array value.
+        /// @nobind
         JSONArray* arrayValue_;
         /// Object value.
+        /// @nobind
         JSONObject* objectValue_;
     };
 };

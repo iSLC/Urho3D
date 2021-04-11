@@ -6017,6 +6017,7 @@ IntRect(const IntVector2&in, const IntVector2&in);
 IntRect(int[]&inout);
 // Methods:
 int Clip(const IntRect&);
+Intersection IsInside(const IntRect&) const;
 Intersection IsInside(const IntVector2&) const;
 int Merge(const IntRect&);
 
@@ -6164,7 +6165,7 @@ void Resize(uint);
 void Set(const String&, const JSONValue&);
 void SetVariant(const Variant&);
 void SetVariantMap(const VariantMap&);
-const String& GetString(const String& = String ( "" )) const;
+const String& GetString(const String& = String ( )) const;
 
 // Properties:
 /* readonly */
@@ -6844,7 +6845,7 @@ String GetLanguage(int);
 int GetLanguageIndex(const String&);
 bool HasSubscribedToEvent(Object, const String&);
 bool HasSubscribedToEvent(const String&);
-void LoadJSONFile(const String&, const String = String ( "" ) const);
+void LoadJSONFile(const String&, const String& = String ( "" ) const);
 void LoadMultipleLanguageJSON(const JSONValue&);
 void LoadSingleLanguageJSON(const JSONValue&, const String& = String ( "" ) const);
 void Reset();
@@ -7819,7 +7820,7 @@ bool SetDiscoveryBeacon(const VariantMap& = VariantMap ( ));
 void SetNATServerInfo(const String&, uint16);
 bool SetPassword(const String&);
 void StartNATClient() const;
-bool StartServer(uint16);
+bool StartServer(uint16, uint = 128);
 void StopServer();
 void UnregisterAllRemoteEvents();
 void UnregisterRemoteEvent(const String&) const;
@@ -9243,6 +9244,7 @@ float GetWheelDampingCompression(int);
 float GetWheelDampingRelaxation(int);
 Vector3 GetWheelDirection(int);
 float GetWheelFrictionSlip(int);
+float GetWheelMaxSuspensionForce(int);
 Node GetWheelNode(int);
 Vector3 GetWheelPosition(int);
 float GetWheelRadius(int);
@@ -9290,6 +9292,7 @@ void SetWheelDampingCompression(int, float);
 void SetWheelDampingRelaxation(int, float);
 void SetWheelDirection(int, Vector3);
 void SetWheelFrictionSlip(int, float);
+void SetWheelMaxSuspensionForce(int, float);
 void SetWheelRadius(int, float);
 void SetWheelRestLength(int, float);
 void SetWheelRollInfluence(int, float);
@@ -15423,7 +15426,7 @@ bool HasSubscribedToEvent(Object, const String&);
 bool HasSubscribedToEvent(const String&);
 Vector3 ScreenToWorldPoint(int, int, float) const;
 void SendEvent(const String&, VariantMap& = VariantMap ( ));
-void SetRenderPath(XMLFile);
+bool SetRenderPath(XMLFile);
 IntVector2 WorldToScreenPoint(const Vector3&) const;
 
 // Properties:

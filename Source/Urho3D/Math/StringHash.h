@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -87,6 +87,7 @@ public:
     explicit operator bool() const { return value_ != 0; }
 
     /// Return hash value.
+    /// @property
     unsigned Value() const { return value_; }
 
     /// Return as string.

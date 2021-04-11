@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -79,7 +79,7 @@ public:
         DoInsertElements(0, vector.Begin(), vector.End(), CopyTag{});
     }
 
-    /// Copy-construct from another vector (iterator version)
+    /// Copy-construct from another vector (iterator version).
     Vector(ConstIterator start, ConstIterator end)
     {
         DoInsertElements(0, start, end, CopyTag{});
@@ -122,7 +122,6 @@ public:
     /// Move-assign from another vector.
     Vector<T>& operator =(Vector<T> && rhs)
     {
-        assert(&rhs != this);
         Swap(rhs);
         return *this;
     }
@@ -552,7 +551,7 @@ private:
     template <class RandomIteratorT>
     static void ConstructElements(T* dest, RandomIteratorT start, RandomIteratorT end, CopyTag)
     {
-        const unsigned count = end - start;
+        const auto count = (unsigned)(end - start);
         for (unsigned i = 0; i < count; ++i)
             new(dest + i) T(*(start + i));
     }
@@ -561,7 +560,7 @@ private:
     template <class RandomIteratorT>
     static void ConstructElements(T* dest, RandomIteratorT start, RandomIteratorT end, MoveTag)
     {
-        const unsigned count = end - start;
+        const auto count = (unsigned)(end - start);
         for (unsigned i = 0; i < count; ++i)
             new(dest + i) T(std::move(*(start + i)));
     }
@@ -618,7 +617,7 @@ private:
         if (pos > size_)
             pos = size_;
 
-        const unsigned numElements = end - start;
+        const auto numElements = (unsigned)(end - start);
         if (size_ + numElements > capacity_)
         {
             T* src = Buffer();
@@ -850,9 +849,11 @@ public:
     /// Add another vector at the end.
     void Push(const PODVector<T>& vector)
     {
-        unsigned oldSize = size_;
-        Resize(size_ + vector.size_);
-        CopyElements(Buffer() + oldSize, vector.Buffer(), vector.size_);
+        // Obtain the size before resizing, in case the other vector is another reference to this vector
+        unsigned thisSize = size_;
+        unsigned vectorSize = vector.size_;
+        Resize(thisSize + vectorSize);
+        CopyElements(Buffer() + thisSize, vector.Buffer(), vectorSize);
     }
 
     /// Remove the last element.
@@ -1049,6 +1050,15 @@ public:
         }
 
         size_ = newSize;
+    }
+
+    /// Resize the vector and fill new elements with default value.
+    void Resize(unsigned newSize, const T& value)
+    {
+        unsigned oldSize = Size();
+        Resize(newSize);
+        for (unsigned i = oldSize; i < newSize; ++i)
+            At(i) = value;
     }
 
     /// Set new capacity.

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -94,7 +94,7 @@ static long long HiresTick()
     else
         return timeGetTime();
 #elif __EMSCRIPTEN__
-    return (unsigned)(emscripten_get_now()*1000.0);
+    return (long long)(emscripten_get_now()*1000.0);
 #else
     struct timeval time{};
     gettimeofday(&time, nullptr);
@@ -110,9 +110,11 @@ void Time::BeginFrame(float timeStep)
 
     timeStep_ = timeStep;
 
+#ifdef URHO3D_PROFILING
     auto* profiler = GetSubsystem<Profiler>();
     if (profiler)
         profiler->BeginFrame();
+#endif
 
     {
         URHO3D_PROFILE(BeginFrame);
@@ -136,9 +138,11 @@ void Time::EndFrame()
         SendEvent(E_ENDFRAME);
     }
 
+#ifdef URHO3D_PROFILING
     auto* profiler = GetSubsystem<Profiler>();
     if (profiler)
         profiler->EndFrame();
+#endif
 }
 
 void Time::SetTimerPeriod(unsigned mSec)

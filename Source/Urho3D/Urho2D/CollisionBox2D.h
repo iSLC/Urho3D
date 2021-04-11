@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,26 +38,33 @@ public:
     /// Destruct.
     ~CollisionBox2D() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Set size.
+    /// @property
     void SetSize(const Vector2& size);
     /// Set size.
     void SetSize(float width, float height);
     /// Set center.
+    /// @property
     void SetCenter(const Vector2& center);
     /// Set center.
     void SetCenter(float x, float y);
     /// Set angle.
+    /// @property
     void SetAngle(float angle);
 
     /// Return size.
+    /// @property
     const Vector2& GetSize() const { return size_; }
 
     /// Return center.
+    /// @property
     const Vector2& GetCenter() const { return center_; }
 
     /// Return angle.
+    /// @property
     float GetAngle() const { return angle_; }
 
 private:
@@ -70,7 +77,7 @@ private:
     b2PolygonShape boxShape_;
     /// Size.
     Vector2 size_;
-    /// Center
+    /// Center.
     Vector2 center_;
     /// Angle.
     float angle_;

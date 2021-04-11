@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2019 the Urho3D project.
+# Copyright (c) 2008-2020 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -68,13 +68,13 @@ if (URHO3D_LIB_TYPE STREQUAL SHARED AND NOT WIN32 AND NOT ANDROID AND NOT IOS AN
 endif ()
 
 # Add targets
-foreach (TARGET FreeType LZ4 PugiXml rapidjson SDL StanHull STB)
+foreach (TARGET ETCPACK FreeType LZ4 PugiXml rapidjson SDL StanHull STB)
     add_subdirectory (ThirdParty/${TARGET})
 endforeach ()
 
 if (URHO3D_ANGELSCRIPT)
     add_subdirectory (ThirdParty/AngelScript)
-    if (WEB OR (ARM AND URHO3D_64BIT))
+    if (WEB OR (ARM AND URHO3D_64BIT) OR URHO3D_FORCE_AS_MAX_PORTABILITY)
         add_subdirectory (ThirdParty/boost)
     endif ()
 endif ()
@@ -124,6 +124,10 @@ if (URHO3D_PHYSICS)
     add_subdirectory (ThirdParty/Bullet)
 endif ()
 
+if (URHO3D_TRACY_PROFILING)
+    add_subdirectory (ThirdParty/Tracy)
+endif ()
+
 if (NOT ANDROID AND NOT ARM AND NOT WEB)
     if (URHO3D_OPENGL)
         add_subdirectory (ThirdParty/GLEW)
@@ -135,21 +139,18 @@ if (NOT ANDROID AND NOT ARM AND NOT WEB)
     endif ()
 endif ()
 
-# Urho3D game engine library
 add_subdirectory (Urho3D)
 
-# Urho3D Clang tools
 if (URHO3D_CLANG_TOOLS)
     add_subdirectory (Clang-Tools)
 endif ()
 
-# Urho3D tools
-add_subdirectory (Tools)
+# In order to get clean module segregation, always exclude player/samples from AAR
+if (NOT ANDROID)
+    add_subdirectory (Tools)
+    add_subdirectory (Samples)
+endif ()
 
-# Urho3D samples
-add_subdirectory (Samples)
-
-# Urho3D extras
 if (URHO3D_EXTRAS)
     add_subdirectory (Extras)
 endif ()

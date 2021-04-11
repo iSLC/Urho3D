@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@ namespace Urho3D
 
 /// Client->server: send VariantMap of identity and authentication data.
 static const int MSG_IDENTITY = 0x87;
-/// Client->server: send controls (buttons and mouse movement.)
+/// Client->server: send controls (buttons and mouse movement).
 static const int MSG_CONTROLS = 0x88;
 /// Client->server: scene has been loaded and client is ready to proceed.
 static const int MSG_SCENELOADED = 0x89;
@@ -63,6 +63,12 @@ static const int MSG_REMOTEEVENT = 0x96;
 static const int MSG_REMOTENODEEVENT = 0x97;
 /// Server->client: info about package.
 static const int MSG_PACKAGEINFO = 0x98;
+
+/// Packet that includes all the above messages
+static const int MSG_PACKED_MESSAGE = 0x99;
+
+/// Used to define custom messages, usually of the form MSG_USER + x, where x is an integer value.
+static const int MSG_USER = 0x200;
 
 /// Fixed content ID for client controls update.
 static const unsigned CONTROLS_CONTENT_ID = 1;

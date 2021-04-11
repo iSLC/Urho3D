@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -392,7 +392,7 @@ bool Texture2D::Create()
         levels_ = 1;
     else if (usage_ == TEXTURE_RENDERTARGET && levels_ != 1 && multiSample_ == 1)
         textureDesc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
-    
+
     textureDesc.Width = (UINT)width_;
     textureDesc.Height = (UINT)height_;
     // Disable mip levels from the multisample texture. Rather create them to the resolve texture

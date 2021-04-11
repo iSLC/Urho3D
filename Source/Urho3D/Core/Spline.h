@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -74,18 +74,21 @@ public:
     }
 
     /// Return the interpolation mode.
+    /// @property
     InterpolationMode GetInterpolationMode() const { return interpolationMode_; }
 
     /// Return the knots of the spline.
     const VariantVector& GetKnots() const { return knots_; }
 
     /// Return the knot at the specific index.
+    /// @property
     Variant GetKnot(unsigned index) const { return knots_[index]; }
 
     /// Return the T of the point of the spline at f from 0.f - 1.f.
     Variant GetPoint(float f) const;
 
     /// Set the interpolation mode.
+    /// @property
     void SetInterpolationMode(InterpolationMode interpolationMode) { interpolationMode_ = interpolationMode; }
 
     /// Set the knots of the spline.

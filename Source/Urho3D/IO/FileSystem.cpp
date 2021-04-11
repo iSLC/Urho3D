@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #include "../Core/Context.h"
 #include "../Core/CoreEvents.h"
 #include "../Core/Thread.h"
+#include "../Core/Profiler.h"
 #include "../Engine/EngineEvents.h"
 #include "../IO/File.h"
 #include "../IO/FileSystem.h"
@@ -246,6 +247,8 @@ public:
     /// The function to run in the thread.
     void ThreadFunction() override
     {
+        URHO3D_PROFILE_THREAD("AsyncSystemCommand Thread");
+
         exitCode_ = DoSystemCommand(commandLine_, false, nullptr);
         completed_ = true;
     }
@@ -271,6 +274,8 @@ public:
     /// The function to run in the thread.
     void ThreadFunction() override
     {
+        URHO3D_PROFILE_THREAD("AsyncSystemRun Thread");
+
         exitCode_ = DoSystemRun(fileName_, arguments_);
         completed_ = true;
     }
@@ -903,7 +908,7 @@ void FileSystem::ScanDirInternal(Vector<String>& result, String path, const Stri
 
 void FileSystem::HandleBeginFrame(StringHash eventType, VariantMap& eventData)
 {
-    /// Go through the execution queue and post + remove completed requests
+    // Go through the execution queue and post + remove completed requests
     for (List<AsyncExecRequest*>::Iterator i = asyncExecQueue_.Begin(); i != asyncExecQueue_.End();)
     {
         AsyncExecRequest* request = *i;

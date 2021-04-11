@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 namespace Urho3D
 {
 
-/// HTTP connection state
+/// HTTP connection state.
 enum HttpRequestState
 {
     HTTP_INITIALIZING = 0,
@@ -62,19 +62,25 @@ public:
     bool IsEof() const override;
 
     /// Return URL used in the request.
+    /// @property{get_url}
     const String& GetURL() const { return url_; }
 
     /// Return verb used in the request. Default GET if empty verb specified on construction.
+    /// @property
     const String& GetVerb() const { return verb_; }
 
     /// Return error. Only non-empty in the error state.
+    /// @property
     String GetError() const;
     /// Return connection state.
+    /// @property
     HttpRequestState GetState() const;
     /// Return amount of bytes in the read buffer.
+    /// @property
     unsigned GetAvailableSize() const;
 
     /// Return whether connection is in the open state.
+    /// @property
     bool IsOpen() const { return GetState() == HTTP_OPEN; }
 
 private:

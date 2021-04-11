@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -241,17 +241,6 @@ public:
         );
     }
 
-    /// Make a rotation matrix given an axis of rotation
-    /*
-        Useful for standalone rotation of a node around an arbtitrary position,
-        by the given axis of rotation (can be used for orbital mechanics).
-        rotating the parent node doesn't do the same as it's children orbit around its axis
-        of rotation, not the center point
-        To get the next point multiply this by a starting Vector3 pos with it's origin (0,0,0)
-        being the center of rotation
-    */
-    void MakeRotationMatrix(float xAxis,float yAxis, float zAxis, Urho3D::AngleTypeEnum angleType = DEGREES);
-
     /// Test for equality with another matrix with epsilon.
     bool Equals(const Matrix3& rhs) const
     {
@@ -281,6 +270,30 @@ public:
 
     /// Return matrix column.
     Vector3 Column(unsigned j) const { return Vector3(Element(0, j), Element(1, j), Element(2, j)); }
+
+    /// Return whether any element is NaN.
+    bool IsNaN() const
+    {
+        const float* data = Data();
+        for (unsigned i = 0; i < 9; ++i)
+        {
+            if (Urho3D::IsNaN(data[i]))
+                return true;
+        }
+        return false;
+    }
+
+    /// Return whether any element is Inf.
+    bool IsInf() const
+    {
+        const float* data = Data();
+        for (unsigned i = 0; i < 9; ++i)
+        {
+            if (Urho3D::IsInf(data[i]))
+                return true;
+        }
+        return false;
+    }
 
     /// Return as string.
     String ToString() const;

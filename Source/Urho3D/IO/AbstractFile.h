@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,15 @@ public:
     explicit AbstractFile(unsigned int size) : Deserializer(size) { }
     /// Destruct.
     ~AbstractFile() override = default;
+    /// Change the file name. Used by the resource system.
+    /// @property
+    virtual void SetName(const String& name) { name_ = name; }
+    /// Return the file name.
+    const String& GetName() const override { return name_; }
+
+protected:
+    /// File name.
+    String name_;
 };
 
 }

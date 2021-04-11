@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 #include "../Core/Context.h"
 #include "../Core/ProcessUtils.h"
 #include "../Core/Thread.h"
+#include "../Core/Profiler.h"
 #include "../IO/Log.h"
 
 #include "../DebugNew.h"
@@ -58,10 +59,13 @@ bool TypeInfo::IsTypeOf(StringHash type) const
 
 bool TypeInfo::IsTypeOf(const TypeInfo* typeInfo) const
 {
+    if (typeInfo == nullptr)
+        return false;
+
     const TypeInfo* current = this;
     while (current)
     {
-        if (current == typeInfo)
+        if (current == typeInfo || current->GetType() == typeInfo->GetType())
             return true;
 
         current = current->GetBaseTypeInfo();
@@ -304,6 +308,13 @@ void Object::SendEvent(StringHash eventType, VariantMap& eventData)
 
     if (blockEvents_)
         return;
+
+#ifdef URHO3D_TRACY_PROFILING
+    URHO3D_PROFILE_COLOR(SendEvent, URHO3D_PROFILE_EVENT_COLOR);
+
+    const String& eventName = GetEventNameRegister().GetString(eventType);
+    URHO3D_PROFILE_STR(eventName.CString(), eventName.Length());
+#endif
 
     // Make a weak pointer to self to check for destruction during event handling
     WeakPtr<Object> self(this);

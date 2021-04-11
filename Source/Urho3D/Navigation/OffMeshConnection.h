@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@ public:
     /// Destruct.
     ~OffMeshConnection() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Apply attribute changes that can not be applied immediately. Called after scene load or a network update.
@@ -46,29 +47,39 @@ public:
     void DrawDebugGeometry(DebugRenderer* debug, bool depthTest) override;
 
     /// Set endpoint node.
+    /// @property
     void SetEndPoint(Node* node);
     /// Set radius.
+    /// @property
     void SetRadius(float radius);
     /// Set bidirectional flag. Default true.
+    /// @property
     void SetBidirectional(bool enabled);
-    /// Set a user assigned mask
+    /// Set a user assigned mask.
+    /// @property
     void SetMask(unsigned newMask);
-    /// Sets the assigned area Id for the connection
+    /// Sets the assigned area Id for the connection.
+    /// @property
     void SetAreaID(unsigned newAreaID);
 
     /// Return endpoint node.
+    /// @property
     Node* GetEndPoint() const;
 
     /// Return radius.
+    /// @property
     float GetRadius() const { return radius_; }
 
     /// Return whether is bidirectional.
+    /// @property
     bool IsBidirectional() const { return bidirectional_; }
 
-    /// Return the user assigned mask
+    /// Return the user assigned mask.
+    /// @property
     unsigned GetMask() const { return mask_; }
 
-    /// Return the user assigned area ID
+    /// Return the user assigned area ID.
+    /// @property
     unsigned GetAreaID() const { return areaId_; }
 
 private:
@@ -84,9 +95,9 @@ private:
     bool bidirectional_;
     /// Endpoint changed flag.
     bool endPointDirty_;
-    /// Flags mask to represent properties of this mesh
+    /// Flags mask to represent properties of this mesh.
     unsigned mask_;
-    /// Area id to be used for this off mesh connection's internal poly
+    /// Area id to be used for this off mesh connection's internal poly.
     unsigned areaId_;
 };
 

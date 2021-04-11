@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -75,6 +75,7 @@ public:
     /// Destruct.
     ~ValueAnimation() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
@@ -93,10 +94,13 @@ public:
     /// Set owner.
     void SetOwner(void* owner);
     /// Set interpolation method.
+    /// @property
     void SetInterpolationMethod(InterpMethod method);
     /// Set spline tension, should be between 0.0f and 1.0f, but this is not a must.
+    /// @property
     void SetSplineTension(float tension);
     /// Set value type.
+    /// @property
     void SetValueType(VariantType valueType);
 
     /// Set key frame.
@@ -111,12 +115,15 @@ public:
     void* GetOwner() const { return owner_; }
 
     /// Return interpolation method.
+    /// @property
     InterpMethod GetInterpolationMethod() const { return interpolationMethod_; }
 
     /// Return spline tension.
+    /// @property
     float GetSplineTension() const { return splineTension_; }
 
     /// Return value type.
+    /// @property
     VariantType GetValueType() const { return valueType_; }
 
     /// Return begin time.

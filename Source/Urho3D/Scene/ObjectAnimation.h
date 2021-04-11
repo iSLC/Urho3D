@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@ public:
     /// Destruct.
     ~ObjectAnimation() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
@@ -68,10 +69,13 @@ public:
     void RemoveAttributeAnimation(ValueAnimation* attributeAnimation);
 
     /// Return attribute animation by name.
+    /// @property{get_attributeAnimations}
     ValueAnimation* GetAttributeAnimation(const String& name) const;
     /// Return attribute animation wrap mode by name.
+    /// @property{get_wrapModes}
     WrapMode GetAttributeAnimationWrapMode(const String& name) const;
     /// Return attribute animation speed by name.
+    /// @property{get_speeds}
     float GetAttributeAnimationSpeed(const String& name) const;
 
     /// Return all attribute animations infos.

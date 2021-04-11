@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -112,7 +112,13 @@ public:
             rect.bottom_ = graphics->GetHeight();
         }
 
-        Ray ray(camera->GetScreenRay((float)screenPos.x_ / rect.Width(), (float)screenPos.y_ / rect.Height()));
+        auto* ui = GetSubsystem<UI>();
+
+        // Convert to system mouse position
+        IntVector2 pos;
+        pos = ui->ConvertUIToSystem(screenPos);
+
+        Ray ray(camera->GetScreenRay((float)pos.x_ / rect.Width(), (float)pos.y_ / rect.Height()));
         PODVector<RayQueryResult> queryResultVector;
         RayOctreeQuery query(queryResultVector, ray, RAY_TRIANGLE_UV, M_INFINITY, DRAWABLE_GEOMETRY, DEFAULT_VIEWMASK);
 
@@ -135,6 +141,10 @@ public:
             Vector2& uv = queryResult.textureUV_;
             result = IntVector2(static_cast<int>(uv.x_ * GetWidth()),
                 static_cast<int>(uv.y_ * GetHeight()));
+
+            // Convert back to scaled UI position
+            result = ui->ConvertSystemToUI(result);
+
             return result;
         }
         return result;

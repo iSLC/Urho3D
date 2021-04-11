@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -342,9 +342,11 @@ public:
     }
 
     /// Return length.
+    /// @property
     float Length() const { return sqrtf(x_ * x_ + y_ * y_ + z_ * z_); }
 
     /// Return squared length.
+    /// @property
     float LengthSquared() const { return x_ * x_ + y_ * y_ + z_ * z_; }
 
     /// Calculate dot product.
@@ -410,23 +412,19 @@ public:
         return Urho3D::Equals(x_, rhs.x_) && Urho3D::Equals(y_, rhs.y_) && Urho3D::Equals(z_, rhs.z_);
     }
 
-    /// Returns the angle between this vector and another vector in degrees or radians.
-    float Angle(const Vector3& rhs, Urho3D::AngleTypeEnum angleType = DEGREES) const 
-    { 
-        float angle = Urho3D::Acos(DotProduct(rhs) / (Length() * rhs.Length()));
-        if (angleType == RADIANS) {
-            angle = Urho3D::toRadians(angle);
-        }
-        return angle; 
-    }
+    /// Returns the angle between this vector and another vector in degrees.
+    float Angle(const Vector3& rhs) const { return Urho3D::Acos(DotProduct(rhs) / (Length() * rhs.Length())); }
 
-    /// Return whether is NaN.
+    /// Return whether any component is NaN.
     bool IsNaN() const { return Urho3D::IsNaN(x_) || Urho3D::IsNaN(y_) || Urho3D::IsNaN(z_); }
+
+    /// Return whether any component is Inf.
+    bool IsInf() const { return Urho3D::IsInf(x_) || Urho3D::IsInf(y_) || Urho3D::IsInf(z_); }
 
     /// Return normalized to unit length.
     Vector3 Normalized() const
     {
-        float lenSquared = LengthSquared();
+        const float lenSquared = LengthSquared();
         if (!Urho3D::Equals(lenSquared, 1.0f) && lenSquared > 0.0f)
         {
             float invLen = 1.0f / sqrtf(lenSquared);
@@ -434,6 +432,27 @@ public:
         }
         else
             return *this;
+    }
+
+    /// Return normalized to unit length or zero if length is too small.
+    Vector3 NormalizedOrDefault(const Vector3& defaultValue = Vector3::ZERO, float eps = M_LARGE_EPSILON) const
+    {
+        const float lenSquared = LengthSquared();
+        if (lenSquared < eps * eps)
+            return defaultValue;
+        return *this / sqrtf(lenSquared);
+    }
+
+    /// Return normalized vector with length in given range.
+    Vector3 ReNormalized(float minLength, float maxLength, const Vector3& defaultValue = Vector3::ZERO, float eps = M_LARGE_EPSILON) const
+    {
+        const float lenSquared = LengthSquared();
+        if (lenSquared < eps * eps)
+            return defaultValue;
+
+        const float len = sqrtf(lenSquared);
+        const float newLen = Clamp(len, minLength, maxLength);
+        return *this * (newLen / len);
     }
 
     /// Return float data.
@@ -502,6 +521,9 @@ inline Vector3 VectorRound(const Vector3& vec) { return Vector3(Round(vec.x_), R
 /// Per-component ceil of 3-vector.
 inline Vector3 VectorCeil(const Vector3& vec) { return Vector3(Ceil(vec.x_), Ceil(vec.y_), Ceil(vec.z_)); }
 
+/// Per-component absolute value of 3-vector.
+inline Vector3 VectorAbs(const Vector3& vec) { return Vector3(Abs(vec.x_), Abs(vec.y_), Abs(vec.z_)); }
+
 /// Per-component floor of 3-vector. Returns IntVector3.
 inline IntVector3 VectorFloorToInt(const Vector3& vec) { return IntVector3(FloorToInt(vec.x_), FloorToInt(vec.y_), FloorToInt(vec.z_)); }
 
@@ -516,6 +538,9 @@ inline IntVector3 VectorMin(const IntVector3& lhs, const IntVector3& rhs) { retu
 
 /// Per-component max of two 3-vectors.
 inline IntVector3 VectorMax(const IntVector3& lhs, const IntVector3& rhs) { return IntVector3(Max(lhs.x_, rhs.x_), Max(lhs.y_, rhs.y_), Max(lhs.z_, rhs.z_)); }
+
+/// Per-component absolute value of integer 3-vector.
+inline IntVector3 VectorAbs(const IntVector3& vec) { return IntVector3(Abs(vec.x_), Abs(vec.y_), Abs(vec.z_)); }
 
 /// Return a random value from [0, 1) from 3-vector seed.
 inline float StableRandom(const Vector3& seed) { return StableRandom(Vector2(StableRandom(Vector2(seed.x_, seed.y_)), seed.z_)); }

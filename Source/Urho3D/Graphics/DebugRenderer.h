@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -98,9 +98,11 @@ public:
     /// Destruct.
     ~DebugRenderer() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Set line antialiasing on/off. Default false.
+    /// @property
     void SetLineAntiAlias(bool enable);
     /// Set the camera viewpoint. Call before rendering, or before adding geometry if you want to use culling.
     void SetView(Camera* camera);
@@ -131,7 +133,7 @@ public:
     /// Add a sphere sector. Angle ranges from 0 to 360. Identity Quaternion yields the filled portion of the sector upwards.
     void AddSphereSector(const Sphere& sphere, const Quaternion& rotation, float angle,
         bool drawLines, const Color& color, bool depthTest = true);
-    /// Add a cylinder
+    /// Add a cylinder.
     void AddCylinder(const Vector3& position, float radius, float height, const Color& color, bool depthTest = true);
     /// Add a skeleton.
     void AddSkeleton(const Skeleton& skeleton, const Color& color, bool depthTest = true);
@@ -152,6 +154,7 @@ public:
     void Render();
 
     /// Return whether line antialiasing is enabled.
+    /// @property
     bool GetLineAntiAlias() const { return lineAntiAlias_; }
 
     /// Return the view transform.

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,19 +44,25 @@ public:
     /// Destruct.
     ~MessageBox() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Set title text. No-ops if there is no title text element.
+    /// @property
     void SetTitle(const String& text);
     /// Set message text. No-ops if there is no message text element.
+    /// @property
     void SetMessage(const String& text);
 
     /// Return title text. Return empty string if there is no title text element.
+    /// @property
     const String& GetTitle() const;
     /// Return message text. Return empty string if there is no message text element.
+    /// @property
     const String& GetMessage() const;
 
     /// Return dialog window.
+    /// @property
     UIElement* GetWindow() const { return window_; }
 
 private:

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ const BYTE d3dElementUsage[] =
     D3DDECLUSAGE_TEXCOORD,
     D3DDECLUSAGE_COLOR,
     D3DDECLUSAGE_BLENDWEIGHT,
-    D3DDECLUSAGE_BLENDINDICES, 
+    D3DDECLUSAGE_BLENDINDICES,
     D3DDECLUSAGE_TEXCOORD // Object index (not supported by D3D9)
 };
 

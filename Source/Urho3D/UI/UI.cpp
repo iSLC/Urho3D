@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -153,6 +153,9 @@ UI::~UI() = default;
 
 void UI::SetCursor(Cursor* cursor)
 {
+    if (cursor_ == cursor)
+        return;
+
     // Remove old cursor (if any) and set new
     if (cursor_)
     {
@@ -357,7 +360,7 @@ void UI::Update(float timeStep)
                     dragElement->OnDragBegin(dragElement->ScreenToElement(beginSendPos), beginSendPos, dragData->dragButtons,
                         qualifiers_, cursor_);
                 else
-                    dragElement->OnDragBegin(dragElement->ScreenToElement(beginSendPos), beginSendPos, dragData->dragButtons, 0, nullptr);
+                    dragElement->OnDragBegin(dragElement->ScreenToElement(beginSendPos), beginSendPos, dragData->dragButtons, QUAL_NONE, nullptr);
 
                 SendDragOrHoverEvent(E_DRAGBEGIN, dragElement, beginSendPos, IntVector2::ZERO, dragData);
             }
@@ -379,8 +382,7 @@ void UI::Update(float timeStep)
     {
         TouchState* touch = input->GetTouch(i);
         IntVector2 touchPos = touch->position_;
-        touchPos.x_ = (int)(touchPos.x_ / uiScale_);
-        touchPos.y_ = (int)(touchPos.y_ / uiScale_);
+        touchPos = ConvertSystemToUI(touchPos);
         ProcessHover(touchPos, MakeTouchIDMask(touch->touchID_), QUAL_NONE, nullptr);
     }
 
@@ -765,7 +767,10 @@ void UI::SetCustomSize(int width, int height)
 
 IntVector2 UI::GetCursorPosition() const
 {
-    return cursor_ ? cursor_->GetPosition() : GetSubsystem<Input>()->GetMousePosition();
+    if (cursor_)
+        return cursor_->GetPosition();
+
+    return ConvertSystemToUI(GetSubsystem<Input>()->GetMousePosition());
 }
 
 UIElement* UI::GetElementAt(const IntVector2& position, bool enabledOnly, IntVector2* elementScreenPosition)
@@ -841,6 +846,16 @@ UIElement* UI::GetElementAt(UIElement* root, const IntVector2& position, bool en
 UIElement* UI::GetElementAt(int x, int y, bool enabledOnly)
 {
     return GetElementAt(IntVector2(x, y), enabledOnly);
+}
+
+IntVector2 UI::ConvertSystemToUI(const IntVector2& systemPos) const
+{
+    return VectorFloorToInt(static_cast<Vector2>(systemPos) / GetScale());
+}
+
+IntVector2 UI::ConvertUIToSystem(const IntVector2& uiPos) const
+{
+    return VectorFloorToInt(static_cast<Vector2>(uiPos) * GetScale());
 }
 
 UIElement* UI::GetFrontElement() const
@@ -1041,7 +1056,7 @@ void UI::Render(VertexBuffer* buffer, const PODVector<UIBatch>& batches, unsigne
         ShaderVariation* ps;
         ShaderVariation* vs;
 
-        if (!batch.custom_material_)
+        if (!batch.customMaterial_)
         {
             if (!batch.texture_)
             {
@@ -1064,7 +1079,7 @@ void UI::Render(VertexBuffer* buffer, const PODVector<UIBatch>& batches, unsigne
             vs = diffTextureVS;
             ps = diffTexturePS;
 
-            Technique* technique = batch.custom_material_->GetTechnique(0);
+            Technique* technique = batch.customMaterial_->GetTechnique(0);
             if (technique)
             {
                 Pass* pass = nullptr;
@@ -1073,8 +1088,8 @@ void UI::Render(VertexBuffer* buffer, const PODVector<UIBatch>& batches, unsigne
                     pass = technique->GetPass(i);
                     if (pass)
                     {
-                        vs = graphics_->GetShader(VS, pass->GetVertexShader(), batch.custom_material_->GetVertexShaderDefines());
-                        ps = graphics_->GetShader(PS, pass->GetPixelShader(), batch.custom_material_->GetPixelShaderDefines());
+                        vs = graphics_->GetShader(VS, pass->GetVertexShader(), batch.customMaterial_->GetVertexShaderDefines());
+                        ps = graphics_->GetShader(PS, pass->GetPixelShader(), batch.customMaterial_->GetPixelShaderDefines());
                         break;
                     }
                 }
@@ -1112,22 +1127,22 @@ void UI::Render(VertexBuffer* buffer, const PODVector<UIBatch>& batches, unsigne
 
         graphics_->SetBlendMode(batch.blendMode_);
         graphics_->SetScissorTest(true, scissor);
-        if (!batch.custom_material_)
+        if (!batch.customMaterial_)
         {
             graphics_->SetTexture(0, batch.texture_);
         } else
         {
             // Update custom shader parameters if needed
-            if (graphics_->NeedParameterUpdate(SP_MATERIAL, reinterpret_cast<const void*>(batch.custom_material_->GetShaderParameterHash())))
+            if (graphics_->NeedParameterUpdate(SP_MATERIAL, reinterpret_cast<const void*>(batch.customMaterial_->GetShaderParameterHash())))
             {
-                auto shader_parameters = batch.custom_material_->GetShaderParameters();
+                auto shader_parameters = batch.customMaterial_->GetShaderParameters();
                 for (auto it = shader_parameters.Begin(); it != shader_parameters.End(); ++it)
                 {
                     graphics_->SetShaderParameter(it->second_.name_, it->second_.value_);
                 }
             }
             // Apply custom shader textures
-            auto textures = batch.custom_material_->GetTextures();
+            auto textures = batch.customMaterial_->GetTextures();
             for (auto it = textures.Begin(); it != textures.End(); ++it)
             {
                 graphics_->SetTexture(it->first_, it->second_);
@@ -1137,10 +1152,10 @@ void UI::Render(VertexBuffer* buffer, const PODVector<UIBatch>& batches, unsigne
         graphics_->Draw(TRIANGLE_LIST, batch.vertexStart_ / UI_VERTEX_SIZE,
             (batch.vertexEnd_ - batch.vertexStart_) / UI_VERTEX_SIZE);
 
-        if (batch.custom_material_)
+        if (batch.customMaterial_)
         {
             // Reset textures used by the batch custom material
-            auto textures = batch.custom_material_->GetTextures();
+            auto textures = batch.customMaterial_->GetTextures();
             for (auto it = textures.Begin(); it != textures.End(); ++it)
             {
                 graphics_->SetTexture(it->first_, 0);
@@ -1299,15 +1314,18 @@ void UI::GetCursorPositionAndVisible(IntVector2& pos, bool& visible)
     else
     {
         auto* input = GetSubsystem<Input>();
-        pos = input->GetMousePosition();
         visible = input->IsMouseVisible();
 
         if (!visible && cursor_)
+        {
             pos = cursor_->GetPosition();
+        }
+        else
+        {
+            pos = input->GetMousePosition();
+            pos = ConvertSystemToUI(pos);
+        }
     }
-
-    pos.x_ = (int)(pos.x_ / uiScale_);
-    pos.y_ = (int)(pos.y_ / uiScale_);
 }
 
 void UI::SetCursorShape(CursorShape shape)
@@ -1787,20 +1805,20 @@ void UI::HandleMouseMove(StringHash eventType, VariantMap& eventData)
     const IntVector2& rootSize = rootElement_->GetSize();
     const IntVector2& rootPos = rootElement_->GetPosition();
 
-    IntVector2 DeltaP = IntVector2(eventData[P_DX].GetInt(), eventData[P_DY].GetInt());
+    const IntVector2 mouseDeltaPos{ eventData[P_DX].GetInt(), eventData[P_DY].GetInt() };
+    const IntVector2 mousePos{ eventData[P_X].GetInt(), eventData[P_Y].GetInt() };
 
     if (cursor_)
     {
         if (!input->IsMouseVisible())
         {
             if (!input->IsMouseLocked())
-                cursor_->SetPosition(IntVector2(eventData[P_X].GetInt(), eventData[P_Y].GetInt()));
+                cursor_->SetPosition(ConvertSystemToUI(mousePos));
             else if (cursor_->IsVisible())
             {
                 // Relative mouse motion: move cursor only when visible
                 IntVector2 pos = cursor_->GetPosition();
-                pos.x_ += eventData[P_DX].GetInt();
-                pos.y_ += eventData[P_DY].GetInt();
+                pos += ConvertSystemToUI(mouseDeltaPos);
                 pos.x_ = Clamp(pos.x_, rootPos.x_, rootPos.x_ + rootSize.x_ - 1);
                 pos.y_ = Clamp(pos.y_, rootPos.y_, rootPos.y_ + rootSize.y_ - 1);
                 cursor_->SetPosition(pos);
@@ -1809,7 +1827,7 @@ void UI::HandleMouseMove(StringHash eventType, VariantMap& eventData)
         else
         {
             // Absolute mouse motion: move always
-            cursor_->SetPosition(IntVector2(eventData[P_X].GetInt(), eventData[P_Y].GetInt()));
+            cursor_->SetPosition(ConvertSystemToUI(mousePos));
         }
     }
 
@@ -1817,7 +1835,7 @@ void UI::HandleMouseMove(StringHash eventType, VariantMap& eventData)
     bool cursorVisible;
     GetCursorPositionAndVisible(cursorPos, cursorVisible);
 
-    ProcessMove(cursorPos, DeltaP, mouseButtons_, qualifiers_, cursor_, cursorVisible);
+    ProcessMove(cursorPos, mouseDeltaPos, mouseButtons_, qualifiers_, cursor_, cursorVisible);
 }
 
 void UI::HandleMouseWheel(StringHash eventType, VariantMap& eventData)
@@ -1873,8 +1891,7 @@ void UI::HandleTouchBegin(StringHash eventType, VariantMap& eventData)
     using namespace TouchBegin;
 
     IntVector2 pos(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
-    pos.x_ = int(pos.x_ / uiScale_);
-    pos.y_ = int(pos.y_ / uiScale_);
+    pos = ConvertSystemToUI(pos);
     usingTouchInput_ = true;
 
     const MouseButton touchId = MakeTouchIDMask(eventData[P_TOUCHID].GetInt());
@@ -1894,8 +1911,7 @@ void UI::HandleTouchEnd(StringHash eventType, VariantMap& eventData)
     using namespace TouchEnd;
 
     IntVector2 pos(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
-    pos.x_ = int(pos.x_ / uiScale_);
-    pos.y_ = int(pos.y_ / uiScale_);
+    pos = ConvertSystemToUI(pos);
 
     // Get the touch index
     const MouseButton touchId = MakeTouchIDMask(eventData[P_TOUCHID].GetInt());
@@ -1914,7 +1930,7 @@ void UI::HandleTouchEnd(StringHash eventType, VariantMap& eventData)
     }
 
     if (element && element->IsEnabled())
-        element->OnHover(element->ScreenToElement(pos), pos, 0, 0, nullptr);
+        element->OnHover(element->ScreenToElement(pos), pos, MOUSEB_NONE, QUAL_NONE, nullptr);
 
     ProcessClickEnd(pos, touchId, MOUSEB_NONE, QUAL_NONE, nullptr, true);
 }
@@ -1925,10 +1941,8 @@ void UI::HandleTouchMove(StringHash eventType, VariantMap& eventData)
 
     IntVector2 pos(eventData[P_X].GetInt(), eventData[P_Y].GetInt());
     IntVector2 deltaPos(eventData[P_DX].GetInt(), eventData[P_DY].GetInt());
-    pos.x_ = int(pos.x_ / uiScale_);
-    pos.y_ = int(pos.y_ / uiScale_);
-    deltaPos.x_ = int(deltaPos.x_ / uiScale_);
-    deltaPos.y_ = int(deltaPos.y_ / uiScale_);
+    pos = ConvertSystemToUI(pos);
+    deltaPos = ConvertSystemToUI(deltaPos);
     usingTouchInput_ = true;
 
     const MouseButton touchId = MakeTouchIDMask(eventData[P_TOUCHID].GetInt());
@@ -2048,8 +2062,7 @@ void UI::HandleDropFile(StringHash eventType, VariantMap& eventData)
     if (input->IsMouseVisible())
     {
         IntVector2 screenPos = input->GetMousePosition();
-        screenPos.x_ = int(screenPos.x_ / uiScale_);
-        screenPos.y_ = int(screenPos.y_ / uiScale_);
+        screenPos = ConvertSystemToUI(screenPos);
 
         UIElement* element = GetElementAt(screenPos);
 
@@ -2135,8 +2148,8 @@ IntVector2 UI::SumTouchPositions(UI::DragData* dragData, const IntVector2& oldSe
                 if (!ts)
                     break;
                 IntVector2 pos = ts->position_;
-                dragData->sumPos.x_ += (int)(pos.x_ / uiScale_);
-                dragData->sumPos.y_ += (int)(pos.y_ / uiScale_);
+                pos = ConvertSystemToUI(pos);
+                dragData->sumPos += pos;
             }
         }
         sendPos.x_ = dragData->sumPos.x_ / dragData->numDragButtons;

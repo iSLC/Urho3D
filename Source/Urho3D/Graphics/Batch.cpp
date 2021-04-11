@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -556,7 +556,7 @@ void Batch::Prepare(View* view, Camera* camera, bool setModelTransform, bool all
                 }
                 else
                 {
-                    cutoff = -1.0f;
+                    cutoff = -2.0f;
                     invCutoff = 1.0f;
                 }
 

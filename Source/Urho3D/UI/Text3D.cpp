@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -589,6 +589,9 @@ void Text3D::UpdateTextBatches()
     case HA_RIGHT:
         offset.x_ -= (float)text_.GetWidth();
         break;
+
+    case HA_CUSTOM:
+        break;
     }
 
     switch (text_.GetVerticalAlignment())
@@ -602,6 +605,9 @@ void Text3D::UpdateTextBatches()
 
     case VA_BOTTOM:
         offset.y_ -= (float)text_.GetHeight();
+        break;
+
+    case VA_CUSTOM:
         break;
     }
 

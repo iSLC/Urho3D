@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,11 @@ public:
     /// Process work items until stopped.
     void ThreadFunction() override
     {
+#ifdef URHO3D_TRACY_PROFILING
+        String name;
+        name.AppendWithFormat("WorkerThread #%d", index_);
+        URHO3D_PROFILE_THREAD(name.CString());
+#endif
         // Init FPU state first
         InitFPU();
         owner_->ProcessItems(index_);

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +53,7 @@ public:
     /// Destruct.
     ~ScriptFile() override;
     /// Register object factory.
+    /// @nobind
     static void RegisterObject(Context* context);
 
     /// Load resource from stream. May be called from a worker thread. Return true if successful.
@@ -113,7 +114,7 @@ public:
     /// Return whether script compiled successfully.
     bool IsCompiled() const { return compiled_; }
 
-    /// Clean up an event invoker object when its associated script object no longer exists
+    /// Clean up an event invoker object when its associated script object no longer exists.
     void CleanupEventInvoker(asIScriptObject* object);
 
 private:
@@ -146,7 +147,7 @@ private:
     HashMap<asITypeInfo*, HashMap<String, asIScriptFunction*> > methods_;
     /// Delayed function calls.
     Vector<DelayedCall> delayedCalls_;
-    /// Event helper objects for handling procedural or non-ScriptInstance script events
+    /// Event helper objects for handling procedural or non-ScriptInstance script events.
     HashMap<asIScriptObject*, SharedPtr<ScriptEventInvoker> > eventInvokers_;
     /// Byte code for asynchronous loading.
     SharedArrayPtr<unsigned char> loadByteCode_;

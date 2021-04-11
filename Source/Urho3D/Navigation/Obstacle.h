@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -33,35 +33,41 @@ class DynamicNavigationMesh;
 /// Obstacle for dynamic navigation mesh.
 class URHO3D_API Obstacle : public Component
 {
-    URHO3D_OBJECT(Obstacle, Component)
+    URHO3D_OBJECT(Obstacle, Component);
 
     friend class DynamicNavigationMesh;
 
 public:
     /// Construct.
-    explicit Obstacle(Context*);
+    explicit Obstacle(Context* context);
     /// Destruct.
     ~Obstacle() override;
 
     /// Register Obstacle with engine context.
-    static void RegisterObject(Context*);
+    /// @nobind
+    static void RegisterObject(Context* context);
 
     /// Update the owning mesh when enabled status has changed.
     void OnSetEnabled() override;
 
     /// Get the height of this obstacle.
+    /// @property
     float GetHeight() const { return height_; }
 
     /// Set the height of this obstacle.
+    /// @property
     void SetHeight(float newHeight);
 
     /// Get the blocking radius of this obstacle.
+    /// @property
     float GetRadius() const { return radius_; }
 
     /// Set the blocking radius of this obstacle.
+    /// @property
     void SetRadius(float newRadius);
 
     /// Get the internal obstacle ID.
+    /// @property{get_obstacleId}
     unsigned GetObstacleID() const { return obstacleId_; }
 
     /// Render debug information.

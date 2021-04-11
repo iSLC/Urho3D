@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -247,6 +247,9 @@ const Matrix3x4& Sprite::GetTransform() const
             case HA_RIGHT:
                 pos.x_ += (float)parent_->GetSize().x_;
                 break;
+
+            case HA_CUSTOM:
+                break;
             }
             switch (GetVerticalAlignment())
             {
@@ -259,6 +262,9 @@ const Matrix3x4& Sprite::GetTransform() const
 
             case VA_BOTTOM:
                 pos.y_ += (float)(parent_->GetSize().y_);
+                break;
+
+            case VA_CUSTOM:
                 break;
             }
         }

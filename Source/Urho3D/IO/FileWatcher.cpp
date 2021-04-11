@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #include "../IO/FileSystem.h"
 #include "../IO/FileWatcher.h"
 #include "../IO/Log.h"
+#include "../Core/Profiler.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -237,6 +238,8 @@ void FileWatcher::SetDelay(float interval)
 void FileWatcher::ThreadFunction()
 {
 #ifdef URHO3D_FILEWATCHER
+    URHO3D_PROFILE_THREAD("FileWatcher Thread");
+
 #ifdef _WIN32
     unsigned char buffer[BUFFERSIZE];
     DWORD bytesFilled = 0;

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2008-2019 the Urho3D project.
+// Copyright (c) 2008-2020 the Urho3D project.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -67,27 +67,6 @@ String Matrix3::ToString() const
     char tempBuffer[MATRIX_CONVERSION_BUFFER_LENGTH];
     sprintf(tempBuffer, "%g %g %g %g %g %g %g %g %g", m00_, m01_, m02_, m10_, m11_, m12_, m20_, m21_, m22_);
     return String(tempBuffer);
-}
-
-void Matrix3::MakeRotationMatrix(float xAxis,float yAxis, float zAxis, Urho3D::AngleTypeEnum angleType)
-{
-    float xAxisInput = xAxis;
-    float yAxisInput = yAxis;
-    float zAxisInput = zAxis;
-    if(angleType == RADIANS){
-        xAxisInput = Urho3D::toDegrees(xAxisInput);
-        yAxisInput = Urho3D::toDegrees(yAxisInput);
-        zAxisInput = Urho3D::toDegrees(zAxisInput);
-    }
-    m00_ = Urho3D::Cos(yAxisInput) * Urho3D::Cos(zAxisInput);
-    m01_ = Urho3D::Cos(xAxisInput) * Urho3D::Sin(zAxisInput) + Urho3D::Sin(xAxisInput) * Urho3D::Sin(yAxisInput) * Urho3D::Cos(zAxisInput);
-    m02_ = Urho3D::Sin(xAxisInput) * Urho3D::Sin(zAxisInput) - Urho3D::Cos(xAxisInput) * Urho3D::Sin(yAxisInput) * Urho3D::Cos(zAxisInput);
-    m10_ = -Urho3D::Cos(yAxisInput) * Urho3D::Sin(zAxisInput);
-    m11_ = Urho3D::Cos(xAxisInput) * Urho3D::Cos(zAxisInput) - Urho3D::Sin(xAxisInput) * Urho3D::Sin(yAxisInput) * Urho3D::Sin(zAxisInput);
-    m12_ = Urho3D::Sin(xAxisInput) * Urho3D::Cos(zAxisInput) + Urho3D::Cos(xAxisInput) * Urho3D::Sin(yAxisInput) * Urho3D::Sin(zAxisInput);
-    m20_ = Urho3D::Sin(yAxisInput);
-    m21_ = -Urho3D::Sin(xAxisInput) * Urho3D::Cos(yAxisInput);
-    m22_ = Urho3D::Cos(xAxisInput) * Urho3D::Cos(yAxisInput);
 }
 
 }
