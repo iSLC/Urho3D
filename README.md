@@ -1,5 +1,10 @@
 ![Urho3D logo](https://raw.githubusercontent.com/urho3d/Urho3D/master/bin/Data/Textures/LogoLarge.png)
 
+## Incompatible fork!
+
+Personal fork of Urho3D that I plan on modifying to satisfy specific needs. Which are likely to be more limited than original project goals.
+The goal is to get rid of bloat and upgrade the code to newer standards while maintaining the same ideology that the project originaly had. 
+
 # Urho3D
 
 [![CI/CD](https://github.com/urho3d/Urho3D/workflows/CI/CD/badge.svg)](https://github.com/urho3d/Urho3D/actions?query=workflow%3ACI%2FCD)
