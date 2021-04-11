@@ -180,7 +180,7 @@ public:
         return static_cast<Enum>(value_);
     }
 
-    /// Cast to double. Used by Lua bindings.
+    /// Cast to double. Used by script bindings.
     explicit operator double() const
     {
         return static_cast<double>(value_);

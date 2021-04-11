@@ -33,7 +33,7 @@ Although all required third-party libraries are included as source code, there a
     - fcitx-libs-dev (Debian-based) or fcitx-devel (RedHat-based) for Flexible %Input Method Framework (fcitx).
   + Miscellaneous (optional).
     - libdbus-1-dev (Debian-based) or dbus-devel (Redhat-based) for system-wide messaging (e.g. inhibiting screen-saver).
-    - libreadline6-dev (Debian-based) or readline-devel (Redhat-based) for easy editing of command lines in interactive standalone host tools, e.g. isql and lua interpreter.
+    - libreadline6-dev (Debian-based) or readline-devel (Redhat-based) for easy editing of command lines in interactive standalone host tools, e.g. isql.
     - libts-dev (Debian-based) or tslib-devel (RedHat-based) for resistive, single-touch touchscreen input for embedded Linux device, e.g. Pandora and Wiz. Modern multi-touch touchscreen does not need this.
     - libudev-dev (Debian-based) or systemd-devel (Redhat-based) for input device hot-plugging.
   + HTTPS support (optional).
@@ -111,11 +111,6 @@ A number of build options can be defined when invoking the build scripts or when
 |URHO3D_64BIT         |*|Enable 64-bit build, the default is set based on the native ABI of the chosen compiler toolchain|
 |URHO3D_ANGELSCRIPT   |1|Enable AngelScript scripting support|
 |URHO3D_FORCE_AS_MAX_PORTABILITY|0|Use generic calling convention for AngelScript on any platform|
-|URHO3D_LUA           |1|Enable Lua scripting support|
-|URHO3D_LUAJIT        |1|Enable Lua scripting support using LuaJIT (check LuaJIT's CMakeLists.txt for more options)|
-|URHO3D_LUAJIT_AMALG  |*|Enable LuaJIT amalgamated build (LuaJIT only); default to true when LuaJIT is enabled|
-|URHO3D_SAFE_LUA      |0|Enable Lua C++ wrapper safety checks (Lua/LuaJIT only)|
-|URHO3D_LUA_RAW_SCRIPT_LOADER  |0|Prefer loading raw script files from the file system before falling back on Urho3D resource cache. Useful for debugging (e.g. breakpoints), but less performant (Lua/LuaJIT only)|
 |URHO3D_IK            |1|Enable inverse kinematics support|
 |URHO3D_NETWORK       |1|Enable Networking support|
 |URHO3D_SSL           |0|Enable HTTPS support for HttpRequest. Requires URHO3D_NETWORK build option to be enabled|
@@ -301,7 +296,7 @@ This section assumes you have already updated, installed, and activated the late
 
 Set the EMSCRIPTEN_ROOT_PATH environment variable or build option to point to the root path of Emscripten cross-compiler tools. Alternatively, call the emsdk_env script to set the EMSCRIPTEN environment variable for you. The Emscripten sysroot path will be derived from the root path, usually from 'system' subdir relative to the root path. However, you can optionally set the EMSCRIPTEN_SYSROOT environment variable or build option to point to another system root path.
 
-On Windows host, execute cmake_emscripten.bat. On MacOS or Linux host, execute cmake_emscripten.sh. Then go to the build tree and execute the 'make' command to start the build as usual. You may want to set the URHO3D_SAMPLES build option to build all the samples. You may also optionally set the URHO3D_LUA build option to enable Lua scripting support. If you encounter "Too many open files" warning when archiving the Urho3D static library, follow by "Unresolved symbol" errors on MacOS then you have to increase the soft-limit in your host system before rebuilding the library and all the main targets.
+On Windows host, execute cmake_emscripten.bat. On MacOS or Linux host, execute cmake_emscripten.sh. Then go to the build tree and execute the 'make' command to start the build as usual. You may want to set the URHO3D_SAMPLES build option to build all the samples. If you encounter "Too many open files" warning when archiving the Urho3D static library, follow by "Unresolved symbol" errors on MacOS then you have to increase the soft-limit in your host system before rebuilding the library and all the main targets.
 
 For example, to double the limit (which normally defaults to 256 on MacOS):
 \verbatim
@@ -386,8 +381,6 @@ Urho3DPlayer <scriptfilename> [options]
 \endverbatim
 
 The scripting language supported by default is AngelScript (http://www.angelcode.com/angelscript); the script files have .as extension and need to be placed under either the bin/Data or bin/CoreData subdirectories so that Urho3DPlayer can find them. An application script is required to have the function void Start(), which will be executed before starting the engine main loop. It is this function's responsibility to initialize the application and to hook up to any necessary \ref Events "events", such as the update that happens every frame.
-
-Lua language support can optionally be built in, see \ref Build_Options.
 
 If Urho3DPlayer is given no command line arguments at all, it will read the command line from the file bin/Data/CommandLine.txt. This is primarily intended for mobile platforms, where the command line can not be entered. By default the NinjaSnowWar example will be run.
 
@@ -502,7 +495,7 @@ To build Urho3D you have to use the newly created account instead of your origin
 
 \page Examples Examples
 
-The examples included with Urho3D consist of two larger applications built in AngelScript, and a set of smaller sample applications provided in both C++, AngelScript and Lua, which demonstrate a specific engine feature.
+The examples included with Urho3D consist of two larger applications built in AngelScript, and a set of smaller sample applications provided in both C++ and AngelScript, which demonstrate a specific engine feature.
 
 \section Examples_NinjaSnowWar NinjaSnowWar
 
@@ -536,7 +529,7 @@ For details on how to use the editor, see \ref EditorInstructions.
 
 The sample applications start from the very simple (a "Hello World" program) and progress to demonstrate more complex engine features. The code is heavily commented and should be easy to follow for learning. The applications display on-screen instructions when run.
 
-The AngelScript and Lua versions reside in the bin/Data/Scripts and bin/Data/LuaScripts directories. %Batch files to run each of them are not provided due to their large amount: instead run the player application with the script file name as the parameter, for example Urho3DPlayer Scripts/01_HelloWorld.as
+The AngelScript version reside in the bin/Data/Scripts directory. %Batch files to run each of them are not provided due to their large amount: instead run the player application with the script file name as the parameter, for example Urho3DPlayer Scripts/01_HelloWorld.as
 
 The C++ versions need to be explicitly enabled in the build with the CMake option -DURHO3D_SAMPLES=1. When enabled, the executables will be produced into the bin directory and can be run from there. Their source code is in the Source/Samples directory.
 
@@ -772,7 +765,6 @@ The third-party libraries used by Urho3D and their purposes are:
 - GLEW: OpenGL extensions handling
 - SLikeNet: UDP networking
 - libcpuid: CPU properties detection
-- Lua, LuaJIT, tolua+: Lua scripting implementation and bindings
 - LZ4: data compression for package files
 - MojoShader: HLSL shader reflection after compiling
 - Open Asset Import Library: reading various 3D file formats
