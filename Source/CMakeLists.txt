@@ -79,11 +79,6 @@ if (URHO3D_ANGELSCRIPT)
     endif ()
 endif ()
 
-if (URHO3D_LUA)
-    add_subdirectory (ThirdParty/Lua${JIT})
-    add_subdirectory (ThirdParty/toluapp/src/lib)
-endif ()
-
 if (URHO3D_NETWORK)
     add_subdirectory (ThirdParty/Civetweb)
     add_subdirectory (ThirdParty/SLikeNet)

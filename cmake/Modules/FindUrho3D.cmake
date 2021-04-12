@@ -39,7 +39,6 @@
 #  URHO3D_SSE
 #  URHO3D_DATABASE_ODBC
 #  URHO3D_DATABASE_SQLITE
-#  URHO3D_LUAJIT
 #  URHO3D_TESTING
 #
 # WIN32 only:
@@ -54,7 +53,7 @@
 #  URHO3D_STATIC_RUNTIME
 #
 
-set (AUTO_DISCOVER_VARS URHO3D_OPENGL URHO3D_D3D11 URHO3D_SSE URHO3D_DATABASE_ODBC URHO3D_DATABASE_SQLITE URHO3D_LUAJIT URHO3D_TESTING URHO3D_STATIC_RUNTIME)
+set (AUTO_DISCOVER_VARS URHO3D_OPENGL URHO3D_D3D11 URHO3D_SSE URHO3D_DATABASE_ODBC URHO3D_DATABASE_SQLITE URHO3D_TESTING URHO3D_STATIC_RUNTIME)
 set (PATH_SUFFIX Urho3D)
 if (CMAKE_PROJECT_NAME STREQUAL Urho3D AND TARGET Urho3D)
     # A special case where library location is already known to be in the build tree of Urho3D project
@@ -64,10 +63,6 @@ if (CMAKE_PROJECT_NAME STREQUAL Urho3D AND TARGET Urho3D)
         # Bullet library depends on its own include dir to be added in the header search path
         # This is more practical than patching its header files in many places to make them work with relative path
         list (APPEND URHO3D_INCLUDE_DIRS ${URHO3D_HOME}/include/Urho3D/ThirdParty/Bullet)
-    endif ()
-    if (URHO3D_LUA)
-        # ditto for Lua/LuaJIT
-        list (APPEND URHO3D_INCLUDE_DIRS ${URHO3D_HOME}/include/Urho3D/ThirdParty/Lua${JIT})
     endif ()
     set (URHO3D_LIBRARIES Urho3D)
     set (FOUND_MESSAGE "Found Urho3D: as CMake target")
@@ -157,9 +152,6 @@ else ()
         list (APPEND URHO3D_INCLUDE_DIRS ${URHO3D_BASE_INCLUDE_DIR}/ThirdParty)
         if (URHO3D_PHYSICS)
             list (APPEND URHO3D_INCLUDE_DIRS ${URHO3D_BASE_INCLUDE_DIR}/ThirdParty/Bullet)
-        endif ()
-        if (URHO3D_LUA)
-            list (APPEND URHO3D_INCLUDE_DIRS ${URHO3D_BASE_INCLUDE_DIR}/ThirdParty/Lua${JIT})
         endif ()
         # Intentionally do not cache the URHO3D_VERSION as it has potential to change frequently
         file (STRINGS ${URHO3D_BASE_INCLUDE_DIR}/librevision.h URHO3D_VERSION REGEX "^const char\\* revision=\"[^\"]*\".*$")

@@ -220,7 +220,7 @@ task :ci_publish_web do
   web = {'samples' => {}}
   Dir.chdir('build/urho3d.github.io/samples') { web['samples']['Native'] = Dir['*.html'].sort }
   web['player'] = web['samples']['Native'].pop # Assume the last sample after sorting is the Urho3DPlayer.html
-  {'AngelScript' => 'Scripts', 'Lua' => 'LuaScripts'}.each { |lang, subdir|
+  {'AngelScript' => 'Scripts'}.each { |lang, subdir|
     Dir.chdir("bin/Data/#{subdir}") {
       script_samples = Dir['[0-9]*'].sort
       deleted_samples = [] # Delete samples that do not have their native counterpart

@@ -149,7 +149,6 @@ cmake_dependent_option (URHO3D_64BIT "Enable 64-bit build, the default is set ba
 option (URHO3D_ANGELSCRIPT "Enable AngelScript scripting support" TRUE)
 cmake_dependent_option (URHO3D_FORCE_AS_MAX_PORTABILITY "Use generic calling convention for AngelScript on any platform" FALSE "URHO3D_ANGELSCRIPT" FALSE)
 option (URHO3D_IK "Enable inverse kinematics support" TRUE)
-option (URHO3D_LUA "Enable additional Lua scripting support" TRUE)
 option (URHO3D_NAVIGATION "Enable navigation support" TRUE)
 cmake_dependent_option (URHO3D_NETWORK "Enable networking support" TRUE "NOT WEB" FALSE)
 option (URHO3D_PHYSICS "Enable physics support" TRUE)
@@ -200,13 +199,6 @@ if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
     cmake_dependent_option (URHO3D_MMX "Enable MMX instruction set (32-bit Linux platform only); the MMX is effectively enabled when 3DNow! or SSE is enabled; should only be used for older CPU with MMX support" "${HAVE_MMX}" "X86 OR E2K AND CMAKE_SYSTEM_NAME STREQUAL Linux AND NOT URHO3D_64BIT AND NOT URHO3D_SSE AND NOT URHO3D_3DNOW" FALSE)
     # For completeness sake - this option is intentionally not documented as we do not officially support PowerPC (yet)
     cmake_dependent_option (URHO3D_ALTIVEC "Enable AltiVec instruction set (PowerPC only)" "${HAVE_ALTIVEC}" POWERPC FALSE)
-    cmake_dependent_option (URHO3D_LUAJIT "Enable Lua scripting support using LuaJIT (check LuaJIT's CMakeLists.txt for more options)" TRUE "NOT WEB AND NOT APPLE" FALSE)
-    cmake_dependent_option (URHO3D_LUAJIT_AMALG "Enable LuaJIT amalgamated build (LuaJIT only); default to true when LuaJIT is enabled" TRUE URHO3D_LUAJIT FALSE)
-    cmake_dependent_option (URHO3D_SAFE_LUA "Enable Lua C++ wrapper safety checks (Lua/LuaJIT only)" FALSE URHO3D_LUA FALSE)
-    if (NOT CMAKE_BUILD_TYPE STREQUAL Release AND NOT CMAKE_CONFIGURATION_TYPES)
-        set (DEFAULT_LUA_RAW TRUE)
-    endif ()
-    cmake_dependent_option (URHO3D_LUA_RAW_SCRIPT_LOADER "Prefer loading raw script files from the file system before falling back on Urho3D resource cache. Useful for debugging (e.g. breakpoints), but less performant (Lua/LuaJIT only)" "${DEFAULT_LUA_RAW}" URHO3D_LUA FALSE)
     option (URHO3D_PLAYER "Build Urho3D script player" TRUE)
     option (URHO3D_SAMPLES "Build sample applications" TRUE)
     option (URHO3D_UPDATE_SOURCE_TREE "Enable commands to copy back some of the generated build artifacts from build tree to source tree to facilitate devs to push them as part of a commit (for library devs with push right only)")
@@ -226,8 +218,8 @@ if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
     option (URHO3D_TESTING "Enable testing support")
     # By default this option is off (i.e. we use the MSVC dynamic runtime), this can be switched on if using Urho3D as a STATIC library
     cmake_dependent_option (URHO3D_STATIC_RUNTIME "Use static C/C++ runtime libraries and eliminate the need for runtime DLLs installation (VS only)" FALSE "MSVC" FALSE)
-    if (((URHO3D_LUA AND NOT URHO3D_LUAJIT) OR URHO3D_DATABASE_SQLITE) AND NOT ANDROID AND NOT IOS AND NOT TVOS AND NOT WEB AND NOT WIN32)
-        # Find GNU Readline development library for Lua interpreter and SQLite's isql
+    if (URHO3D_DATABASE_SQLITE AND NOT ANDROID AND NOT IOS AND NOT TVOS AND NOT WEB AND NOT WIN32)
+        # Find GNU Readline development library for SQLite's isql
         find_package (Readline)
     endif ()
     if (CPACK_SYSTEM_NAME STREQUAL Linux)
@@ -382,10 +374,6 @@ endif ()
 if (URHO3D_DATABASE_SQLITE OR URHO3D_DATABASE_ODBC)
     set (URHO3D_DATABASE 1)
 endif ()
-if (URHO3D_LUAJIT)
-    set (JIT JIT)
-    set (URHO3D_LUA 1)
-endif ()
 if (EMSCRIPTEN)
     set (URHO3D_LIB_TYPE STATIC)
     unset (URHO3D_LIB_TYPE CACHE)
@@ -416,7 +404,6 @@ if (URHO3D_CLANG_TOOLS)
             URHO3D_FILEWATCHER
             URHO3D_IK
             URHO3D_LOGGING
-            URHO3D_LUA
             URHO3D_NAVIGATION
             URHO3D_NETWORK
             URHO3D_PHYSICS
@@ -424,7 +411,7 @@ if (URHO3D_CLANG_TOOLS)
             URHO3D_URHO2D)
         set (${OPT} 1)
     endforeach ()
-    foreach (OPT URHO3D_TESTING URHO3D_LUAJIT URHO3D_DATABASE_ODBC URHO3D_TRACY_PROFILING)
+    foreach (OPT URHO3D_TESTING URHO3D_DATABASE_ODBC URHO3D_TRACY_PROFILING)
         set (${OPT} 0)
     endforeach ()
 endif ()
@@ -432,7 +419,6 @@ endif ()
 if (URHO3D_GENERATEBINDINGS)
     # Ensure the script subsystems are enabled at the very least
     set (URHO3D_ANGELSCRIPT 1)
-    set (URHO3D_LUA 1)
 endif ()
 
 # Coverity scan does not support PCH
@@ -471,7 +457,6 @@ foreach (OPT
         URHO3D_FILEWATCHER
         URHO3D_IK
         URHO3D_LOGGING
-        URHO3D_LUA
         URHO3D_MINIDUMPS
         URHO3D_NAVIGATION
         URHO3D_NETWORK
@@ -487,7 +472,7 @@ foreach (OPT
     endif ()
 endforeach ()
 
-# TODO: The logic below is earmarked to be moved into SDL's CMakeLists.txt when refactoring the library dependency handling, until then ensure the DirectX package is not being searched again in external projects such as when building LuaJIT library
+# TODO: The logic below is earmarked to be moved into SDL's CMakeLists.txt when refactoring the library dependency handling, until then ensure the DirectX package is not being searched again in external projects
 if (WIN32 AND NOT CMAKE_PROJECT_NAME MATCHES ^Urho3D-ExternalProject-)
     set (DIRECTX_REQUIRED_COMPONENTS)
     set (DIRECTX_OPTIONAL_COMPONENTS DInput DSound XInput)
@@ -649,7 +634,6 @@ else ()
                         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
                     endif ()
                     # The effective SSE level could be higher, see also URHO3D_DEPLOYMENT_TARGET and CMAKE_OSX_DEPLOYMENT_TARGET build options
-                    # The -mfpmath=sse is not set in global scope but it may be set in local scope when building LuaJIT sub-library for x86 arch
                     if (URHO3D_SSE)
                         if (HAVE_SSE3)
                             set (SIMD_FLAG -msse3)
@@ -765,23 +749,6 @@ else ()
             set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fdiagnostics-color=auto")
             set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=auto")
         endif ()
-    endif ()
-endif ()
-# LuaJIT specific - extra linker flags for linking against LuaJIT (adapted from LuaJIT's original Makefile)
-if (URHO3D_LUAJIT)
-    if (URHO3D_64BIT AND APPLE AND NOT ARM)
-        # 64-bit macOS: it simply won't work without these flags; if you are reading this comment then you may want to know the following also
-        # it's recommended to rebase all (self-compiled) shared libraries which are loaded at runtime on OSX/x64 (e.g. C extension modules for Lua), see: man rebase
-        set (LUAJIT_EXE_LINKER_FLAGS_APPLE "-pagezero_size 10000 -image_base 100000000")
-        set (LUAJIT_SHARED_LINKER_FLAGS_APPLE "-image_base 7fff04c4a000")
-        if (NOT XCODE)
-            set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LUAJIT_EXE_LINKER_FLAGS_APPLE}")
-            set (CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LUAJIT_SHARED_LINKER_FLAGS_APPLE}")
-        endif ()
-    elseif (URHO3D_LIB_TYPE STREQUAL STATIC AND NOT WIN32 AND NOT APPLE)    # The original condition also checks: AND NOT SunOS AND NOT PS3
-        # We assume user may want to load C modules compiled for plain Lua with require(), so we have to ensure all the public symbols are exported when linking with Urho3D (and therefore LuaJIT) statically
-        # Note: this implies that loading such modules on Windows platform may only work with SHARED library type
-        set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-E")
     endif ()
 endif ()
 # Trim the leading white space in the compiler/linker flags, if any
@@ -929,13 +896,6 @@ macro (define_dependency_libs TARGET)
             endif ()
             find_package(OpenSSL)
             list (APPEND LIBS ${OPENSSL_LIBRARIES})
-        endif ()
-    endif ()
-
-    # Urho3D/LuaJIT external dependency
-    if (URHO3D_LUAJIT AND ${TARGET} MATCHES LuaJIT|Urho3D)
-        if (NOT WIN32 AND NOT WEB)
-            list (APPEND LIBS dl m)
         endif ()
     endif ()
 
@@ -1522,10 +1482,6 @@ macro (setup_executable)
     if (NOT ARG_NODEPS)
         define_dependency_libs (Urho3D)
     endif ()
-    if (XCODE AND LUAJIT_EXE_LINKER_FLAGS_APPLE)
-        # Xcode universal build linker flags when targeting 64-bit OSX with LuaJIT enabled
-        list (APPEND TARGET_PROPERTIES XCODE_ATTRIBUTE_OTHER_LDFLAGS[arch=x86_64] "${LUAJIT_EXE_LINKER_FLAGS_APPLE} $(OTHER_LDFLAGS)")
-    endif ()
     _setup_target ()
 
     if (URHO3D_SCP_TO_TARGET)
@@ -1596,9 +1552,6 @@ macro (setup_library)
     get_target_property (LIB_TYPE ${TARGET_NAME} TYPE)
     if (NOT ARG_NODEPS AND NOT PROJECT_NAME STREQUAL Urho3D)
         define_dependency_libs (Urho3D)
-    endif ()
-    if (XCODE AND LUAJIT_SHARED_LINKER_FLAGS_APPLE AND LIB_TYPE STREQUAL SHARED_LIBRARY)
-        list (APPEND TARGET_PROPERTIES XCODE_ATTRIBUTE_OTHER_LDFLAGS[arch=x86_64] "${LUAJIT_SHARED_LINKER_FLAGS_APPLE} $(OTHER_LDFLAGS)")    # Xcode universal build linker flags when targeting 64-bit OSX with LuaJIT enabled
     endif ()
     _setup_target ()
 
