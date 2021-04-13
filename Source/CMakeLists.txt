@@ -72,13 +72,6 @@ foreach (TARGET ETCPACK FreeType LZ4 PugiXml rapidjson SDL StanHull STB)
     add_subdirectory (ThirdParty/${TARGET})
 endforeach ()
 
-if (URHO3D_ANGELSCRIPT)
-    add_subdirectory (ThirdParty/AngelScript)
-    if (WEB OR (ARM AND URHO3D_64BIT) OR URHO3D_FORCE_AS_MAX_PORTABILITY)
-        add_subdirectory (ThirdParty/boost)
-    endif ()
-endif ()
-
 if (URHO3D_NETWORK)
     add_subdirectory (ThirdParty/Civetweb)
     add_subdirectory (ThirdParty/SLikeNet)
@@ -135,10 +128,6 @@ if (NOT ANDROID AND NOT ARM AND NOT WEB)
 endif ()
 
 add_subdirectory (Urho3D)
-
-if (URHO3D_CLANG_TOOLS)
-    add_subdirectory (Clang-Tools)
-endif ()
 
 # In order to get clean module segregation, always exclude player/samples from AAR
 if (NOT ANDROID)

@@ -74,20 +74,6 @@ if (DOXYGEN_FOUND)
         configure_file (${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in ${CMAKE_CURRENT_BINARY_DIR}/generated/Doxyfile)
     endif ()
 
-    # Dump AngelScript API to Doxygen file if the corresponding host tool is available
-    if (TARGET ScriptCompiler AND NOT CMAKE_CROSSCOMPILING)
-        add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/ScriptAPI.dox ${CMAKE_CURRENT_BINARY_DIR}/generated/AngelScriptAPI.h
-            COMMAND ${CMAKE_BINARY_DIR}/bin/tool/ScriptCompiler -dumpapi ${CMAKE_SOURCE_DIR} ScriptAPI.dox AngelScriptAPI.h
-            DEPENDS ScriptCompiler     # ScriptCompiler implicitly depends on Urho3D already
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated
-            COMMENT "Dumping AngelScript API to ScriptAPI.dox")
-    else ()
-        add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/generated/ScriptAPI.dox ${CMAKE_CURRENT_BINARY_DIR}/generated/AngelScriptAPI.h
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/ScriptAPI.dox ${CMAKE_CURRENT_BINARY_DIR}/generated/ScriptAPI.dox
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/AngelScriptAPI.h ${CMAKE_CURRENT_BINARY_DIR}/generated/AngelScriptAPI.h
-            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ScriptAPI.dox ${CMAKE_CURRENT_SOURCE_DIR}/AngelScriptAPI.h)
-    endif ()
-
     # In quiet mode, redirect standard output stream of Doxygen to a null device
     if (URHO3D_DOCS_QUIET)
         set (REDIRECT_STDOUT 1>${NULL_DEVICE})
@@ -98,11 +84,6 @@ if (DOXYGEN_FOUND)
     endif ()
 
     # Add custom 'doc' target for generating Urho3D documentation
-    if (URHO3D_UPDATE_SOURCE_TREE)
-        foreach (FILE ScriptAPI.dox AngelScriptAPI.h)
-            list (APPEND UPDATE_COMMANDS COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_BINARY_DIR}/generated/${FILE} ${CMAKE_CURRENT_SOURCE_DIR}/${FILE})
-        endforeach ()
-    endif ()
     file (GLOB DOX_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.dox)
     add_custom_command (OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/html/index.html
         COMMAND ${DOXYGEN_EXECUTABLE} generated/Doxyfile ${REDIRECT_STDOUT}
