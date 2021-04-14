@@ -54,15 +54,15 @@
 #define URHO_CPP17_OR_LATER (URHO_CPLUSPLUS >= URHO_CPP17_STANDARD)
 
 // Macros for specific c++ versions
-#if URHO_CPP11_OR_LATER
+#if URHO_CPP17_OR_LATER
     // Least match
     #define URHO_CPP11(x) x
-    #define URHO_CPP14(x)
-    #define URHO_CPP17(x)
+    #define URHO_CPP14(x) x
+    #define URHO_CPP17(x) x
     // Exact match
-    #define URHO_CPP11_ONLY(x) x
+    #define URHO_CPP11_ONLY(x)
     #define URHO_CPP14_ONLY(x)
-    #define URHO_CPP17_ONLY(x)
+    #define URHO_CPP17_ONLY(x) x
 #elif URHO_CPP14_OR_LATER
     // Least match
     #define URHO_CPP11(x) x
@@ -72,15 +72,15 @@
     #define URHO_CPP11_ONLY(x)
     #define URHO_CPP14_ONLY(x) x
     #define URHO_CPP17_ONLY(x)
-#elif URHO_CPP17_OR_LATER
+#elif URHO_CPP11_OR_LATER
     // Least match
     #define URHO_CPP11(x) x
-    #define URHO_CPP14(x) x
-    #define URHO_CPP17(x) x
+    #define URHO_CPP14(x)
+    #define URHO_CPP17(x)
     // Exact match
-    #define URHO_CPP11_ONLY(x)
+    #define URHO_CPP11_ONLY(x) x
     #define URHO_CPP14_ONLY(x)
-    #define URHO_CPP17_ONLY(x) x
+    #define URHO_CPP17_ONLY(x)
 #else
     #error Compiler does not support required c++ standard. How did you get here?
 #endif
