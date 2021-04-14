@@ -146,8 +146,6 @@ include (CMakeDependentOption)
 cmake_dependent_option (IOS "Setup build for iOS platform" FALSE "XCODE" FALSE)
 cmake_dependent_option (TVOS "Setup build for tvOS platform" FALSE "XCODE" FALSE)
 cmake_dependent_option (URHO3D_64BIT "Enable 64-bit build, the default is set based on the native ABI of the chosen compiler toolchain" "${NATIVE_64BIT}" "NOT MSVC AND NOT ANDROID AND NOT (ARM AND NOT IOS) AND NOT WEB AND NOT POWERPC" "${NATIVE_64BIT}")     # Intentionally only enable the option for iOS but not for tvOS as the latter is 64-bit only
-option (URHO3D_ANGELSCRIPT "Enable AngelScript scripting support" TRUE)
-cmake_dependent_option (URHO3D_FORCE_AS_MAX_PORTABILITY "Use generic calling convention for AngelScript on any platform" FALSE "URHO3D_ANGELSCRIPT" FALSE)
 option (URHO3D_IK "Enable inverse kinematics support" TRUE)
 option (URHO3D_NAVIGATION "Enable navigation support" TRUE)
 cmake_dependent_option (URHO3D_NETWORK "Enable networking support" TRUE "NOT WEB" FALSE)
@@ -199,13 +197,8 @@ if (CMAKE_PROJECT_NAME STREQUAL Urho3D)
     cmake_dependent_option (URHO3D_MMX "Enable MMX instruction set (32-bit Linux platform only); the MMX is effectively enabled when 3DNow! or SSE is enabled; should only be used for older CPU with MMX support" "${HAVE_MMX}" "X86 OR E2K AND CMAKE_SYSTEM_NAME STREQUAL Linux AND NOT URHO3D_64BIT AND NOT URHO3D_SSE AND NOT URHO3D_3DNOW" FALSE)
     # For completeness sake - this option is intentionally not documented as we do not officially support PowerPC (yet)
     cmake_dependent_option (URHO3D_ALTIVEC "Enable AltiVec instruction set (PowerPC only)" "${HAVE_ALTIVEC}" POWERPC FALSE)
-    option (URHO3D_PLAYER "Build Urho3D script player" TRUE)
     option (URHO3D_SAMPLES "Build sample applications" TRUE)
     option (URHO3D_UPDATE_SOURCE_TREE "Enable commands to copy back some of the generated build artifacts from build tree to source tree to facilitate devs to push them as part of a commit (for library devs with push right only)")
-    option (URHO3D_BINDINGS "Enable API binding generation support for script subsystems")
-    option (URHO3D_GENERATEBINDINGS "Regenerate bindings for scripting languages")
-    cmake_dependent_option (URHO3D_CLANG_TOOLS "Build Clang tools (native on host system only)" FALSE "NOT CMAKE_CROSSCOMPILING" FALSE)
-    mark_as_advanced (URHO3D_UPDATE_SOURCE_TREE URHO3D_BINDINGS URHO3D_CLANG_TOOLS)
     cmake_dependent_option (URHO3D_TOOLS "Build tools (native, RPI, and ARM on Linux only)" TRUE "NOT IOS AND NOT TVOS AND NOT ANDROID AND NOT WEB" FALSE)
     cmake_dependent_option (URHO3D_EXTRAS "Build extras (native, RPI, and ARM on Linux only)" FALSE "NOT IOS AND NOT TVOS AND NOT ANDROID AND NOT WEB" FALSE)
     option (URHO3D_DOCS "Generate documentation as part of normal build")
@@ -386,41 +379,6 @@ endif ()
 # Union all the sysroot variables into one so it can be referred to generically later
 set (SYSROOT ${CMAKE_SYSROOT} ${MINGW_SYSROOT} ${IOS_SYSROOT} ${TVOS_SYSROOT} CACHE INTERNAL "Path to system root of the cross-compiling target")  # SYSROOT is empty for native build
 
-# Clang tools building
-if (URHO3D_CLANG_TOOLS OR URHO3D_BINDINGS)
-    # Ensure LLVM/Clang is installed
-    find_program (LLVM_CONFIG NAMES llvm-config llvm-config-64 llvm-config-32 HINTS $ENV{LLVM_CLANG_ROOT}/bin DOC "LLVM config tool" NO_CMAKE_FIND_ROOT_PATH)
-    if (NOT LLVM_CONFIG)
-        message (FATAL_ERROR "Could not find LLVM/Clang installation")
-    endif ()
-endif ()
-if (URHO3D_CLANG_TOOLS)
-    set (URHO3D_PCH 0)
-    set (URHO3D_LIB_TYPE SHARED)
-    # Set build options that would maximise the AST of Urho3D library
-    foreach (OPT
-            URHO3D_ANGELSCRIPT
-            URHO3D_DATABASE_SQLITE
-            URHO3D_FILEWATCHER
-            URHO3D_IK
-            URHO3D_LOGGING
-            URHO3D_NAVIGATION
-            URHO3D_NETWORK
-            URHO3D_PHYSICS
-            URHO3D_PROFILING
-            URHO3D_URHO2D)
-        set (${OPT} 1)
-    endforeach ()
-    foreach (OPT URHO3D_TESTING URHO3D_DATABASE_ODBC URHO3D_TRACY_PROFILING)
-        set (${OPT} 0)
-    endforeach ()
-endif ()
-
-if (URHO3D_GENERATEBINDINGS)
-    # Ensure the script subsystems are enabled at the very least
-    set (URHO3D_ANGELSCRIPT 1)
-endif ()
-
 # Coverity scan does not support PCH
 if ($ENV{COVERITY_SCAN_BRANCH})
     set (URHO3D_PCH 0)
@@ -452,7 +410,6 @@ endif ()
 
 # Define preprocessor macros (for building the Urho3D library) based on the configured build options
 foreach (OPT
-        URHO3D_ANGELSCRIPT
         URHO3D_DATABASE
         URHO3D_FILEWATCHER
         URHO3D_IK
@@ -597,9 +554,6 @@ else ()
                 if (URHO3D_64BIT)
                     # aarch64 has only one valid arch so far
                     set (ARM_CFLAGS "${ARM_CFLAGS} -march=armv8-a")
-                elseif (URHO3D_ANGELSCRIPT)
-                    # Angelscript seems to fail to compile using Thumb states, so force to use ARM states by default
-                    set (ARM_CFLAGS "${ARM_CFLAGS} -marm")
                 endif ()
                 if (ARM_ABI_FLAGS)
                     # Instead of guessing all the possible ABIs, user would have to specify the ABI compiler flags explicitly via ARM_ABI_FLAGS build option

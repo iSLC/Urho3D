@@ -35,12 +35,6 @@ build/
 *.vs?
 *.ps?
 
-# Compiled AngelScript
-*.asc
-
-# Compiled Lua script
-*.luc
-
 # Generated documentation
 /Docs/html/
 /Docs/qch/

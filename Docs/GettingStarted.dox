@@ -529,8 +529,6 @@ For details on how to use the editor, see \ref EditorInstructions.
 
 The sample applications start from the very simple (a "Hello World" program) and progress to demonstrate more complex engine features. The code is heavily commented and should be easy to follow for learning. The applications display on-screen instructions when run.
 
-The AngelScript version reside in the bin/Data/Scripts directory. %Batch files to run each of them are not provided due to their large amount: instead run the player application with the script file name as the parameter, for example Urho3DPlayer Scripts/01_HelloWorld.as
-
 The C++ versions need to be explicitly enabled in the build with the CMake option -DURHO3D_SAMPLES=1. When enabled, the executables will be produced into the bin directory and can be run from there. Their source code is in the Source/Samples directory.
 
 The samples provide the following common key controls:
@@ -739,7 +737,6 @@ under the Source/Urho3D directory:
 - Physics. Provides physics simulation.
 - Navigation. Provides navigation mesh generation and pathfinding.
 - Urho2D. Provides 2D rendering components that integrate into the 3D scene.
-- %Script. Provides scripting support using the AngelScript language.
 - %Engine. Instantiates the subsystems from the modules above (except Script, which needs to be instantiated by the application) and manages the main loop iteration.
 
 \section Structure_Context Execution context
@@ -758,7 +755,6 @@ The %Context provides the following functionality (described in detail on their 
 
 The third-party libraries used by Urho3D and their purposes are:
 
-- AngelScript: scripting language implementation
 - Bullet: physics simulation implementation
 - Civetweb: HTTP requests, use could be expanded to also provide an embedded web server
 - FreeType: font rendering
@@ -953,8 +949,6 @@ To reorder nodes or UI elements within the same parent instead of reparenting, h
 To locate a scene node from the scene, double-click it in the hierarchy window.
 
 To create a user variable into the current node, or delete it, type the variable name into the edit field below the node attributes, and press New or Del buttons next to it. The New button will prompt to choose the variable type.
-
-While editing, you can execute script files using the "Run script" item in the %File menu. These are AngelScript files that are executed in immediate mode ie. you do not need to define a function. The editor's scene will be accessible to the script as the global property "scene."
 
 Components of same type can be multi-edited. Where attribute values differ, the attribute field will be left blank, but editing the attribute will apply the change to all components.
 

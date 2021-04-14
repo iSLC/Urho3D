@@ -36,9 +36,6 @@
 #include <Urho3D/UI/UI.h>
 #include <Urho3D/UI/UIEvents.h>
 #include <Urho3D/UI/Text.h>
-#ifdef URHO3D_ANGELSCRIPT
-#include <Urho3D/AngelScript/Script.h>
-#endif
 
 #include "PBRMaterials.h"
 
@@ -95,11 +92,6 @@ void PBRMaterials::CreateInstructions()
 void PBRMaterials::CreateScene()
 {
     auto* cache = GetSubsystem<ResourceCache>();
-
-#ifdef URHO3D_ANGELSCRIPT
-    // The scene uses an AngelScript component for animation. Instantiate the subsystem if possible
-    context_->RegisterSubsystem(new Script(context_));
-#endif
 
     scene_ = new Scene(context_);
 

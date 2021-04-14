@@ -34,21 +34,6 @@ if (HAVE_STDINT_H)
   add_definitions (-DHAVE_STDINT_H)
 endif ()
 
-# For AngelScript big files
-if (MSVC)
-    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /bigobj")
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
-elseif (MINGW)
-    if (URHO3D_64BIT)
-        set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wa,-mbig-obj")
-        set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wa,-mbig-obj")
-    elseif (CMAKE_BUILD_TYPE MATCHES Debug)
-        SET_SOURCE_FILES_PROPERTIES(AngelScript/GeneratedClasses.cpp PROPERTIES COMPILE_FLAGS -Os)
-        SET_SOURCE_FILES_PROPERTIES(AngelScript/GeneratedClasses.cpp PROPERTIES LINK_FLAGS -Os)
-        SET_SOURCE_FILES_PROPERTIES(AngelScript/GeneratedClasses.cpp PROPERTIES STATIC_LIBRARY_FLAGS -Os)
-    endif ()
-endif ()
-
 # Generate JSON compilation database format specification
 if (URHO3D_CLANG_TOOLS OR URHO3D_BINDINGS)
     set (CMAKE_EXPORT_COMPILE_COMMANDS 1)
@@ -129,9 +114,6 @@ foreach (DIR IK Navigation Network Physics Urho2D WebP)
         list (APPEND EXCLUDED_SOURCE_DIRS ${DIR})
     endif ()
 endforeach ()
-if (NOT URHO3D_ANGELSCRIPT)
-    list (APPEND EXCLUDED_SOURCE_DIRS AngelScript)
-endif ()
 if (URHO3D_DATABASE)
     if (URHO3D_DATABASE_ODBC)
         list (APPEND EXCLUDED_SOURCE_DIRS Database/SQLite)
@@ -157,64 +139,6 @@ if (APPLE AND NOT ARM)
 endif ()
 string (REPLACE ";" "/[^;]+;" EXCLUDE_PATTERNS "${EXCLUDED_SOURCE_DIRS};")
 define_source_files (EXCLUDE_PATTERNS ${EXCLUDE_PATTERNS} GLOB_CPP_PATTERNS *.cpp ${GLOB_OBJC_PATTERN} RECURSE GROUP)
-
-if (URHO3D_GENERATEBINDINGS)
-
-    find_package (Doxygen 1.8.17 REQUIRED)
-    if (NOT DOXYGEN_FOUND)
-        message (FATAL_ERROR "Doxygen >= 1.8.17 required to generate bindings")
-    endif ()
-
-    # Generating Doxyfile
-    set (DOXYFILE_PATH "${CMAKE_BINARY_DIR}/Source/Tools/BindingGenerator/generated/Doxyfile")
-    configure_file ("${CMAKE_SOURCE_DIR}/Source/Tools/BindingGenerator/Doxyfile.in" "${DOXYFILE_PATH}")
-
-    set (XML_AST_DIR "${CMAKE_BINARY_DIR}/Source/Tools/BindingGenerator/generated/xml")
-    set (BINDING_GENERATOR_PATH "${CMAKE_BINARY_DIR}/bin/tool/BindingGenerator")
-
-    set (AS_GENERATED_FILES "AngelScript/GeneratedEnums.cpp"
-                            "AngelScript/GeneratedObjectTypes.cpp"
-                            "AngelScript/GeneratedDefaultConstructors.cpp"
-                            "AngelScript/GeneratedClasses.cpp"
-                            "AngelScript/GeneratedGlobalVariables.cpp"
-                            "AngelScript/GeneratedGlobalFunctions.cpp"
-                            "AngelScript/GeneratedIncludes.h"
-                            "AngelScript/Generated_Members.h"
-                            "AngelScript/Generated_Templates_New.h")
-
-    set (AS_GENERATED_FILES_FULL_PATHS "${AS_GENERATED_FILES}")
-    # Add "${CMAKE_SOURCE_DIR}/Source/Urho3D/" to every item in list
-    list(TRANSFORM AS_GENERATED_FILES_FULL_PATHS PREPEND "${CMAKE_SOURCE_DIR}/Source/Urho3D/")
-
-    set (BINDED_HEADER_FILES "${SOURCE_FILES}")
-    # Header files only are used when generating bindings
-    list (FILTER BINDED_HEADER_FILES INCLUDE REGEX ".*\.h$")
-    # Exclude files from AngelScript directory to solve circular dependency
-    list (FILTER BINDED_HEADER_FILES EXCLUDE REGEX "^AngelScript/")
-
-    # Generate xmls and run BindingGenerator
-    add_custom_command (OUTPUT ${AS_GENERATED_FILES_FULL_PATHS}
-                               #${CMAKE_SOURCE_DIR}/Source/Urho3D/JavaScript/Generated.cpp
-                               #${CMAKE_SOURCE_DIR}/Source/Urho3D/CSharp/Generated.cpp
-                               #fake_output_to_force_run_every_time
-                        COMMAND ${CMAKE_COMMAND} -E echo "Generating XMLs with AST to ${XML_AST_DIR}"
-                        COMMAND ${DOXYGEN_EXECUTABLE} "${DOXYFILE_PATH}"
-                        COMMAND ${CMAKE_COMMAND} -E echo "Running ${BINDING_GENERATOR_PATH} ${XML_AST_DIR} ${CMAKE_SOURCE_DIR}"
-                        COMMAND "${BINDING_GENERATOR_PATH}" "${XML_AST_DIR}" "${CMAKE_SOURCE_DIR}"
-                        DEPENDS BindingGenerator "${DOXYFILE_PATH}" "${BINDED_HEADER_FILES}"
-                        COMMENT "Generating bindings to script languages")
-
-    if (URHO3D_ANGELSCRIPT)
-        # If generated files already exists they will be in list SOURCE_FILES already.
-        # But they can also be removed.
-        # Make sure we have generated files in SOURCE_FILES in a single copy
-        list (REMOVE_ITEM SOURCE_FILES ${AS_GENERATED_FILES})
-        list (APPEND SOURCE_FILES ${AS_GENERATED_FILES})
-
-        source_group ("Source Files\\AngelScript" FILES ${AS_GENERATED_FILES})
-    endif()
-
-endif ()
 
 # Define generated source files
 if (NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/librevision.h)
@@ -249,7 +173,7 @@ if (URHO3D_BINDINGS)
         ${ALTERNATE_COMMAND})
     add_make_clean_files (${CMAKE_BINARY_DIR}/bin/tool/clang/AutoBinder)
     file (MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated/generated)
-    foreach (SCRIPT AngelScript JavaScript)
+    foreach (SCRIPT JavaScript)
         string (TOUPPER URHO3D_${SCRIPT} OPT)
         if (${OPT})
             list (APPEND SCRIPT_SUBSYSTEMS -s ${SCRIPT})
@@ -308,9 +232,6 @@ foreach (DEFINE URHO3D_STATIC_DEFINE URHO3D_OPENGL URHO3D_D3D11 URHO3D_SSE URHO3
         set (APPENDIX "${APPENDIX}#define ${DEFINE}\n")
     endif ()
 endforeach()
-if (URHO3D_FORCE_AS_MAX_PORTABILITY)
-    set (APPENDIX "${APPENDIX}#define AS_MAX_PORTABILITY\n")
-endif ()
 generate_export_header (${TARGET_NAME} EXPORT_MACRO_NAME URHO3D_API EXPORT_FILE_NAME Urho3D.h.new CUSTOM_CONTENT_FROM_VARIABLE APPENDIX)
 file (READ Precompiled.h COPYRIGHT LIMIT 1128)
 file (READ ${CMAKE_CURRENT_BINARY_DIR}/Urho3D.h.new EXPORT_HEADER)
@@ -475,7 +396,7 @@ install_header_files (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ DESTINATION ${DEST_
 # Generate the include-all-headers header file even though we do not encourage Urho3D library users to use it
 list (SORT URHO_HEADERS)
 list (REVERSE URHO_HEADERS)
-set (OPTIONAL_SUBS AngelScript Database IK Navigation Network Physics Urho2D)
+set (OPTIONAL_SUBS Database IK Navigation Network Physics Urho2D)
 foreach (SUB ${OPTIONAL_SUBS})
     if (URHO_HEADERS MATCHES "(include/Urho3D/${SUB}[^;]+)")
         list (FIND URHO_HEADERS ${CMAKE_MATCH_1} FOUND_INDEX)
@@ -556,8 +477,4 @@ if (URHO3D_SCP_TO_TARGET)
     # Ensure SCP is the last command
     add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND scp $<TARGET_FILE:${TARGET_NAME}> ${URHO3D_SCP_TO_TARGET} || exit 0
         COMMENT "Scp-ing Urho3D library to target system")
-endif ()
-
-if (URHO3D_FORCE_AS_MAX_PORTABILITY)
-    add_definitions (-DAS_MAX_PORTABILITY)
 endif ()

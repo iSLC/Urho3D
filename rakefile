@@ -220,14 +220,6 @@ task :ci_publish_web do
   web = {'samples' => {}}
   Dir.chdir('build/urho3d.github.io/samples') { web['samples']['Native'] = Dir['*.html'].sort }
   web['player'] = web['samples']['Native'].pop # Assume the last sample after sorting is the Urho3DPlayer.html
-  {'AngelScript' => 'Scripts'}.each { |lang, subdir|
-    Dir.chdir("bin/Data/#{subdir}") {
-      script_samples = Dir['[0-9]*'].sort
-      deleted_samples = [] # Delete samples that do not have their native counterpart
-      script_samples.each { |sample| deleted_samples.push sample unless web['samples']['Native'].include? "#{sample.split('.').first}.html" }
-      web['samples'][lang] = (script_samples - deleted_samples).map { |sample| "#{subdir}/#{sample}" }
-    }
-  }
   File.open('build/urho3d.github.io/_data/web.json', 'w') { |file| file.puts web.to_json }
   system %Q{
     cd build/urho3d.github.io && \\
