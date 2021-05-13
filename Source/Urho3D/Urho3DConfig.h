@@ -215,12 +215,13 @@
  * Macro that can be used to identify C version.
 */
 
-#ifdef __STDC_VERSION__
+#if defined(__STDC_VERSION__)
     #define U3D_C_STANDARD __STDC_VERSION__
 #elif defined(__STDC__)
     #define U3D_C_STANDARD __STDC__
 #else
-    #error Cannot identify the C standard as __STDC_VERSION__ or __STDC__ macro is missing.
+    // Default to minimum C standard (even though c11 is required for the C++ we're using)
+    #define U3D_C_STANDARD U3D_C89_STANDARD
 #endif
 
 /*
@@ -590,25 +591,6 @@
 #define U3D_OSX_OR(UV, OV) U3D_OSX_ONLY(UV) U3D_EXCEPT_OSX(OV)
 
 /*
- * is_constant_evaluated feature.
-*/
-
-// Can it be detected via __has_builtin method?
-#if defined(__has_builtin)
-    #if __has_builtin(__builtin_is_constant_evaluated)
-        #define U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
-    #endif
-// GCC and Clang introduced this in version 9
-#elif (defined(U3D_GNUC) || defined(U3D_CLANG)) && (U3D_COMPILER_MAJOR >= 9)
-    #define U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
-// MSVC seems to have added this in version 19.25
-#elif defined(U3D_MSC) && (U3D_COMPILER_MAJOR >= 19) && (U3D_COMPILER_MINOR >= 25)
-    #define U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
-#else
-    #undef U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
-#endif
-
-/*
  * Intrinsics.
 */
 
@@ -715,13 +697,53 @@
  * Unreachable code. Mark code paths that are known to not be reached.
 */
 
+// GCC 4.8+, Clang, Intel and other compilers compatible with GCC
 #if defined(U3D_GNUC) || defined(U3D_CLANG)
-    #define U3D_UNREACHABLE __builtin_unreachable();
+    [[noreturn]] inline __attribute__((always_inline)) void Unreachable() { __builtin_unreachable(); }
+    #define U3D_UNREACHABLE ::Ax::Unreachable();
+// MSVC
 #elif defined(U3D_MSC)
-    static _Noreturn void unreachable() { return; }
-    #define U3D_UNREACHABLE ::Ax::unreachable();
+    [[noreturn]] __forceinline void Unreachable() { __assume(false); }
+    #define U3D_UNREACHABLE ::Ax::Unreachable();
+// Failsafe
 #else
-    #define U3D_UNREACHABLE U3D_ASSERT(0); // TODO: Implement
+    #define U3D_UNREACHABLE U3D_ASSERT(0) // TODO: do a better job that works in release mode as well
+#endif
+
+/*
+ * is_constant_evaluated feature.
+*/
+
+// Can it be detected via __has_builtin method?
+#if defined(__has_builtin)
+    #if __has_builtin(__builtin_is_constant_evaluated)
+        #define U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+    #endif
+// GCC and Clang introduced this in version 9
+#elif (defined(U3D_GNUC) || defined(U3D_CLANG)) && (U3D_COMPILER_MAJOR >= 9)
+    #define U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+// MSVC seems to have added this in version 19.25
+#elif defined(U3D_MSC) && (U3D_COMPILER_MAJOR >= 19) && (U3D_COMPILER_MINOR >= 25)
+    #define U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED 1
+#else
+    #undef U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+#endif
+
+/*
+ * constant detection feature.
+*/
+
+// Can it be detected via __has_builtin method?
+#if defined(__has_builtin)
+    #if __has_builtin(__builtin_constant_p)
+        #define U3D_HAVE_BUILTIN_CONSTANT_P 1
+    #endif
+// GCC and Clang should already have this
+#elif defined(U3D_GNUC) || defined(U3D_CLANG)
+    #define U3D_HAVE_BUILTIN_CONSTANT_P 1
+// R.I.P for MSVC and the rest
+#else
+    #undef U3D_HAVE_BUILTIN_CONSTANT_P
 #endif
 
 /*
