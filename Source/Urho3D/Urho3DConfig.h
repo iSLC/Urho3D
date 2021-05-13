@@ -50,15 +50,9 @@
     #define U3D_CLANG_MINOR __clang_minor__
     #define U3D_CLANG_PATCH __clang_patchlevel__
     // MSC version macros
-    #if defined(_MSC_FULL_VER)
-        #define U3D_MSC_MAJOR (_MSC_FULL_VER / 1000000)
-        #define U3D_MSC_MINOR ((_MSC_FULL_VER % 1000000) / 10000)
-        #define U3D_MSC_PATCH (_MSC_FULL_VER % 10000)
-    #else
-        #define U3D_MSC_MAJOR (_MSC_VER / 100)
-        #define U3D_MSC_MINOR (_MSC_VER % 100)
-        #define U3D_MSC_PATCH (0)
-    #endif
+    #define U3D_MSC_MAJOR (_MSC_VER / 100)
+    #define U3D_MSC_MINOR (_MSC_VER % 100)
+    #define U3D_MSC_PATCH (0)
     // Host compiler version macros
     #define U3D_COMPILER_MAJOR __clang_major__
     #define U3D_COMPILER_MINOR __clang_minor__
@@ -115,20 +109,10 @@
 // MSC
 #elif defined(_MSC_VER)
     #define U3D_MSC _MSC_VER
-    // MSC version macros
-    #if defined(_MSC_FULL_VER)
-        #define U3D_MSC_MAJOR (_MSC_FULL_VER / 1000000)
-        #define U3D_MSC_MINOR ((_MSC_FULL_VER % 1000000) / 10000)
-        #define U3D_MSC_PATCH (_MSC_FULL_VER % 10000)
-    #else
-        #define U3D_MSC_MAJOR (_MSC_VER / 100)
-        #define U3D_MSC_MINOR (_MSC_VER % 100)
-        #define U3D_MSC_PATCH (0)
-    #endif
     // Host compiler version macros
-    #define U3D_COMPILER_MAJOR U3D_MSC_MAJOR
-    #define U3D_COMPILER_MINOR U3D_MSC_MINOR
-    #define U3D_COMPILER_PATCH U3D_MSC_PATCH
+    #define U3D_COMPILER_MAJOR (_MSC_VER / 100)
+    #define U3D_COMPILER_MINOR (_MSC_VER % 100)
+    #define U3D_COMPILER_PATCH 0
     // Obviously MSC is MSC compatible
     #define U3D_MSC_COMPAT _MSC_VER
     // Compiler matching selection macros
@@ -240,7 +224,11 @@
 */
 
 #ifndef U3D_CPP_STANDARD
-    #define U3D_CPP_STANDARD __cplusplus
+    #ifdef U3D_MSC
+        #define U3D_CPP_STANDARD _MSVC_LANG
+    #else
+        #define U3D_CPP_STANDARD __cplusplus
+    #endif
 #endif
 
 /*
@@ -364,7 +352,7 @@
     #define U3D_POINTER_BITS 64
     #define U3D_POINTER_BYTES 8
     #define U3D_POINTER_SIZE 8
-#elif
+#else
     // We can assume this is 32-bit
     #define U3D_POINTER_BITS 32
     #define U3D_POINTER_BYTES 4
@@ -697,12 +685,16 @@
 
 // GCC 4.8+, Clang, Intel and other compilers compatible with GCC
 #if defined(U3D_GNUC) || defined(U3D_CLANG)
-    [[noreturn]] inline __attribute__((always_inline)) void Unreachable() { __builtin_unreachable(); }
-    #define U3D_UNREACHABLE ::Ax::Unreachable();
+    namespace Urho3D {
+        [[noreturn]] inline __attribute__((always_inline)) void Unreachable() { __builtin_unreachable(); }
+    }
+    #define U3D_UNREACHABLE ::Urho3D::Unreachable();
 // MSVC
 #elif defined(U3D_MSC)
-    [[noreturn]] __forceinline void Unreachable() { __assume(false); }
-    #define U3D_UNREACHABLE ::Ax::Unreachable();
+    namespace Urho3D {
+        [[noreturn]] __forceinline void Unreachable() { __assume(false); }
+    }
+    #define U3D_UNREACHABLE ::Urho3D::Unreachable();
 // Failsafe
 #else
     #define U3D_UNREACHABLE U3D_ASSERT(0) // TODO: do a better job that works in release mode as well
@@ -726,6 +718,18 @@
 #else
     #undef U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
 #endif
+
+// This functionality plays an important role so we need to be able to switch code when not available.
+#ifdef U3D_HAVE_BUILTIN_IS_CONSTANT_EVALUATED
+    #define U3D_BUILTIN_IS_CONSTANT_EVALUATED_ONLY(VALUE) VALUE
+    #define U3D_EXCEPT_BUILTIN_IS_CONSTANT_EVALUATED(VALUE)
+#else
+    #define U3D_BUILTIN_IS_CONSTANT_EVALUATED_ONLY(VALUE)
+    #define U3D_EXCEPT_BUILTIN_IS_CONSTANT_EVALUATED(VALUE) VALUE
+#endif
+
+// Select the value according to the availability of __builtin_is_constant_evaluated.
+#define U3D_BUILTIN_IS_CONSTANT_EVALUATED_OR(CV, OV) U3D_BUILTIN_IS_CONSTANT_EVALUATED_ONLY(CV) U3D_EXCEPT_BUILTIN_IS_CONSTANT_EVALUATED(OV)
 
 /*
  * constant detection feature.
