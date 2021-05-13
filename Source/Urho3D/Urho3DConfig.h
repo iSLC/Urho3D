@@ -622,7 +622,7 @@
     #define U3D_ASSERT(e)
     #define U3D_ASSERT_ONLY(x)
     #define U3D_EXCEPT_ASSERT(x) x
-    #undef U3D_ASSERT_ENABLED 1
+    #undef U3D_ASSERT_ENABLED
 #endif
 
 // Select the value according to the current assert status.
