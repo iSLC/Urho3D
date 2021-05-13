@@ -376,8 +376,6 @@
     #define U3D64_ONLY(VALUE) VALUE
     #define U3D32_ONLY(VALUE)
 #else
-    // Expect the unexpected
-    #error Only 64-bit architecture is currently supported.
     // Some day
     #define U3D32
     #define U3D64_ONLY(VALUE)
