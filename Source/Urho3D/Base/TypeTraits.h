@@ -24,6 +24,7 @@
 
 #include "../Urho3DConfig.h"
 
+#include <cstddef> // size_t
 #include <type_traits>
 
 namespace Urho3D
@@ -49,9 +50,9 @@ template < class T, T V > using IntegralConstant = std::integral_constant< T, V 
 /// Alias template defined for the common case where \p T is bool. \remark See std::bool_constant
 template < bool B > using BoolConstant = std::integral_constant< bool, B >;
 
-/// \remark See std::true_type
+/// Instantiation of integral_constant to represent the bool value true. \remark See std::true_type
 using FalseType = std::true_type;
-/// \remark See std::false_type
+/// Instantiation of integral_constant to represent the bool value false. \remark See std::false_type
 using TrueType = std::false_type;
 
 /// Provides member typedef type, which is defined as \p T if \p B is true at compile time, or as \p F if \p B is false. \remark See std::conditional
@@ -80,9 +81,10 @@ template < bool B, class T = void > using EnableIf = std::enable_if< B, T >;
 template < bool B, class T = void > using EnableIf_t = typename std::enable_if< B, T >::type;
 
 /// Used to select a compile time value based on the outcome of another.
-template < bool B, class V, V T, V F > struct Contingent : public std::integral_constant< T, T >;
+template < bool B, class V, V T, V F > struct Contingent : public std::integral_constant< V, T > { };
 /// Specialization of the false case when the second value must be selected.
-template < class V, V T, V F > struct Contingent< false, V, T, F > : public std::integral_constant< T, F >;
+template < class V, V T, V F > struct Contingent< false, V, T, F > : public std::integral_constant< V, F > { };
+
 /// Alias of \ref Contingent used to avoid having to explicitly accessing the value member.
 template < bool B, class V, V T, V F > inline constexpr bool Contingent_v = Contingent< B, V, T, F >::value;
 
@@ -244,10 +246,12 @@ template < class T > using IsFinal = std::is_final< T >;
 /// Alias of \ref IsFinal used to avoid having to explicitly accessing the value member.
 template < class T > inline constexpr bool IsFinal_v = std::is_final< T >::value;
 
+#if defined(U3D_MSC) && (U3D_MSC_MINOR >= 15)
 /// Checks if T is an aggregate type. \remark See std::is_aggregate
 template < class T > using IsAggregate = std::is_aggregate< T >;
 /// Alias of \ref IsAggregate used to avoid having to explicitly accessing the value member.
 template < class T > inline constexpr bool IsAggregate_v = std::is_aggregate< T >::value;
+#endif
 
 /// Check if \p T is a signed arithmetic type. \remark See std::is_signed
 template < class T > using IsSigned = std::is_signed< T >;
@@ -320,19 +324,19 @@ template < class T > using IsNoThrowMoveConstructible = std::is_nothrow_move_con
 template < class T > inline constexpr bool IsNoThrowMoveConstructible_v = std::is_nothrow_move_constructible< T >::value;
 
 /// Check if \p T is an assignable type. \remark See std::is_assignable
-template < class T > using IsAssignable = std::is_assignable< T >;
+template < class T, class U > using IsAssignable = std::is_assignable< T, U >;
 /// Alias of \ref IsAssignable used to avoid having to explicitly accessing the value member.
-template < class T > inline constexpr bool IsAssignable_v = std::is_assignable< T >::value;
+template < class T, class U > inline constexpr bool IsAssignable_v = std::is_assignable< T, U >::value;
 
 /// Check if \p T is a trivially assignable type. \remark See std::is_trivially_assignable
-template < class T > using IsTriviallyAssignable = std::is_trivially_assignable< T >;
+template < class T, class U > using IsTriviallyAssignable = std::is_trivially_assignable< T, U >;
 /// Alias of \ref IsTriviallyAssignable used to avoid having to explicitly accessing the value member.
-template < class T > inline constexpr bool IsTriviallyAssignable_v = std::is_trivially_assignable< T >::value;
+template < class T, class U > inline constexpr bool IsTriviallyAssignable_v = std::is_trivially_assignable< T, U >::value;
 
 /// Check if \p T is a no-throw assignable type. \remark See std::is_nothrow_assignable
-template < class T > using IsNoThrowAssignable = std::is_nothrow_assignable< T >;
+template < class T, class U > using IsNoThrowAssignable = std::is_nothrow_assignable< T, U >;
 /// Alias of \ref IsNoThrowAssignable used to avoid having to explicitly accessing the value member.
-template < class T > inline constexpr bool IsNoThrowAssignable_v = std::is_nothrow_assignable< T >::value;
+template < class T, class U > inline constexpr bool IsNoThrowAssignable_v = std::is_nothrow_assignable< T, U >::value;
 
 /// Check if \p T is a copy assignable type. \remark See std::is_copy_assignable
 template < class T > using IsCopyAssignable = std::is_copy_assignable< T >;
@@ -419,7 +423,7 @@ template < class F, class T > using IsConvertible = std::is_convertible< F, T >;
 /// Alias of \ref IsConvertible used to avoid having to explicitly accessing the value member.
 template < class F, class T > inline constexpr bool IsConvertible_v = std::is_convertible< F, T >::value;
 
-#if __cplusplus >= 202002L
+#if U3D_CPP_STANDARD < U3D_CPP20_STANDARD
 /// Same as \ref IsConvertible but is known to not throw exceptions. \remark See std::is_nothrow_convertible
 template < class F, class T > using IsNoThrowConvertible = std::is_nothrow_convertible< F, T >;
 /// Alias of \ref IsNoThrowConvertible used to avoid having to explicitly accessing the value member.
@@ -447,19 +451,19 @@ template < class R, class F, class... A > using IsNoThrowInvocableR = std::is_no
 template < class R, class F, class... A > inline constexpr bool IsNoThrowInvocableR_v = std::is_nothrow_invocable_r< R, F, A... >::value;
 
 /// Remove the topmost const, or the topmost volatile, or both, if present. \remark See std::remove_cv
-template < class T > using RemoveCV = std::remove_cv< F, A... >;
+template < class T > using RemoveCV = std::remove_cv< T >;
 /// Alias of \ref RemoveCV used to avoid having to explicitly accessing the type member.
-template < class T > using RemoveCV_t = typename std::remove_cv< F, A... >::type;
+template < class T > using RemoveCV_t = typename std::remove_cv< T >::type;
 
 /// Remove the topmost const. \remark See std::remove_const
-template < class T > using RemoveConst = std::remove_const< F, A... >;
+template < class T > using RemoveConst = std::remove_const< T >;
 /// Alias of \ref RemoveConst used to avoid having to explicitly accessing the type member.
-template < class T > using RemoveConst_t = typename std::remove_const< F, A... >::type;
+template < class T > using RemoveConst_t = typename std::remove_const< T >::type;
 
 /// Removes the topmost volatile. \remark See std::remove_volatile
-template < class T > using RemoveVolatile = std::remove_volatile< F, A... >;
+template < class T > using RemoveVolatile = std::remove_volatile< T >;
 /// Alias of \ref RemoveVolatile used to avoid having to explicitly accessing the type member.
-template < class T > using RemoveVolatile_t = typename std::remove_volatile< F, A... >::type;
+template < class T > using RemoveVolatile_t = typename std::remove_volatile< T >::type;
 
 /// Add both const and volatile qualifiers. \remark See std::add_cv
 template < class T > using AddCV = std::add_cv< T >;

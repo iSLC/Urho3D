@@ -146,6 +146,10 @@
 // MSC
 #elif defined(_MSC_VER)
     #define U3D_MSC _MSC_VER
+    // MSC version macros
+    #define U3D_MSC_MAJOR (_MSC_VER / 100)
+    #define U3D_MSC_MINOR (_MSC_VER % 100)
+    #define U3D_MSC_PATCH 0
     // Host compiler version macros
     #define U3D_COMPILER_MAJOR (_MSC_VER / 100)
     #define U3D_COMPILER_MINOR (_MSC_VER % 100)
