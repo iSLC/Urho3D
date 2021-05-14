@@ -523,18 +523,6 @@
     #define U3D_PLATFORM_MOBILE 1
     #define U3D_PLATFORM_UNIX 1
     #define U3D_PLATFORM_NAME "Emscripten"
-    // Identify other platform traits
-    #if defined(__i386__)
-        #define U3D_X86 1
-    #elif defined(__arm__)
-        #define U3D_ARM32 1
-    #elif defined(__aarch64__)
-        #define U3D_ARM64 1
-    #elif defined(__x86_64__)
-        #define U3D_X86_64 1
-    #else
-        #error Unknown processor
-    #endif
 #elif defined(__linux__)
     #define U3D_LINUX 1
     #define U3D_PLATFORM_LINUX 1
