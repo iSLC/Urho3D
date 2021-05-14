@@ -40,8 +40,53 @@
  * Compiler identification.
 */
 
+// Emscripten
+#if defined(__EMSCRIPTEN__)
+    #define U3D_EMCC 1
+    // Emscripten version macros
+    #define U3D_EMSCRIPTEN_MAJOR __EMSCRIPTEN_major__
+    #define U3D_EMSCRIPTEN_MINOR __EMSCRIPTEN_minor__
+    #define U3D_EMSCRIPTEN_PATCH __EMSCRIPTEN_tiny__
+    // GNUC compatibility
+    #ifdef __GNUC__
+        // Clang is GNUC compatible
+        #define U3D_GNUC 1
+        // GNUC version macros
+        #define U3D_GNUC_MAJOR __GNUC__
+        #define U3D_GNUC_MINOR __GNUC_MINOR__
+        #define U3D_GNUC_PATCH __GNUC_PATCHLEVEL__
+    #endif
+    // Clang compatibility
+    #ifdef __clang__
+        // Emscripten uses Clang
+        #define U3D_CLANG 1
+        // Clang version macros
+        #define U3D_CLANG_MAJOR __clang_major__
+        #define U3D_CLANG_MINOR __clang_minor__
+        #define U3D_CLANG_PATCH __clang_patchlevel__
+    #endif
+    // Host compiler version macros
+    #define U3D_COMPILER_MAJOR __EMSCRIPTEN_major__
+    #define U3D_COMPILER_MINOR __EMSCRIPTEN_minor__
+    #define U3D_COMPILER_PATCH __EMSCRIPTEN_tiny__
+    // Emscripten uses Clang which is GNUC compatible
+    #if defined(__clang__) || defined(__GNUC__)
+        #define U3D_GNUC_COMPAT __GNUC__
+    #endif
+    // Compiler matching selection macros
+    #define U3D_GNUC_ONLY(VALUE)
+    #define U3D_MINGW_ONLY(VALUE)
+    #define U3D_CLANG_ONLY(VALUE)
+    #define U3D_MSC_ONLY(VALUE)
+    #define U3D_EMCC_ONLY(VALUE) VALUE
+    // Compiler non-matching selection macros
+    #define U3D_EXCEPT_GNUC(VALUE) VALUE
+    #define U3D_EXCEPT_MINGW(VALUE) VALUE
+    #define U3D_EXCEPT_CLANG(VALUE) VALUE
+    #define U3D_EXCEPT_MSC(VALUE) VALUE
+    #define U3D_EXCEPT_EMCC(VALUE)
 // Clang pretending to be MSC
-#if defined(__clang__) && defined(_MSC_VER)
+#elif defined(__clang__) && defined(_MSC_VER)
     // Assume compatibility for both
     #define U3D_CLANG __clang__
     #define U3D_MSC _MSC_VER
@@ -64,17 +109,13 @@
     #define U3D_MINGW_ONLY(VALUE)
     #define U3D_CLANG_ONLY(VALUE) VALUE
     #define U3D_MSC_ONLY(VALUE) VALUE
+    #define U3D_EMCC_ONLY(VALUE)
     // Compiler non-matching selection macros
     #define U3D_EXCEPT_GNUC(VALUE) VALUE
     #define U3D_EXCEPT_MINGW(VALUE) VALUE
     #define U3D_EXCEPT_CLANG(VALUE)
     #define U3D_EXCEPT_MSC(VALUE)
-    // GCC compatibility matching and non-matching selection macros
-    #define U3D_GNUC_COMPAT_ONLY(VALUE)
-    #define U3D_EXCEPT_GNUC_COMPAT(VALUE) VALUE
-    // MSC compatibility matching and non-matching selection macros
-    #define U3D_MSC_COMPAT_ONLY(VALUE) VALUE
-    #define U3D_EXCEPT_MSC_COMPAT(VALUE)
+    #define U3D_EXCEPT_EMCC(VALUE) VALUE
 // Clang
 #elif defined(__clang__)
     #define U3D_CLANG __clang__
@@ -86,7 +127,7 @@
     #define U3D_COMPILER_MAJOR __clang_major__
     #define U3D_COMPILER_MINOR __clang_minor__
     #define U3D_COMPILER_PATCH __clang_patchlevel__
-    // Clang offers GCC compatibility
+    // Clang offers GNUC compatibility
     #ifdef __GNUC__
         #define U3D_GNUC_COMPAT __GNUC__
     #endif
@@ -94,18 +135,14 @@
     #define U3D_GNUC_ONLY(VALUE)
     #define U3D_MINGW_ONLY(VALUE)
     #define U3D_CLANG_ONLY(VALUE) VALUE
-    #define U3D_MSVC_ONLY(VALUE)
+    #define U3D_MSC_ONLY(VALUE)
+    #define U3D_EMCC_ONLY(VALUE)
     // Compiler non-matching selection macros
     #define U3D_EXCEPT_GNUC(VALUE) VALUE
     #define U3D_EXCEPT_MINGW(VALUE) VALUE
     #define U3D_EXCEPT_CLANG(VALUE)
-    #define U3D_EXCEPT_MSVC(VALUE) VALUE
-    // GCC compatibility matching and non-matching selection macros
-    #define U3D_GNUC_COMPAT_ONLY(VALUE) VALUE
-    #define U3D_EXCEPT_GNUC_COMPAT(VALUE)
-    // MSC compatibility matching and non-matching selection macros
-    #define U3D_MSC_COMPAT_ONLY(VALUE)
-    #define U3D_EXCEPT_MSC_COMPAT(VALUE) VALUE
+    #define U3D_EXCEPT_MSC(VALUE) VALUE
+    #define U3D_EXCEPT_EMCC(VALUE) VALUE
 // MSC
 #elif defined(_MSC_VER)
     #define U3D_MSC _MSC_VER
@@ -120,21 +157,17 @@
     #define U3D_MINGW_ONLY(VALUE)
     #define U3D_CLANG_ONLY(VALUE)
     #define U3D_MSC_ONLY(VALUE) VALUE
+    #define U3D_EMCC_ONLY(VALUE)
     // Compiler non-matching selection macros
     #define U3D_EXCEPT_GNUC(VALUE) VALUE
     #define U3D_EXCEPT_MINGW(VALUE) VALUE
     #define U3D_EXCEPT_CLANG(VALUE) VALUE
     #define U3D_EXCEPT_MSC(VALUE)
-    // GCC compatibility matching and non-matching selection macros
-    #define U3D_GNUC_COMPAT_ONLY(VALUE)
-    #define U3D_EXCEPT_GNUC_COMPAT(VALUE) VALUE
-    // MSC compatibility matching and non-matching selection macros
-    #define U3D_MSC_COMPAT_ONLY(VALUE) VALUE
-    #define U3D_EXCEPT_MSC_COMPAT(VALUE)
-// GCC (a.k.a. GNUC)
+    #define U3D_EXCEPT_EMCC(VALUE) VALUE
+// GNUC
 #elif defined(__GNUC__)
     #define U3D_GNUC __GNUC__
-    // GCC version macros
+    // GNUC version macros
     #define U3D_GNUC_MAJOR __GNUC__
     #define U3D_GNUC_MINOR __GNUC_MINOR__
     #define U3D_GNUC_PATCH __GNUC_PATCHLEVEL__
@@ -148,10 +181,12 @@
     #define U3D_GNUC_ONLY(VALUE) VALUE
     #define U3D_CLANG_ONLY(VALUE)
     #define U3D_MSC_ONLY(VALUE)
+    #define U3D_EMCC_ONLY(VALUE)
     // Compiler non-matching selection macros
     #define U3D_EXCEPT_GNUC(VALUE)
     #define U3D_EXCEPT_CLANG(VALUE) VALUE
     #define U3D_EXCEPT_MSC(VALUE) VALUE
+    #define U3D_EXCEPT_EMCC(VALUE) VALUE
     // MinGW is GNUC but with a touch of Windows
     #if defined(__MINGW32__) || defined(__MINGW64__)
         #define U3D_MINGW __GNUC__
@@ -161,12 +196,6 @@
         #define U3D_MINGW_ONLY(VALUE)
         #define U3D_EXCEPT_MINGW(VALUE) VALUE
     #endif
-    // GCC compatibility matching and non-matching selection macros
-    #define U3D_GNUC_COMPAT_ONLY(VALUE) VALUE
-    #define U3D_EXCEPT_GNUC_COMPAT(VALUE)
-    // MSC compatibility matching and non-matching selection macros
-    #define U3D_MSC_COMPAT_ONLY(VALUE)
-    #define U3D_EXCEPT_MSC_COMPAT(VALUE) VALUE
 // Unknown
 #else
     #error Unknown or unsupported compiler. Must implement support for it.
@@ -177,6 +206,26 @@
 #define U3D_MINGW_OR(MV, OV) U3D_MINGW_ONLY(MV) U3D_EXCEPT_MINGW(OV)
 #define U3D_CLANG_OR(CV, OV) U3D_CLANG_ONLY(CV) U3D_EXCEPT_CLANG(OV)
 #define U3D_MSC_OR(MV, OV) U3D_MSC_ONLY(MV) U3D_EXCEPT_MSC(OV)
+
+// GNUC compatibility matching and non-matching selection macros
+#ifdef U3D_GNUC_COMPAT
+    #define U3D_GNUC_COMPAT_ONLY(VALUE) VALUE
+    #define U3D_EXCEPT_GNUC_COMPAT(VALUE)
+#else
+    #define U3D_GNUC_COMPAT_ONLY(VALUE)
+    #define U3D_EXCEPT_GNUC_COMPAT(VALUE) VALUE
+#endif
+
+// MSC compatibility matching and non-matching selection macros
+#ifdef U3D_MSC_COMPAT
+    #define U3D_MSC_COMPAT_ONLY(VALUE) VALUE
+    #define U3D_EXCEPT_MSC_COMPAT(VALUE)
+#else
+    #define U3D_MSC_COMPAT_ONLY(VALUE)
+    #define U3D_EXCEPT_MSC_COMPAT(VALUE) VALUE
+#endif
+
+// Select the value according to the available compatibility.
 #define U3D_GNUC_COMPAT_OR(GV, OV) U3D_GNUC_COMPAT_ONLY(GV) U3D_EXCEPT_GNUC_COMPAT(OV)
 #define U3D_MSC_COMPAT_OR(MV, OV) U3D_MSC_COMPAT_ONLY(GV) U3D_EXCEPT_MSC_COMPAT(OV)
 
@@ -395,7 +444,7 @@
     // Identify other platform traits
     #if defined(_M_AMD64) || defined(_AMD64_) || defined(__x86_64__)
         #define U3D_X86_64 1
-    #elif defined(_M_IX86) || defined(_X86_)
+    #elif defined(_M_IX86) || defined(_X86_) || defined(__i386__)
         #define U3D_X86 1
     #elif defined(_M_IA64) || defined(_IA64_)
         #define U3D_IA64 1
@@ -468,12 +517,30 @@
             #error Unknown processor
         #endif
     #endif
+#elif defined(__EMSCRIPTEN__)
+    #define U3D_WEB 1
+    #define U3D_PLATFORM_DESKTOP 1
+    #define U3D_PLATFORM_MOBILE 1
+    #define U3D_PLATFORM_UNIX 1
+    #define U3D_PLATFORM_NAME "Emscripten"
+    // Identify other platform traits
+    #if defined(__i386__)
+        #define U3D_X86 1
+    #elif defined(__arm__)
+        #define U3D_ARM32 1
+    #elif defined(__aarch64__)
+        #define U3D_ARM64 1
+    #elif defined(__x86_64__)
+        #define U3D_X86_64 1
+    #else
+        #error Unknown processor
+    #endif
 #elif defined(__linux__)
     #define U3D_LINUX 1
     #define U3D_PLATFORM_LINUX 1
     #define U3D_PLATFORM_DESKTOP 1
-    #define U3D_PLATFORM_POSIX
-    #define U3D_PLATFORM_UNIX
+    #define U3D_PLATFORM_POSIX 1
+    #define U3D_PLATFORM_UNIX 1
     #define U3D_PLATFORM_NAME "Linux"
     // Identify other platform traits
     #if defined(__i386__) || defined(__intel__) || defined(_M_IX86)
@@ -507,74 +574,100 @@
     #define U3D_LINUX_ONLY(VALUE)
     #define U3D_IOS_ONLY(VALUE)
     #define U3D_OSX_ONLY(VALUE)
+    #define U3D_WEB_ONLY(VALUE)
     #define U3D_EXCEPT_WINDOWS(VALUE)
     #define U3D_EXCEPT_ANDROID(VALUE) VALUE
     #define U3D_EXCEPT_LINUX(VALUE) VALUE
     #define U3D_EXCEPT_IOS(VALUE) VALUE
     #define U3D_EXCEPT_OSX(VALUE) VALUE
+    #define U3D_EXCEPT_WEB(VALUE) VALUE
 #elif defined(U3D_ANDROID)
     #define U3D_WINDOWS_ONLY(VALUE)
     #define U3D_ANDROID_ONLY(VALUE) VALUE
     #define U3D_LINUX_ONLY(VALUE)
     #define U3D_IOS_ONLY(VALUE)
     #define U3D_OSX_ONLY(VALUE)
+    #define U3D_WEB_ONLY(VALUE)
     #define U3D_EXCEPT_WINDOWS(VALUE) VALUE
     #define U3D_EXCEPT_ANDROID(VALUE)
     #define U3D_EXCEPT_LINUX(VALUE) VALUE
     #define U3D_EXCEPT_IOS(VALUE) VALUE
     #define U3D_EXCEPT_OSX(VALUE) VALUE
+    #define U3D_EXCEPT_WEB(VALUE) VALUE
 #elif defined(U3D_LINUX)
     #define U3D_WINDOWS_ONLY(VALUE)
     #define U3D_ANDROID_ONLY(VALUE)
     #define U3D_LINUX_ONLY(VALUE) VALUE
     #define U3D_IOS_ONLY(VALUE)
     #define U3D_OSX_ONLY(VALUE)
+    #define U3D_WEB_ONLY(VALUE)
     #define U3D_EXCEPT_WINDOWS(VALUE) VALUE
     #define U3D_EXCEPT_ANDROID(VALUE) VALUE
     #define U3D_EXCEPT_LINUX(VALUE)
     #define U3D_EXCEPT_IOS(VALUE) VALUE
     #define U3D_EXCEPT_OSX(VALUE) VALUE
+    #define U3D_EXCEPT_WEB(VALUE) VALUE
 #elif defined(U3D_IOS)
     #define U3D_WINDOWS_ONLY(VALUE)
     #define U3D_ANDROID_ONLY(VALUE)
     #define U3D_LINUX_ONLY(VALUE)
     #define U3D_IOS_ONLY(VALUE) VALUE
     #define U3D_OSX_ONLY(VALUE)
+    #define U3D_WEB_ONLY(VALUE)
     #define U3D_EXCEPT_WINDOWS(VALUE) VALUE
     #define U3D_EXCEPT_ANDROID(VALUE) VALUE
     #define U3D_EXCEPT_LINUX(VALUE) VALUE
     #define U3D_EXCEPT_IOS(VALUE)
     #define U3D_EXCEPT_OSX(VALUE) VALUE
+    #define U3D_EXCEPT_WEB(VALUE) VALUE
 #elif defined(U3D_OSX)
     #define U3D_WINDOWS_ONLY(VALUE)
     #define U3D_ANDROID_ONLY(VALUE)
     #define U3D_LINUX_ONLY(VALUE)
     #define U3D_IOS_ONLY(VALUE)
     #define U3D_OSX_ONLY(VALUE) VALUE
+    #define U3D_WEB_ONLY(VALUE)
     #define U3D_EXCEPT_WINDOWS(VALUE) VALUE
     #define U3D_EXCEPT_ANDROID(VALUE) VALUE
     #define U3D_EXCEPT_LINUX(VALUE) VALUE
     #define U3D_EXCEPT_IOS(VALUE) VALUE
     #define U3D_EXCEPT_OSX(VALUE)
+    #define U3D_EXCEPT_WEB(VALUE) VALUE
+#elif defined(U3D_WEB)
+    #define U3D_WINDOWS_ONLY(VALUE)
+    #define U3D_ANDROID_ONLY(VALUE)
+    #define U3D_LINUX_ONLY(VALUE)
+    #define U3D_IOS_ONLY(VALUE)
+    #define U3D_OSX_ONLY(VALUE)
+    #define U3D_WEB_ONLY(VALUE) VALUE
+    #define U3D_EXCEPT_WINDOWS(VALUE) VALUE
+    #define U3D_EXCEPT_ANDROID(VALUE) VALUE
+    #define U3D_EXCEPT_LINUX(VALUE) VALUE
+    #define U3D_EXCEPT_IOS(VALUE) VALUE
+    #define U3D_EXCEPT_OSX(VALUE) VALUE
+    #define U3D_EXCEPT_WEB(VALUE)
 #else
     #define U3D_WINDOWS_ONLY(VALUE)
     #define U3D_ANDROID_ONLY(VALUE)
     #define U3D_LINUX_ONLY(VALUE)
     #define U3D_IOS_ONLY(VALUE)
     #define U3D_OSX_ONLY(VALUE)
+    #define U3D_WEB_ONLY(VALUE)
     #define U3D_EXCEPT_WINDOWS(VALUE) VALUE
     #define U3D_EXCEPT_ANDROID(VALUE) VALUE
     #define U3D_EXCEPT_LINUX(VALUE) VALUE
     #define U3D_EXCEPT_IOS(VALUE) VALUE
     #define U3D_EXCEPT_OSX(VALUE) VALUE
+    #define U3D_EXCEPT_WEB(VALUE) VALUE
 #endif
 
 // Select the value according to the current platform.
 #define U3D_WINDOWS_OR(WV, OV) U3D_WINDOWS_ONLY(WV) U3D_EXCEPT_WINDOWS(OV)
-#define U3D_ANDROID_OR(WV, OV) U3D_ANDROID_ONLY(WV) U3D_EXCEPT_ANDROID(OV)
+#define U3D_ANDROID_OR(AV, OV) U3D_ANDROID_ONLY(AV) U3D_EXCEPT_ANDROID(OV)
 #define U3D_LINUX_OR(LV, OV) U3D_LINUX_ONLY(LV) U3D_EXCEPT_LINUX(OV)
-#define U3D_IOS_OR(MV, OV) U3D_IOS_ONLY(MV) U3D_EXCEPT_IOS(OV)
-#define U3D_OSX_OR(UV, OV) U3D_OSX_ONLY(UV) U3D_EXCEPT_OSX(OV)
+#define U3D_IOS_OR(IV, OV) U3D_IOS_ONLY(IV) U3D_EXCEPT_IOS(OV)
+#define U3D_OSX_OR(MV, OV) U3D_OSX_ONLY(MV) U3D_EXCEPT_OSX(OV)
+#define U3D_WEB_OR(WV, OV) U3D_WEB_ONLY(WV) U3D_EXCEPT_WEB(OV)
 
 /*
  * Intrinsics.
