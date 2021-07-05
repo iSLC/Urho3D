@@ -453,7 +453,7 @@ template < class F, class T > using IsConvertible = std::is_convertible< F, T >;
 /// Alias of \ref IsConvertible used to avoid having to explicitly accessing the value member.
 template < class F, class T > inline constexpr bool IsConvertible_v = std::is_convertible< F, T >::value;
 
-#if U3D_CPP_STANDARD < U3D_CPP20_STANDARD
+#if U3D_CPP_STANDARD >= U3D_CPP20_STANDARD
 /// Same as \ref IsConvertible but is known to not throw exceptions. \remark See std::is_nothrow_convertible
 template < class F, class T > using IsNoThrowConvertible = std::is_nothrow_convertible< F, T >;
 /// Alias of \ref IsNoThrowConvertible used to avoid having to explicitly accessing the value member.
