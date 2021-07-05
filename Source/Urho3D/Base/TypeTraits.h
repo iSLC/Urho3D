@@ -24,14 +24,19 @@
 
 #include "../Urho3DConfig.h"
 
-#include <cstddef> // size_t
+#include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 namespace Urho3D
 {
 
-struct NoneSuchBase { }; //NOLINT(altera-struct-pack-align)
+// Forward declarations.
+struct StrView;
+template < class, size_t > struct Span;
+template < class, size_t > struct Array;
 
+struct NoneSuchBase { }; //NOLINT(altera-struct-pack-align)
 /// Type used by \ref Detected_t to indicate detection failure. \remark See `std::nonesuch`
 /// Has no default constructor or initializer-list constructor, and is not an aggregate.
 /// Cannot be constructed, destroyed, or copied.
@@ -44,6 +49,17 @@ struct NoneSuch : private NoneSuchBase //NOLINT(altera-struct-pack-align)
     // Copy assignment operator (disabled).
     void operator = (NoneSuch const &) = delete;
 };
+
+template < class T, class U = T && > U Helper_declval(int);
+template < class T > T Helper_declval(long);
+template < class > struct Helper_DeclvalProtector { static const bool stop = false; };
+
+/// Converts any type T to a reference type, making it possible to use member functions in decltype expressions without the need to go through constructors. \remark See `std::declval`
+template < class T > auto declval() noexcept -> decltype(Helper_declval< T >(0))
+{
+    static_assert(Helper_DeclvalProtector< T >::stop, "declval() must not be used!");
+    return Helper_declval< T >(0);
+}
 
 /// Wraps a static constant of specified type. \remark See std::remove_reference
 template < class T, T V > using IntegralConstant = std::integral_constant< T, V >;
@@ -111,10 +127,24 @@ template < class T > using IsFloatingPoint = std::is_floating_point< T >;
 /// Alias of \ref IsFloatingPoint used to avoid having to explicitly accessing the value member.
 template < class T > inline constexpr bool IsFloatingPoint_v = std::is_floating_point< T >::value;
 
-/// Check if \p T is an array type. \remark See std::is_array
-template < class T > using IsArray = std::is_array< T >;
+/// Check if \p T is an array type. Does not include array container. \remark See std::is_array
+template < class T > using IsPlainArray = std::is_array< T >;
 /// Alias of \ref IsArray used to avoid having to explicitly accessing the value member.
-template < class T > inline constexpr bool IsArray_v = std::is_array< T >::value;
+template < class T > inline constexpr bool IsPlainArray_v = std::is_array< T >::value;
+
+/// Check whether `T` is an array container. \remark Not a standard feature!
+template < class T > struct IsArrayContainer : public FalseType { };
+/// Partial specialization for the case when `T` is an array container.
+template < class T, size_t N > struct IsArrayContainer< Array< T, N > > : public TrueType { };
+/// Helper of \ref IsArrayContainer used to avoid having to explicitly accessing the `value` member.
+template < class T > inline constexpr auto IsArrayContainer_v = IsArrayContainer< T >::value;
+
+/// Check whether `T` is an array type. Also includes array container. \remark Not a standard feature!
+template < class T > struct IsArray : public IsPlainArray< T > { };
+/// Partial specialization for the case when `T` is an array container.
+template < class T, size_t N > struct IsArray< Array< T, N > > : public TrueType { };
+/// Helper of \ref IsArray used to avoid having to explicitly accessing the `value` member.
+template < class T > inline constexpr auto IsArray_v = IsArray< T >::value;
 
 /// Check if \p T is an enumeration type. \remark See std::is_enum
 template < class T > using IsEnum = std::is_enum< T >;
@@ -564,5 +594,83 @@ template < class F, class... A > using InvokeResult_t = typename std::invoke_res
 template < class T, class U > struct IsSameSize : public std::integral_constant< bool, bool(sizeof(T) == sizeof(U)) > { };
 /// Alias of \ref IsSameSize used to avoid having to explicitly accessing the value member.
 template < class T, class U > inline constexpr bool IsSameSize_v = IsSameSize< T, U >::value;
+
+/// Check whether `T` is a complete type. Not a standard feature.
+template < class, class = size_t > struct IsComplete : FalseType { };
+/// Partial specialization of \ref IsComplete for cases where given template parameter is a complete type.
+template < class T > struct IsComplete< T, decltype(sizeof(T)) > : TrueType { };
+/// Helper of \ref IsComplete used to avoid having to explicitly accessing the `value` member.
+template < class T > inline constexpr auto IsComplete_v = IsComplete< T, decltype(sizeof(T)) >::value;
+
+/// Check whether `T` is a \ref Span type. \remark Not a standard feature!
+template < class > struct IsSpan : FalseType { };
+/// Partial specialization for the case when `T` is a \ref Span type.
+template < class T, size_t S > struct IsSpan< Span< T, S > > : TrueType { };
+/// Helper of \ref IsSpan used to avoid having to explicitly accessing the `value` member.
+template < class T > inline constexpr auto IsSpan_v = IsSpan< T >::value;
+
+/// Check whether `T` is a \ref StrView type. \remark Not a standard feature!
+template < class > struct IsStrView : FalseType { };
+/// Partial specialization for the case when `T` is a \ref StrView type.
+template < > struct IsStrView< StrView > : TrueType { };
+/// Helper of \ref IsStrView used to avoid having to explicitly accessing the `value` member.
+template < class T > inline constexpr auto IsStrView_v = IsStrView< T >::value;
+
+/// Check whether `T` is a type that has `Size()` and `Data()` member methods. \remark Not a standard feature!
+template < class, class = void > struct HasSizeAndData : FalseType { };
+/// Partial specialization for the case when `T` is actually has `Size()` and `Data()` member methods.
+template < class T > struct HasSizeAndData< T, Void_t< decltype(Size(declval< T >())), decltype(Data(declval< T >())) > > : TrueType { };
+/// Helper of \ref HasSizeAndData used to avoid having to explicitly accessing the `value` member.
+template < class T > inline constexpr auto HasSizeAndData_v = HasSizeAndData< T >::value;
+
+/// Helper which can be used to tell if one type can be copied (verbatim) into the memory of another and have a valid result.
+template < class, class > struct IsBinaryCompatible : public FalseType { };
+/// Helper of \ref IsBinaryCompatible used to avoid having to explicitly accessing the `value` member.
+template < class T, class U > inline constexpr auto IsBinaryCompatible_v = IsBinaryCompatible< T, U >::value;
+// Specializations of IsBinaryCompatible for integral types
+template < class T > struct IsBinaryCompatible< char, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< char, T > >::value > { };
+template < class T > struct IsBinaryCompatible< signed char, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< signed char, T > >::value > { };
+template < class T > struct IsBinaryCompatible< unsigned char, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< unsigned char, T > >::value > { };
+template < class T > struct IsBinaryCompatible< short, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< short, T > >::value > { };
+template < class T > struct IsBinaryCompatible< unsigned short, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< unsigned short, T > >::value > { };
+template < class T > struct IsBinaryCompatible< int, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< int, T > >::value > { };
+template < class T > struct IsBinaryCompatible< unsigned int, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< unsigned int, T > >::value > { };
+template < class T > struct IsBinaryCompatible< long, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< long, T > >::value > { };
+template < class T > struct IsBinaryCompatible< unsigned long, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< unsigned long, T > >::value > { };
+template < class T > struct IsBinaryCompatible< long long, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< long long, T > >::value > { };
+template < class T > struct IsBinaryCompatible< unsigned long long, T >
+    : public IntegralConstant< bool, Conjunction< IsFundamental< T >, IsSameSize< unsigned long long, T > >::value > { };
+// Specializations of IsBinaryCompatible for float types
+template < > struct IsBinaryCompatible< char, float > : public FalseType { };
+template < > struct IsBinaryCompatible< signed char, float > : public FalseType { };
+template < > struct IsBinaryCompatible< int, float > : public FalseType { };
+template < > struct IsBinaryCompatible< long, float > : public FalseType { };
+template < > struct IsBinaryCompatible< long long, float > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned char, float > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned short, float > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned int, float > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned long, float > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned long long, float > : public FalseType { };
+template < > struct IsBinaryCompatible< char, double > : public FalseType { };
+template < > struct IsBinaryCompatible< signed char, double > : public FalseType { };
+template < > struct IsBinaryCompatible< short, double > : public FalseType { };
+template < > struct IsBinaryCompatible< int, double > : public FalseType { };
+template < > struct IsBinaryCompatible< long, double > : public FalseType { };
+template < > struct IsBinaryCompatible< long long, double > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned char, double > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned short, double > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned int, double > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned long, double > : public FalseType { };
+template < > struct IsBinaryCompatible< unsigned long long, double > : public FalseType { };
 
 }
