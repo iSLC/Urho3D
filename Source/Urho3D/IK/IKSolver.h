@@ -357,7 +357,7 @@ private:
     /// Invokes the IK solver.
     void HandleSceneDrawableUpdateFinished(StringHash eventType, VariantMap& eventData);
 
-    // Need these wrapper functions flags of GetFeature/SetFeature can be correctly exposed to the editor and to AngelScript and lua
+    // Need these wrapper functions flags of GetFeature/SetFeature can be correctly exposed to the script
 public:
     /// @property{get_JOINT_ROTATIONS}
     bool GetJOINT_ROTATIONS() const;

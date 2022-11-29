@@ -27,15 +27,6 @@ project (Urho3D-Tools)
 find_package (Urho3D REQUIRED)
 include_directories (${URHO3D_INCLUDE_DIRS})
 
-# Urho3DPlayer target is rather special, although it is here, it is not a tool because it is built into target platform binary as opposed to host platform
-# In order to test the player on Web platform built using Emscripten, the request parameters need to be parsed into Module['argument'] (see https://github.com/kripken/emscripten/blob/master/src/emrun_prejs.js for inspiration)
-# The CTest could "run" the Urho3DPlayer.html with script name as parameter, thanks to emrun performing this parsing automatically
-# In a production environment, however, the request parameters parsing has to be done by the application itself one way or another
-if (URHO3D_ANGELSCRIPT OR URHO3D_LUA)
-    # Add Urho3DPlayer as target only when one of the supported scripting subsystems is enabled
-    add_subdirectory (Urho3DPlayer)
-endif ()
-
 # Build host-tools using host compiler toolchain
 if (CMAKE_CROSSCOMPILING)
     check_native_compiler_exist ()
@@ -74,12 +65,11 @@ endif ()
 
 if (URHO3D_TOOLS)
     # Urho3D tools
-    add_subdirectory (AssetImporter)
     add_subdirectory (OgreImporter)
     add_subdirectory (PackageTool)
     add_subdirectory (RampGenerator)
     add_subdirectory (SpritePacker)
-    if (URHO3D_ANGELSCRIPT)
+    if (URHO3D_SCRIPT)
         add_subdirectory (ScriptCompiler)
     endif ()
 elseif (NOT CMAKE_CROSSCOMPILING AND URHO3D_PACKAGING)

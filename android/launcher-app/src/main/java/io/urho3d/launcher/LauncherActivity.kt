@@ -43,13 +43,12 @@ class LauncherActivity : ExpandableListActivity() {
         val libraryNames = UrhoActivity.getLibraryNames(this)
         val items = mutableMapOf("C++" to libraryNames.filterNot { regex.matches(it) }.sorted())
         if (libraryNames.find { it == "Urho3DPlayer" } != null) {
-            items.putAll(
-                mapOf(
+            //items.putAll(
+            //    mapOf(
                     // FIXME: Should not assume both scripting subsystems are enabled in the build
-                    "AngelScript" to getScriptNames("Data/Scripts"),
-                    "Lua" to getScriptNames("Data/LuaScripts")
-                )
-            )
+                    //"Script" to getScriptNames("Data/Scripts"),
+            //    )
+            //)
         }
         items.filterValues { it.isEmpty() }.forEach { items.remove(it.key) }
 
@@ -93,8 +92,7 @@ class LauncherActivity : ExpandableListActivity() {
                     .putExtra(
                         MainActivity.argument,
                         if (argument.contains('.')) {
-                            if (argument.endsWith(".as")) "Urho3DPlayer:Scripts/$argument"
-                            else "Urho3DPlayer:LuaScripts/$argument"
+                            if (argument.endsWith(".sq")) "Urho3DPlayer:Scripts/$argument"
                         } else argument
                     )
             )

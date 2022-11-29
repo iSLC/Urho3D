@@ -234,7 +234,7 @@ task :ci do
   ENV['URHO3D_LINT'] = '1' if ENV['MODIFIER'] == 'clang-tidy'
   ENV['URHO3D_STYLE'] = '1' if ENV['MODIFIER'] == 'clang-format'
   # Enable all the bells and whistles
-  %w[URHO3D_DATABASE_SQLITE URHO3D_EXTRAS].each { |it| ENV[it] = '1' }
+  %w[URHO3D_EXTRAS].each { |it| ENV[it] = '1' }
 end
 
 task :ci_publish_web do
@@ -255,7 +255,7 @@ task :ci_publish_web do
   web = {'samples' => {}}
   Dir.chdir('build/urho3d.github.io/samples') { web['samples']['Native'] = Dir['*.html'].sort }
   web['player'] = web['samples']['Native'].pop # Assume the last sample after sorting is the Urho3DPlayer.html
-  {'AngelScript' => 'Scripts', 'Lua' => 'LuaScripts'}.each { |lang, subdir|
+  {'Script' => 'Scripts'}.each { |lang, subdir|
     Dir.chdir("bin/Data/#{subdir}") {
       script_samples = Dir['[0-9]*'].sort
       deleted_samples = [] # Delete samples that do not have their native counterpart

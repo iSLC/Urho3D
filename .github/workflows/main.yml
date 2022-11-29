@@ -41,7 +41,6 @@ jobs:
         run: |
           git fetch --deepen=1
           git log --raw --no-merges -1 |grep '^:' >/tmp/whatchanged
-          echo "name=skip::$(grep -cqv 'website/' /tmp/whatchanged; echo $?)" >> $GITHUB_OUTPUT
   linux:
     name: 🐧
     runs-on: ubuntu-latest
@@ -66,8 +65,8 @@ jobs:
           - rel
           - dbg
         include:
-          - { platform: web, lib-type: static, architecture: wasm, build-type: rel }
-          - { platform: web, lib-type: static, architecture: wasm, build-type: dbg }
+          #- { platform: web, lib-type: static, architecture: wasm, build-type: rel }
+          #- { platform: web, lib-type: static, architecture: wasm, build-type: dbg }
           - { platform: android, lib-type: static, architecture: all, build-type: both }
           - { platform: android, lib-type: shared, architecture: all, build-type: both }
     env:
@@ -163,8 +162,8 @@ jobs:
         run: script/dockerized.sh ${PLATFORM/-*} rake publish
         if: |
           github.event_name == 'push' &&
-          (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) &&
-          (matrix.platform == 'android' || (matrix.platform == 'web' && matrix.build-type == 'rel'))
+          (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) && (matrix.platform == 'android')
+          #(matrix.platform == 'android' || (matrix.platform == 'web' && matrix.build-type == 'rel'))
         continue-on-error: ${{ !startsWith(github.ref, 'refs/tags/') }}
   macOS:
     name: 🍏

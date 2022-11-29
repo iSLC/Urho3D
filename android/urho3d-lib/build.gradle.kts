@@ -164,7 +164,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/urho3d/Urho3D")
+            url = uri("https://maven.pkg.github.com/iSLC/Urho3D")
             credentials {
                 username = System.getenv("GITHUB_ACTOR")
                 password = System.getenv("GITHUB_TOKEN")
@@ -183,11 +183,11 @@ bintray {
         repo = "maven"
         name = project.name
         setLicenses("MIT")
-        vcsUrl = "https://github.com/urho3d/Urho3D.git"
+        vcsUrl = "https://github.com/iSLC/Urho3D.git"
         userOrg = "urho3d"
         setLabels("android", "game-development", "game-engine", "open-source", "urho3d")
-        websiteUrl = "https://urho3d.io/"
-        issueTrackerUrl = "https://github.com/urho3d/Urho3D/issues"
+        websiteUrl = "https://github.com/iSLC/Urho3D"
+        issueTrackerUrl = "https://github.com/iSLC/Urho3D/issues"
         githubRepo = "urho3d/Urho3D"
         publicDownloadNumbers = true
         desc = project.description
@@ -230,7 +230,7 @@ fun MavenPublication.configure(config: String) {
             asNode().apply {
                 appendNode("name", "Urho3D")
                 appendNode("description", project.description)
-                appendNode("url", "https://urho3d.io/")
+                appendNode("url", "https://github.com/iSLC/Urho3D")
             }
         }
     }

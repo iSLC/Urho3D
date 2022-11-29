@@ -2341,11 +2341,8 @@ bool Graphics::CreateInterface()
 
 bool Graphics::CreateDevice(unsigned adapter, unsigned deviceType)
 {
-#ifdef URHO3D_LUAJIT
-    DWORD behaviorFlags = D3DCREATE_FPU_PRESERVE;
-#else
     DWORD behaviorFlags = 0;
-#endif
+
     if (impl_->deviceCaps_.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
     {
         behaviorFlags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;

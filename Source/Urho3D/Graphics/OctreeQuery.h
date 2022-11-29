@@ -157,7 +157,7 @@ public:
     Frustum frustum_;
 };
 
-/// General octree query result. Used for Lua bindings only.
+/// General octree query result. Used for script bindings only.
 struct URHO3D_API OctreeQueryResult
 {
     /// Construct with defaults.

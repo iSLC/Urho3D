@@ -198,7 +198,7 @@ private:
     void UpdateTargetNodePosition();
 
 public:
-    /// Need these wrapper functions flags of GetFeature/SetFeature can be correctly exposed to the editor and to AngelScript and lua.
+    /// Need these wrapper functions flags of GetFeature/SetFeature can be correctly exposed to the script.
     bool GetWEIGHT_NLERP() const;
     bool GetINHERIT_PARENT_ROTATION() const;
     void SetWEIGHT_NLERP(bool enable);

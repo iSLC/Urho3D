@@ -72,28 +72,9 @@ foreach (TARGET ETCPACK FreeType LZ4 PugiXml rapidjson SDL StanHull STB)
     add_subdirectory (ThirdParty/${TARGET})
 endforeach ()
 
-if (URHO3D_ANGELSCRIPT)
-    add_subdirectory (ThirdParty/AngelScript)
-    if (WEB OR (ARM AND URHO3D_64BIT) OR URHO3D_FORCE_AS_MAX_PORTABILITY)
-        add_subdirectory (ThirdParty/boost)
-    endif ()
-endif ()
-
-if (URHO3D_LUA)
-    add_subdirectory (ThirdParty/Lua${JIT})
-    add_subdirectory (ThirdParty/toluapp/src/lib)
-endif ()
-
 if (URHO3D_NETWORK)
     add_subdirectory (ThirdParty/Civetweb)
     add_subdirectory (ThirdParty/SLikeNet)
-endif ()
-
-if (URHO3D_DATABASE_ODBC)
-    add_subdirectory (ThirdParty/nanodbc)
-endif ()
-if (URHO3D_DATABASE_SQLITE)
-    add_subdirectory (ThirdParty/SQLite)
 endif ()
 
 if (URHO3D_IK)
@@ -113,10 +94,6 @@ if (URHO3D_URHO2D)
         # Add definition for Spine
         add_definitions (-DURHO3D_SPINE)
     endif ()
-endif ()
-
-if (URHO3D_WEBP)
-    add_subdirectory (ThirdParty/WebP)
 endif ()
 
 if (URHO3D_PHYSICS)
@@ -143,10 +120,6 @@ if (NOT ANDROID AND NOT ARM AND NOT WEB)
 endif ()
 
 add_subdirectory (Urho3D)
-
-if (URHO3D_CLANG_TOOLS)
-    add_subdirectory (Clang-Tools)
-endif ()
 
 # In order to get clean module segregation, always exclude player/samples from AAR
 if (NOT ANDROID)
