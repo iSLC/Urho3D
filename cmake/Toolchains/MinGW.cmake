@@ -119,6 +119,12 @@ if (NOT IN_TRY_COMPILE AND NOT SAVED_MINGW_SYSROOT)
             execute_process (COMMAND ${CMAKE_COMMAND} -E remove find_mingw_sysroot_output)
         endif ()
     endif ()
+    # Try an alternate method
+    if (NOT EXISTS ${MINGW_SYSROOT} AND WIN32)
+        execute_process(COMMAND where.exe "mingw32-make.exe" OUTPUT_VARIABLE MINGW_SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
+        get_filename_component(MINGW_SYSROOT ${MINGW_SYSROOT} DIRECTORY REALPATH) # Remove `/mingw32-make.exe` from the path
+        get_filename_component(MINGW_SYSROOT ${MINGW_SYSROOT} DIRECTORY REALPATH) # Remove `/bin` from the path
+    endif()
     set (MINGW_SYSROOT ${MINGW_SYSROOT} CACHE PATH "Path to MinGW system root (MinGW only); should only be used when the system root could not be auto-detected")
     if (NOT EXISTS ${MINGW_SYSROOT})
         message (FATAL_ERROR "Could not find MinGW system root. "

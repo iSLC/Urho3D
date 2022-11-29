@@ -13,6 +13,7 @@
 generated/
 /Source/Urho3D/tolua++-prefix/
 build/
+.build/
 /captures/
 .cxx/
 /demo/
@@ -82,6 +83,9 @@ build/
 /.vs/
 /CMakeSettings.json
 /out/
+
+# VSCode project settings
+.vscode/
 
 # CMake generated build files
 CMakeCache.txt

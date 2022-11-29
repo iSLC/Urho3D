@@ -72,6 +72,10 @@ if (NOT MSVC_VERSION GREATER 1600 OR MINGW)     # MinGW reuses the logic below t
     if (MINGW)
         # Intentionally searching for d3dcompiler(_XX) libraries in this particular order, avoiding unversioned d3dcompiler library so we know exactly which DLL to use
         set (D3DCOMPILER_NAMES d3dcompiler_47 d3dcompiler_46 d3dcompiler_43 d3dcompiler_42)
+
+        # In certain cases (like with chocolatey) we may have multiple prefix paths to look for libraries
+        set (MINGW_SYSROOTS NULL)
+
         if (NOT MINGW_SYSROOT)
             if (DEFINED ENV{MINGW_SYSROOT})
                 file (TO_CMAKE_PATH $ENV{MINGW_SYSROOT} MINGW_SYSROOT)
@@ -82,6 +86,23 @@ if (NOT MSVC_VERSION GREATER 1600 OR MINGW)     # MinGW reuses the logic below t
                 string (REPLACE "\\ " " " MINGW_SYSROOT "${MINGW_SYSROOT}")
                 execute_process (COMMAND ${CMAKE_COMMAND} -E remove find_mingw_sysroot_output)
             endif ()
+            # Try an alternate method
+            if (NOT EXISTS ${MINGW_SYSROOT} AND WIN32)
+                execute_process (COMMAND where.exe "mingw32-make.exe" OUTPUT_VARIABLE MINGW_SYSROOT OUTPUT_STRIP_TRAILING_WHITESPACE)
+                get_filename_component (MINGW_SYSROOT ${MINGW_SYSROOT} DIRECTORY REALPATH) # Remove `/mingw32-make.exe` from the path
+                get_filename_component (MINGW_SYSROOT ${MINGW_SYSROOT} DIRECTORY REALPATH) # Remove `/bin` from the path
+                # Check if this is the chocolatey variant of mingw64 with different directory structure
+                # In which case we have to go a little deeper to find the libraries we need
+                if (IS_DIRECTORY "${MINGW_SYSROOT}/lib/mingw/tools/install/mingw64")
+                    set (MINGW_SYSROOTS "${MINGW_SYSROOT}/lib/mingw/tools/install/mingw64")
+                    # D3D components are actually located in this folder
+                    # Folders abover this one also contain various libraries. But not the ones we're looking for
+                    # TODO: see if this can have a different name deppending on the architecture
+                    if (IS_DIRECTORY "${MINGW_SYSROOTS}/x86_64-w64-mingw32")
+                        set (MINGW_SYSROOTS "${MINGW_SYSROOTS}/x86_64-w64-mingw32;${MINGW_SYSROOTS}")
+                    endif ()
+                endif ()
+            endif()
             if (NOT EXISTS ${MINGW_SYSROOT})
                 message (FATAL_ERROR "Could not find MinGW system root. "
                     "Use MINGW_SYSROOT environment variable or build option to specify the location of system root.")
@@ -92,6 +113,10 @@ if (NOT MSVC_VERSION GREATER 1600 OR MINGW)     # MinGW reuses the logic below t
         if (CMAKE_HOST_WIN32)
             set (CMAKE_PREFIX_PATH ${MINGW_SYSROOT})
         endif ()
+        # Extra prefixes for special cases and special directory structures
+        if(MINGW_SYSROOTS)
+            set (CMAKE_PREFIX_PATH "${MINGW_SYSROOTS};${MINGW_SYSROOT}")
+        endif()
         # MinGW does not usually need search paths as DirectX headers and libraries (when installed) are in its default search path
         # However, we do not explicitly unset the DIRECTX_INC_SEARCH_PATHS and DIRECTX_LIB_SEARCH_PATHS variables here, so module user could set these two variables externally when for some reasons the DirectX headers and libraries are not installed in MinGW default search path
     else ()
