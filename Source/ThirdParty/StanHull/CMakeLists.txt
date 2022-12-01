@@ -20,14 +20,13 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME StanHull)
+file (GLOB_RECURSE SOURCE_FILES *.cpp *.h)
+add_library (StanHull STATIC ${SOURCE_FILES})
+target_include_directories(StanHull
+    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/StanHull>
+)
 
-# Define source files
-define_source_files ()
-
-# Setup target
-setup_library ()
-
-# Install headers for building the Urho3D library
-install_header_files (DIRECTORY ./ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/StanHull FILES_MATCHING PATTERN *.h BUILD_TREE_ONLY)  # Note: the trailing slash is significant
+if (NOT URHO3D_MERGE_STATIC_LIBS)
+    install(TARGETS StanHull EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+endif ()

@@ -20,34 +20,29 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME LibCpuId)
-
-# Define preprocessor macros
-add_definitions (-DVERSION="0.4.0+")
-if (HAVE_STDINT_H)
-    add_definitions (-DHAVE_STDINT_H)
-endif ()
-
 # Define generated source files
 if (MSVC AND URHO3D_64BIT)
     enable_language (ASM_MASM)
-    # Commented out due to cmake bug
-    #set (ASM_FILES src/masm-x64.asm)
-    # As a temporary workaround
-    add_custom_command (OUTPUT masm-x64.obj COMMAND ${CMAKE_ASM_MASM_COMPILER} -Fo ${CMAKE_CURRENT_BINARY_DIR}/masm-x64.obj -c ${CMAKE_CURRENT_SOURCE_DIR}/src/masm-x64.asm DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/src/masm-x64.asm COMMENT "Temporary workaround for MASM")
-    set (ASM_FILES ${CMAKE_CURRENT_BINARY_DIR}/masm-x64.obj ${CMAKE_CURRENT_SOURCE_DIR}/src/masm-x64.asm)
+    set (ASM_FILES src/masm-x64.asm)
 endif ()
 
 # Define source files
-define_source_files (GLOB_CPP_PATTERNS src/*.c GLOB_H_PATTERNS src/*.h)
+file (GLOB_RECURSE SOURCE_FILES *.c *.h)
 list (APPEND SOURCE_FILES ${ASM_FILES})
 
-# Define dependency libs
-set (INCLUDE_DIRS src)
+add_library (LibCpuId STATIC ${SOURCE_FILES})
+target_compile_definitions (LibCpuId PRIVATE -DVERSION="0.4.0")
+if (HAVE_STDINT_H)
+    target_compile_definitions (LibCpuId PRIVATE -DHAVE_STDINT_H)
+endif ()
 
-# Setup target
-setup_library ()
+target_include_directories(LibCpuId
+    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/LibCpuId>
+)
 
-# Install headers for building the Urho3D library
-install_header_files (DIRECTORY src/ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/LibCpuId FILES_MATCHING PATTERN *.h BUILD_TREE_ONLY)  # Note: the trailing slash is significant
+if (NOT MINI_URHO)
+    if (NOT URHO3D_MERGE_STATIC_LIBS)
+        install(TARGETS LibCpuId EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+    endif ()
+endif ()

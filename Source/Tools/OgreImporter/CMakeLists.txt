@@ -20,11 +20,7 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME OgreImporter)
-
-# Define source files
-define_source_files ()
-
-# Setup target
-setup_executable (TOOL)
+file (GLOB SOURCE_FILES *.cpp *.h)
+add_executable (OgreImporter ${SOURCE_FILES})
+target_link_libraries (OgreImporter Urho3D)
+install(TARGETS OgreImporter RUNTIME DESTINATION ${DEST_BIN_DIR_CONFIG})

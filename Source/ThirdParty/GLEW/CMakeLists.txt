@@ -20,20 +20,24 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME GLEW)
+file (GLOB_RECURSE SOURCE_FILES *.c)
+add_library (GLEW STATIC ${SOURCE_FILES})
+target_compile_definitions(GLEW PUBLIC -DGLEW_NO_GLU)
+if (BUILD_SHARED_LIBS)
+    target_compile_definitions(GLEW PRIVATE -DGLEW_BUILD)
+else ()
+    target_compile_definitions(GLEW PUBLIC  -DGLEW_STATIC)
+endif ()
+target_include_directories(GLEW
+    SYSTEM BEFORE PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+)
 
-# Define preprocessor macros
-add_definitions (-DGLEW_STATIC -DGLEW_NO_GLU)
+if (WIN32)
+    target_link_libraries(GLEW opengl32.lib)
+endif ()
 
-# Define source files
-define_source_files (GLOB_CPP_PATTERNS *.c)
-
-# Define dependency libs
-set (INCLUDE_DIRS .)
-
-# Setup target
-setup_library ()
-
-# Install headers for building and using the Urho3D library (install dependency for OGLGraphicsImpl.h)
-install_header_files (DIRECTORY ./ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/GLEW FILES_MATCHING PATTERN *.h)  # Note: the trailing slash is significant
+if (NOT MINI_URHO)
+    if (NOT URHO3D_MERGE_STATIC_LIBS)
+        install(TARGETS GLEW EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+    endif ()
+endif ()

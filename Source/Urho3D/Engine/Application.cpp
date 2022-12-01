@@ -28,7 +28,7 @@
 
 #if defined(IOS) || defined(TVOS)
 #include "../Graphics/Graphics.h"
-#include <SDL/SDL.h>
+#include <SDL.h>
 #endif
 
 #include "../DebugNew.h"

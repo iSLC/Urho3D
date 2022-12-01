@@ -20,14 +20,20 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME PugiXml)
+file (GLOB_RECURSE SOURCE_FILES *.cpp *.hpp)
+add_library (PugiXml STATIC ${SOURCE_FILES})
+if (BUILD_SHARED_LIBS)
+    target_compile_definitions(PugiXml PRIVATE -DPUGIXML_EXPORTS PUBLIC -DPUGIXML_IMPORTS)
+endif ()
+target_include_directories(PugiXml
+    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/PugiXml>
+)
 
-# Define source files
-define_source_files (GLOB_CPP_PATTERNS src/*.cpp GLOB_H_PATTERNS src/*.hpp)
+if (NOT MINI_URHO)
+    install (DIRECTORY include/ DESTINATION ${DEST_THIRDPARTY_HEADERS_DIR}/ FILES_MATCHING PATTERN *.hpp)
 
-# Setup target
-setup_library ()
-
-# Install headers for building the Urho3D library
-install_header_files (DIRECTORY src/ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/PugiXml FILES_MATCHING PATTERN *.hpp BUILD_TREE_ONLY)  # Note: the trailing slash is significant
+    if (NOT URHO3D_MERGE_STATIC_LIBS)
+        install(TARGETS PugiXml EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+    endif ()
+endif ()

@@ -20,17 +20,13 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME Detour)
+file (GLOB_RECURSE SOURCE_FILES *.cpp *.h)
+add_library (Detour STATIC ${SOURCE_FILES})
+target_include_directories(Detour SYSTEM
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Detour>
+)
 
-# Define source files
-define_source_files (GLOB_CPP_PATTERNS Source/*.cpp GLOB_H_PATTERNS Include/*.h)
-
-# Define dependency libs
-set (INCLUDE_DIRS Include)
-
-# Setup target
-setup_library ()
-
-# Install headers for building the Urho3D library
-install_header_files (DIRECTORY Include/ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/Detour FILES_MATCHING PATTERN *.h BUILD_TREE_ONLY)  # Note: the trailing slash is significant
+if (NOT URHO3D_MERGE_STATIC_LIBS)
+    install(TARGETS Detour EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+endif ()

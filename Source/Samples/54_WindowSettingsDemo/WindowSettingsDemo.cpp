@@ -46,8 +46,6 @@
 
 #include <Urho3D/DebugNew.h>
 
-URHO3D_DEFINE_APPLICATION_MAIN(WindowSettingsDemo)
-
 WindowSettingsDemo::WindowSettingsDemo(Context* context)
     : Sample(context)
     , uiRoot_(GetSubsystem<UI>()->GetRoot())

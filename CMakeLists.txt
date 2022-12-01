@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2022 the Urho3D project.
+# Copyright (c) 2008-2017 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,171 +20,324 @@
 # THE SOFTWARE.
 #
 
-# Set CMake minimum version
-cmake_minimum_required (VERSION 3.10.2)
+# Set CMake minimum version. Also set in android/build.gradle for android projects.
+cmake_minimum_required (VERSION 3.22)
 
-# Set project name
-project (Urho3D)
+# Set C++ standard
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+    set (CMAKE_CXX_STANDARD 17)
+endif ()
+
+# Set project name and languages
+project (Urho3D C CXX)
+if (APPLE)
+    enable_language(OBJC)
+    enable_language(OBJCXX)
+endif ()
 
 # Set CMake modules search path
-set (CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules)
+set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules)
 
-# Include UrhoCommon.cmake module after setting project name
-include (UrhoCommon)
+# Include file that sets up ccache.
+include(CCache)
+
+# Include file that sets up all configurable properties
+include(UrhoOptions)
+
+# Include common utilitles
+include(UrhoCommon)
+
+# Enable testing
+if (URHO3D_TESTING)
+    include (CTest)
+endif ()
+
+# Enable common build options
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set (CLANG ON)
+    set (GNU ON)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set (GCC ON)
+    set (GNU ON)
+endif()
+
+# Set compiler variable
+set ("${CMAKE_CXX_COMPILER_ID}" ON)
+set (CMAKE_INSTALL_RPATH "$ORIGIN")
+if (GNU OR MINGW)
+    if (NOT "$ENV{CI}" STREQUAL "")
+        # Disable debugging info completely for CI builds.
+        ucm_replace_flag(-g -g0 CONFIG Debug RelWithDebInfo)
+    else ()
+        # Reduce size of debugging information.
+        ucm_replace_flag(-g -g1 CONFIG RelWithDebInfo)
+        # Use only debug-friendly optimizations.
+        ucm_replace_flag(-O2 -Og CONFIG RelWithDebInfo)
+    endif ()
+endif ()
+
+# Configure variables
+set (URHO3D_URL "https://github.com/iSLC/Urho3D")
+set (URHO3D_DESCRIPTION "Urho3D is a free lightweight, cross-platform 2D and 3D game engine implemented in C++ and released under the MIT license. Greatly inspired by OGRE (http://www.ogre3d.org) and Horde3D (http://www.horde3d.org).")
+execute_process (COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules/GetUrhoRevision.cmake WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} OUTPUT_VARIABLE URHO3D_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
+string (REGEX MATCH "([^.]+)\\.([^.]+)\\.(.+)" MATCHED "${URHO3D_VERSION}")
 
 # Setup SDK install destinations
-set (PATH_SUFFIX Urho3D)
 if (WIN32)
     set (SCRIPT_EXT .bat)
-    if (CMAKE_HOST_WIN32)
-        set (PATH_SUFFIX .)
-        if (URHO3D_64BIT AND CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-            string (REPLACE " (x86)" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
-        endif ()
-    endif ()
 else ()
     set (SCRIPT_EXT .sh)
 endif ()
-if (URHO3D_64BIT)
-    # Install to 'lib64' when one of these conditions is true
-    if ((MINGW AND CMAKE_CROSSCOMPILING) OR URHO3D_USE_LIB64_RPM OR (HAS_LIB64 AND NOT URHO3D_USE_LIB_DEB))
-        set (LIB_SUFFIX 64)
-    endif ()
-endif ()
-set (DEST_INCLUDE_DIR include/Urho3D)    # The include directory path contains the 'Urho3D' suffix regardless of PATH_SUFFIX variable
-set (DEST_SHARE_DIR share/${PATH_SUFFIX})
-set (DEST_BUNDLE_DIR ${DEST_SHARE_DIR}/Applications)
-# Note to package maintainer: ${PATH_SUFFIX} for library could be removed if the extra path is not desired, but if so then the RPATH setting in Source's CMakeLists.txt needs to be adjusted accordingly
-set (DEST_LIBRARY_DIR lib${LIB_SUFFIX}/${PATH_SUFFIX})
-set (DEST_PKGCONFIG_DIR lib${LIB_SUFFIX}/pkgconfig)
-# Install application launcher scripts
-file (GLOB APP_SCRIPTS ${CMAKE_SOURCE_DIR}/bin/*${SCRIPT_EXT})
-install (PROGRAMS ${APP_SCRIPTS} DESTINATION ${DEST_RUNTIME_DIR})   # DEST_RUNTIME_DIR variable is set by the set_output_directories() macro call in the UrhoCommon module
-# Install CMake modules and toolchains provided by and for Urho3D
-install (DIRECTORY ${CMAKE_SOURCE_DIR}/cmake/ DESTINATION ${DEST_SHARE_DIR}/cmake)    # Note: the trailing slash is significant
-# Install CMake build scripts and rakefile
-file (GLOB CMAKE_SCRIPTS ${CMAKE_SOURCE_DIR}/script/*${SCRIPT_EXT})
-install (PROGRAMS ${CMAKE_SCRIPTS} DESTINATION ${DEST_SHARE_DIR}/scripts)
-install (FILES rakefile DESTINATION ${DEST_SHARE_DIR})
-
-# Setup package variables
-set (URHO3D_DESCRIPTION "Urho3D is a free lightweight, cross-platform 2D and 3D game engine implemented in C++ and released under the MIT license. Greatly inspired by OGRE (http://www.ogre3d.org) and Horde3D (http://www.horde3d.org).")
-set (CPACK_PACKAGE_DESCRIPTION_SUMMARY ${URHO3D_DESCRIPTION})
-set (URHO3D_URL "https://github.com/urho3d/Urho3D")
-set (CPACK_PACKAGE_VENDOR ${URHO3D_URL})
-set (CPACK_PACKAGE_CONTACT ${URHO3D_URL})
-execute_process (COMMAND ${CMAKE_COMMAND} -P ${CMAKE_SOURCE_DIR}/cmake/Modules/GetUrhoRevision.cmake WORKING_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE URHO3D_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-set (CPACK_PACKAGE_VERSION ${URHO3D_VERSION})
-string (REGEX MATCH "([^.]+)\\.([^.]+)\\.(.+)" MATCHED ${URHO3D_VERSION})
-if (MATCHED)
-    set (CPACK_PACKAGE_VERSION_MAJOR ${CMAKE_MATCH_1})
-    set (CPACK_PACKAGE_VERSION_MINOR ${CMAKE_MATCH_2})
-    set (CPACK_PACKAGE_VERSION_PATCH ${CMAKE_MATCH_3})
-endif ()
-set (CPACK_RESOURCE_FILE_LICENSE ${CMAKE_SOURCE_DIR}/LICENSE)
-set (CPACK_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
-set (CPACK_GENERATOR TGZ)
 if (ANDROID)
-    set (CPACK_SYSTEM_NAME Android)
-elseif (IOS)
-    set (CPACK_SYSTEM_NAME iOS)
-elseif (TVOS)
-    set (CPACK_SYSTEM_NAME tvOS)
-elseif (APPLE)
-    set (CPACK_SYSTEM_NAME macOS)
-elseif (WIN32)
-    if (MINGW)
-        set (CPACK_SYSTEM_NAME MinGW)   # MinGW implies Windows platform
+    # For Android platform, install to a path based on the chosen Android ABI, e.g. libs/armeabi-v7a
+    set (LIB_SUFFIX s/${ANDROID_NDK_ABI_NAME})
+endif ()
+
+set (DEST_BASE_INCLUDE_DIR include)
+set (DEST_INCLUDE_DIR ${DEST_BASE_INCLUDE_DIR}/Urho3D)
+set (DEST_BIN_DIR bin)
+set (DEST_SHARE_DIR share)
+set (DEST_RESOURCE_DIR ${DEST_BIN_DIR})
+set (DEST_BUNDLE_DIR ${DEST_SHARE_DIR}/Applications)
+set (DEST_ARCHIVE_DIR lib)
+set (DEST_PKGCONFIG_DIR ${DEST_ARCHIVE_DIR}/pkgconfig)
+set (DEST_THIRDPARTY_HEADERS_DIR ${DEST_INCLUDE_DIR}/ThirdParty)
+
+if (ANDROID)
+    set (DEST_LIBRARY_DIR ${DEST_ARCHIVE_DIR})
+else ()
+    set (DEST_LIBRARY_DIR bin)
+endif ()
+
+if (MSVC OR "${CMAKE_GENERATOR}" STREQUAL "Xcode")
+    set (MULTI_CONFIG_PROJECT ON)
+endif ()
+
+if (MULTI_CONFIG_PROJECT)
+    set (DEST_BIN_DIR_CONFIG ${DEST_BIN_DIR}/$<CONFIG>)
+    set (DEST_LIBRARY_DIR_CONFIG ${DEST_LIBRARY_DIR}/$<CONFIG>)
+    set (DEST_ARCHIVE_DIR_CONFIG ${DEST_ARCHIVE_DIR}/$<CONFIG>)
+else ()
+    set (DEST_BIN_DIR_CONFIG ${DEST_BIN_DIR})
+    set (DEST_LIBRARY_DIR_CONFIG ${DEST_LIBRARY_DIR})
+    set (DEST_ARCHIVE_DIR_CONFIG ${DEST_ARCHIVE_DIR})
+endif ()
+
+if (WIN32)
+    if (NOT DEFINED URHO3D_WINVER)
+        set (URHO3D_WINVER 0x0601)
     endif ()
-    if (CMAKE_HOST_WIN32)
-        set (CPACK_GENERATOR ZIP)       # Differentiate artifacts generated from Windows host system
+    add_definitions(-DWINVER=${URHO3D_WINVER} -D_WIN32_WINNT=${URHO3D_WINVER} -D_WIN32_WINDOWS=${URHO3D_WINVER})
+endif ()
+
+if (NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET AND MACOS)
+    set (CMAKE_OSX_DEPLOYMENT_TARGET 10.10)
+endif ()
+
+# A workaround for Ninja generator putting executables to wrong output dir. This breaks
+# VS/Xcode, they work properly without any workarounds.
+if ("${CMAKE_GENERATOR}" STREQUAL "Ninja")
+    set (_CONFIG "_CONFIG")
+endif ()
+
+if (NOT DEFINED CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${DEST_BIN_DIR${_CONFIG}})
+endif ()
+if (NOT DEFINED CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${DEST_LIBRARY_DIR${_CONFIG}})
+endif ()
+if (NOT DEFINED CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+    set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${DEST_ARCHIVE_DIR${_CONFIG}})
+endif ()
+
+if (NOT DEFINED VS_DEBUGGER_WORKING_DIRECTORY)
+    set (VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+endif ()
+
+string(TOLOWER "${CMAKE_GENERATOR_PLATFORM}" CMAKE_GENERATOR_PLATFORM)
+set(URHO3D_PLATFORM "${CMAKE_GENERATOR_PLATFORM}")
+if (CMAKE_SIZEOF_VOID_P MATCHES 8)
+    set(URHO3D_64BIT ON)
+    if (NOT URHO3D_PLATFORM)
+        set (URHO3D_PLATFORM x64)
     endif ()
-elseif (WEB)
-    set (CPACK_SYSTEM_NAME Web)
-elseif (CPACK_SYSTEM_NAME STREQUAL Linux)
-    if (RPI)
-        set (CPACK_SYSTEM_NAME Raspberry-Pi)
-        set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE armhf)
-    elseif (ARM)
-        set (CPACK_SYSTEM_NAME ARM)     # Generic ARM
-        if (URHO3D_64BIT)
-            set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE arm64)
-        else ()
-            set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE armhf)
-        endif ()
-    elseif (NOT URHO3D_64BIT)
-        set (CPACK_DEBIAN_PACKAGE_ARCHITECTURE i386)
-        set (CPACK_RPM_PACKAGE_ARCHITECTURE i686)       # The 'package' target should be built with the help of 'setarch i686' command on a 64-bit host system
+else ()
+    set(URHO3D_64BIT OFF)
+    if (NOT URHO3D_PLATFORM OR "${URHO3D_PLATFORM}" STREQUAL "win32")
+        set (URHO3D_PLATFORM x86)
     endif ()
-    # TODO: Temporary disable RPM and DEB package generation for CI as it has run out of disk space for a few of the target platforms.
-    if (NOT DEFINED ENV{CI})
-        if (NOT URHO3D_64BIT OR HAS_LIB64)
-            list (APPEND CPACK_GENERATOR RPM)
-        endif ()
-        if (NOT URHO3D_64BIT OR NOT HAS_LIB64)
-            list (APPEND CPACK_GENERATOR DEB)
-        endif ()
-        if (URHO3D_64BIT)
-            if (URHO3D_USE_LIB64_RPM AND NOT HAS_LIB64)
-                set (CPACK_GENERATOR RPM)
-            elseif (URHO3D_USE_LIB_DEB AND HAS_LIB64)
-                set (CPACK_GENERATOR DEB)
+endif ()
+
+if (MULTI_CONFIG_PROJECT)
+    set (URHO3D_CONFIG $<CONFIG>)
+else ()
+    set (URHO3D_CONFIG ${CMAKE_BUILD_TYPE})
+endif ()
+
+if (MINGW)
+    find_file(DLL_FILE_PATH_1 "libstdc++-6.dll")
+    find_file(DLL_FILE_PATH_2 "libgcc_s_seh-1.dll")
+    find_file(DLL_FILE_PATH_3 "libwinpthread-1.dll")
+    foreach (DLL_FILE_PATH ${DLL_FILE_PATH_1} ${DLL_FILE_PATH_2} ${DLL_FILE_PATH_3})
+        if (DLL_FILE_PATH)
+            # Copies dlls to bin or tools.
+            file (COPY ${DLL_FILE_PATH} DESTINATION ${CMAKE_BINARY_DIR}/${DEST_BIN_DIR_CONFIG})
+            if (NOT URHO3D_STATIC_RUNTIME)
+                file (COPY ${DLL_FILE_PATH} DESTINATION ${CMAKE_BINARY_DIR}/${DEST_BIN_DIR_CONFIG})
             endif ()
         endif ()
-    endif ()
+    endforeach ()
 endif ()
-if (URHO3D_64BIT)
-    set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-64bit)
+
+if ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Linux")
+    set (HOST_LINUX 1)
+elseif ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Windows")
+    set (HOST_WIN32 1)
+elseif ("${CMAKE_HOST_SYSTEM_NAME}" STREQUAL "Darwin")
+    set (HOST_MACOS 1)
 endif ()
-set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-${URHO3D_LIB_TYPE})
-if (WIN32 AND NOT URHO3D_OPENGL)
-    if (URHO3D_D3D11)
-        set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-3D11)   # The artifact name has a space constraint on our website when viewed in a mobile browser, 3D11 stands for Direct3D 11
+
+if (URHO3D_SSE)
+    if (DESKTOP)
+        string (TOLOWER "${URHO3D_SSE}" URHO3D_SSE)
+        if (MSVC)
+            list (APPEND VALID_SSE_OPTIONS sse sse2 avx avx2)
+        else ()
+            list (APPEND VALID_SSE_OPTIONS sse sse2 sse3 sse4 sse4a sse4.1 sse4.2 avx avx2)
+        endif ()
+        list (FIND VALID_SSE_OPTIONS "${URHO3D_SSE}" SSE_INDEX)
+        if (SSE_INDEX EQUAL -1)
+            set (URHO3D_SSE sse2)
+        endif ()
+        if (MSVC)
+            string (TOUPPER "${URHO3D_SSE}" URHO3D_SSE)
+        endif ()
     else ()
-        set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-3D9)
-    endif ()
-elseif (ANDROID)
-    set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-${ANDROID_ABI})
-elseif (RPI AND RPI_ABI MATCHES ^armeabi-v7a)
-    set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-v7a)
-elseif (ARM_ABI_FLAGS)
-    string (REGEX REPLACE "^.*mcpu=([^ ]+).*$" -\\1 CPU_NAME "${ARM_ABI_FLAGS}")
-    string (REGEX REPLACE .*- - CPU_NAME "${CPU_NAME}")
-    string (TOUPPER "${CPU_NAME}" CPU_NAME)
-    set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}${CPU_NAME})
-endif ()
-if (NOT DEFINED ENV{RELEASE_TAG})
-    set (CPACK_SYSTEM_NAME ${CPACK_SYSTEM_NAME}-snapshot)
-endif ()
-include (CPack)
-
-# Setup macOS, iOS, and tvOS bundle variables
-if (URHO3D_MACOSX_BUNDLE OR (APPLE AND ARM))
-    if (NOT MACOSX_BUNDLE_ICON_FILE)
-        set (MACOSX_BUNDLE_ICON_FILE UrhoIcon)
-    endif ()
-    if (NOT MACOSX_BUNDLE_BUNDLE_VERSION)
-        set (MACOSX_BUNDLE_BUNDLE_VERSION ${URHO3D_VERSION})
-    endif ()
-    if (NOT MACOSX_BUNDLE_LONG_VERSION_STRING)
-        set (MACOSX_BUNDLE_LONG_VERSION_STRING ${URHO3D_VERSION})
-    endif ()
-    if (NOT MACOSX_BUNDLE_SHORT_VERSION_STRING)
-        set (MACOSX_BUNDLE_SHORT_VERSION_STRING ${URHO3D_VERSION})
-    endif ()
-    if (NOT MACOSX_BUNDLE_COPYRIGHT)
-        set (MACOSX_BUNDLE_COPYRIGHT "Copyright (c) 2008-2022 the Urho3D project.")
+        set (URHO3D_SSE OFF)
     endif ()
 endif ()
 
-# Setup SDK-like include dir in the build tree for building the Urho3D library
-set (THIRD_PARTY_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${DEST_INCLUDE_DIR}/ThirdParty)
-file (MAKE_DIRECTORY ${THIRD_PARTY_INCLUDE_DIR})
+# Workarounds. They are mirrored in Urho3D target build script so that projects linking to it would inherit settings.
+if (ANDROID)
+    set (URHO3D_CXX_STANDARD ${CMAKE_CXX_STANDARD})
+    ucm_add_flags(CXX -std=gnu++${CMAKE_CXX_STANDARD})
+    # NDK bundles old cmake and insists on using it, That version chokes on standard being set to 17 while
+    # crosscompiler works just fine.
+    unset (CMAKE_CXX_STANDARD)
+endif ()
+if (CLANG)
+    if (APPLE)
+        # Ensure that everything built by this project use these libraries. Urho3D target also exports them so all downstream
+        # projects linking to the engine get them as well.
+        ucm_add_flags(C CXX -stdlib=libc++)
+        link_libraries(c++ c++abi)
+    elseif (DESKTOP AND UNIX)
+        # Android ndk handles linking runtime library. Emscripten does not need these.
+        link_libraries(stdc++ m)
+    endif ()
+endif ()
 
-# Urho3D source
-add_subdirectory (Source)
+set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
+if (BUILD_SHARED_LIBS)
+    set (CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif ()
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Urho3D documentation
-if (URHO3D_DOCS)
-    add_subdirectory(Docs)
+if (URHO3D_SSE AND NOT MSVC)
+    # Build engine and it's dependencies with SSE/SSE2 enabled.
+    ucm_add_flags(-msse -msse2)
+endif ()
+
+if (NOT "$ENV{CI}" STREQUAL "")
+    if (MSVC)
+        ucm_replace_flag("/W[0-3]" "/W0" REGEX)
+    else ()
+        ucm_add_flags("-w")
+    endif ()
+elseif (MSVC)
+    ucm_replace_flag("/W[0-3]" "/W1" REGEX)
+endif ()
+
+if (DESKTOP)
+    # Mobile toolchains manage runtime libraries themselves, we should not interfere.
+    if (URHO3D_STATIC_RUNTIME)
+        ucm_set_runtime(STATIC)
+    else ()
+        ucm_set_runtime(DYNAMIC)
+    endif ()
+endif ()
+
+add_subdirectory(Source)
+
+# Print current build configuration
+message(STATUS "Urho3D Configuration:")
+if (URHO3D_STATIC_RUNTIME)
+    message(STATUS "  Runtime         STATIC")
+else ()
+    message(STATUS "  Runtime         SHARED")
+endif ()
+if (BUILD_SHARED_LIBS)
+    message(STATUS "  Library         SHARED")
+else ()
+    message(STATUS "  Library         STATIC")
+endif ()
+message(STATUS "  Graphics        ${URHO3D_GRAPHICS_API}")
+message(STATUS "  SSE             ${URHO3D_SSE}")
+message(STATUS "  2D              ${URHO3D_URHO2D}")
+message(STATUS "  Physics2D       ${URHO3D_PHYSICS2D}")
+message(STATUS "  IK              ${URHO3D_IK}")
+message(STATUS "  Threading       ${URHO3D_THREADING}")
+message(STATUS "  Navigation      ${URHO3D_NAVIGATION}")
+message(STATUS "  Network         ${URHO3D_NETWORK}")
+message(STATUS "  Physics         ${URHO3D_PHYSICS}")
+message(STATUS "  Samples         ${URHO3D_SAMPLES}")
+message(STATUS "  Testing         ${URHO3D_TESTING}")
+if (WIN32)
+    message(STATUS "  MiniDumps       ${URHO3D_MINIDUMPS}")
+endif()
+message(STATUS "Developer options:")
+message(STATUS "  Logging         ${URHO3D_LOGGING}")
+message(STATUS "  Profiling       ${URHO3D_PROFILING}")
+message(STATUS "  Extras          ${URHO3D_EXTRAS}")
+message(STATUS "  Tools           ${URHO3D_TOOLS}")
+if (TARGET Profiler)
+    message(STATUS "     Profiler GUI ${URHO3D_PROFILING}")
+endif ()
+
+# clang-tidy target
+find_program(CLANG_TIDY clang-tidy)
+if (CLANG_TIDY)
+    file (GLOB_RECURSE SOURCE_FILES
+        Source/Samples/**.cpp Source/Samples/**.h Source/Samples/**.hpp Source/Samples/**.inl
+        Source/Urho3D/**.cpp Source/Urho3D/**.h Source/Urho3D/**.hpp
+        Source/Tools/**.cpp Source/Tools/**.h Source/Tools/**.hpp
+    )
+    add_custom_target(tidy
+        COMMAND ${CLANG_TIDY} -p . -export-fixes=clang-tidy.yml -fix ${SOURCE_FILES}
+        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    )
+    set_target_properties(tidy PROPERTIES EXCLUDE_FROM_ALL ON EXCLUDE_FROM_DEFAULT_BUILD ON)
+endif()
+
+################################################### SDK preparation ####################################################
+if (MINI_URHO)
+    return ()
+endif ()
+
+# Install CMake modules and toolchains provided by and for Urho3D
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/CMake/Toolchains/ DESTINATION ${DEST_SHARE_DIR}/CMake/Toolchains)    # Note: the trailing slash is significant
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/CMake/Modules/ DESTINATION ${DEST_SHARE_DIR}/CMake/Modules/)
+# Install CMake build scripts
+file (GLOB CMAKE_SCRIPTS ${CMAKE_SOURCE_DIR}/Script/*${SCRIPT_EXT})
+install (PROGRAMS ${CMAKE_SCRIPTS} DESTINATION ${DEST_SHARE_DIR}/Scripts)
+# Install data files
+file (MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+if (NOT ANDROID)
+    # Multi-config projects store data files in parent dir of binary files.
+    string (REPLACE "/$<CONFIG>" "" RUNTIME_OUTPUT_DIRECTORY_NO_CONFIG ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+    foreach(dir Data CoreData Autoload)
+        create_symlink(${CMAKE_CURRENT_SOURCE_DIR}/bin/${dir} ${RUNTIME_OUTPUT_DIRECTORY_NO_CONFIG}/${dir})
+        # /${dir}/../ trick is used for installing Autoload subdirs.
+        install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/bin/${dir} DESTINATION ${CMAKE_INSTALL_PREFIX}/${DEST_BIN_DIR}/${dir}/../)
+    endforeach()
 endif ()

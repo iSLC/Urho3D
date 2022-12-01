@@ -35,7 +35,6 @@
 #include <Urho3D/DebugNew.h>
 
 // Expands to this example's entry-point
-URHO3D_DEFINE_APPLICATION_MAIN(ConsoleInput)
 
 // Hunger level descriptions
 const char* hungerLevels[] = {
@@ -72,8 +71,8 @@ void ConsoleInput::Start()
     SubscribeToEvent(E_KEYDOWN, URHO3D_HANDLER(ConsoleInput, HandleEscKeyDown));
     UnsubscribeFromEvent(E_KEYUP);
 
-    // Hide logo to make room for the console
-    SetLogoVisible(false);
+    // Enable filesystem interaction in console.
+    GetSubsystem<FileSystem>()->SetExecuteConsoleCommands(true);
 
     // Show the console by default, make it large. Console will show the text edit field when there is at least one
     // subscriber for the console command event
@@ -124,8 +123,11 @@ void ConsoleInput::HandleUpdate(StringHash eventType, VariantMap& eventData)
 void ConsoleInput::HandleEscKeyDown(StringHash eventType, VariantMap& eventData)
 {
     // Unlike the other samples, exiting the engine when ESC is pressed instead of just closing the console
-    if (eventData[KeyDown::P_KEY].GetInt() == KEY_ESCAPE && GetPlatform() != "Web")
-        engine_->Exit();
+    if (eventData[KeyDown::P_KEY].GetInt() == KEY_ESCAPE)
+    {
+        GetSubsystem<Console>()->SetVisible(false);
+        SendEvent(E_EXITREQUESTED);
+    }
 }
 
 void ConsoleInput::StartGame()
@@ -209,7 +211,7 @@ void ConsoleInput::HandleInput(const String& input)
     }
 
     if (inputLower == "quit" || inputLower == "exit")
-        engine_->Exit();
+        SendEvent(E_EXITREQUESTED);
     else if (gameOn_)
     {
         // Game is on
@@ -270,7 +272,7 @@ void ConsoleInput::HandleInput(const String& input)
         if (inputLower[0] == 'y')
             StartGame();
         else if (inputLower[0] == 'n')
-            engine_->Exit();
+            SendEvent(E_EXITREQUESTED);
         else
             Print("Please answer 'y' or 'n'.");
     }
@@ -279,5 +281,5 @@ void ConsoleInput::HandleInput(const String& input)
 void ConsoleInput::Print(const String& output)
 {
     // Logging appears both in the engine console and stdout
-    URHO3D_LOGRAW(output + "\n");
+    URHO3D_LOGINFO(output);
 }

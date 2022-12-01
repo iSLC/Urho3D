@@ -30,7 +30,6 @@
 
 #include <Urho3D/DebugNew.h>
 
-URHO3D_DEFINE_APPLICATION_MAIN(UIDrag)
 
 UIDrag::UIDrag(Context* context) :
     Sample(context)
@@ -215,7 +214,7 @@ void UIDrag::HandleUpdate(StringHash eventType, VariantMap& eventData)
     {
         PODVector<UIElement*> elements;
         root->GetChildrenWithTag(elements, "SomeTag");
-        for (PODVector<UIElement*>::ConstIterator i = elements.Begin(); i != elements.End(); ++i)
+        for (auto i = elements.Begin(); i != elements.End(); ++i)
         {
             UIElement* element = *i;
             element->SetVisible(!element->IsVisible());

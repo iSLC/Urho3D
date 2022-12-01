@@ -19,6 +19,7 @@
 #ifndef B2_SETTINGS_H
 #define B2_SETTINGS_H
 
+#include "Box2D/Box2DConfig.h"
 #include <stddef.h>
 #include <assert.h>
 #include <float.h>
@@ -138,11 +139,11 @@ void* b2Alloc(int32 size);
 void b2Free(void* mem);
 
 /// Logging function.
-void b2Log(const char* string, ...);
+BOX2D_API void b2Log(const char* string, ...);
 
 /// Version numbering scheme.
 /// See http://en.wikipedia.org/wiki/Software_versioning
-struct b2Version
+struct BOX2D_API b2Version
 {
 	int32 major;		///< significant changes
 	int32 minor;		///< incremental changes

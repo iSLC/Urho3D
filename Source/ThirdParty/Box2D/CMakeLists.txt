@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2022 the Urho3D project.
+# Copyright (c) 2008-2020 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,9 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 #
-
-# Define target name
-set (TARGET_NAME Box2D)
 
 set(BOX2D_Collision_SRCS
     Box2D/Collision/b2BroadPhase.cpp
@@ -148,7 +145,7 @@ set(BOX2D_General_HDRS
 )
 
 # Define source files
-file (GLOB CPP_FILES 
+file (GLOB CPP_FILES
     ${BOX2D_Collision_SRCS}
     ${BOX2D_Shapes_SRCS}
     ${BOX2D_Common_SRCS}
@@ -157,7 +154,7 @@ file (GLOB CPP_FILES
     ${BOX2D_Joints_SRCS}
     ${BOX2D_Rope_SRCS})
 
-file (GLOB H_FILES 
+file (GLOB H_FILES
     ${BOX2D_Collision_HDRS}
     ${BOX2D_Shapes_HDRS}
     ${BOX2D_Common_HDRS}
@@ -179,11 +176,16 @@ source_group(Dynamics\\Joints FILES ${BOX2D_Joints_SRCS} ${BOX2D_Joints_HDRS})
 source_group(Include FILES ${BOX2D_General_HDRS})
 source_group(Rope FILES ${BOX2D_Rope_SRCS} ${BOX2D_Rope_HDRS})
 
-# Define dependency libs
-set (INCLUDE_DIRS .)
+add_library (Box2D STATIC ${SOURCE_FILES})
+target_include_directories(Box2D SYSTEM PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>)
+if (BUILD_SHARED_LIBS)
+    target_compile_definitions(Box2D PRIVATE -DBOX2D_EXPORTS PUBLIC -DBOX2D_IMPORTS)
+endif ()
 
-# Setup target
-setup_library ()
+if (NOT MINI_URHO)
+    install(DIRECTORY Box2D DESTINATION ${DEST_THIRDPARTY_HEADERS_DIR} FILES_MATCHING PATTERN *.h)
 
-# Install headers for building and using the Urho3D library (install dependency for Urho3D/Physics2D/PhysicsWorld2D.h and Urho3D/Physics2D/RigidBody2D.h)
-install_header_files (DIRECTORY Box2D DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty FILES_MATCHING PATTERN *.h)
+    if (NOT URHO3D_MERGE_STATIC_LIBS)
+        install(TARGETS Box2D EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+    endif ()
+endif ()

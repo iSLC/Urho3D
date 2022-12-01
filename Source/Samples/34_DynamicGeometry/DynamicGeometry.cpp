@@ -46,7 +46,6 @@
 
 #include <Urho3D/DebugNew.h>
 
-URHO3D_DEFINE_APPLICATION_MAIN(DynamicGeometry)
 
 DynamicGeometry::DynamicGeometry(Context* context) :
     Sample(context),
@@ -156,7 +155,8 @@ void DynamicGeometry::CreateScene()
             SharedPtr<Model> cloneModel = originalModel->Clone();
             object->SetModel(cloneModel);
             // Store the cloned vertex buffer that we will modify when animating
-            animatingBuffers_.Push(SharedPtr<VertexBuffer>(cloneModel->GetGeometry(0, 0)->GetVertexBuffer(0)));
+            animatingBuffers_.Push(
+                SharedPtr<VertexBuffer>(cloneModel->GetGeometry(0, 0)->GetVertexBuffer(0)));
         }
     }
 
@@ -340,7 +340,7 @@ void DynamicGeometry::MoveCamera(float timeStep)
 
 void DynamicGeometry::AnimateObjects(float timeStep)
 {
-    URHO3D_PROFILE(AnimateObjects);
+    URHO3D_PROFILE("AnimateObjects");
 
     time_ += timeStep * 100.0f;
 

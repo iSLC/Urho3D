@@ -29,7 +29,7 @@
 #include "../IO/Log.h"
 #include "../Resource/Decompress.h"
 
-#include <SDL/SDL_surface.h>
+#include <SDL_surface.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <STB/stb_image.h>
 #define STB_IMAGE_WRITE_IMPLEMENTATION

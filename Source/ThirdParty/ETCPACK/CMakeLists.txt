@@ -20,13 +20,11 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME ETCPACK)
+file (GLOB_RECURSE SOURCE_FILES source/etcdec.cxx)
+add_library (ETCPACK STATIC ${SOURCE_FILES})
 
-# Define source files
-set (SOURCE_FILES source/etcdec.cxx)
-
-# Setup target
-setup_library ()
-
-
+if (NOT MINI_URHO)
+    if (NOT URHO3D_MERGE_STATIC_LIBS)
+        install(TARGETS ETCPACK EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+    endif ()
+endif ()

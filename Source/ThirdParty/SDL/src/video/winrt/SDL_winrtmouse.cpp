@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2019 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -34,12 +34,10 @@ using Windows::UI::Core::CoreCursor;
  * SDL includes:
  */
 extern "C" {
-#include "SDL_assert.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../SDL_sysvideo.h"
 #include "SDL_events.h"
-#include "SDL_log.h"
 }
 
 #include "../../core/winrt/SDL_winrtapp_direct3d.h"
@@ -191,6 +189,14 @@ WINRT_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
+// Urho3D: WINRT_WarpMouse impl
+void
+WINRT_WarpMouse(SDL_Window* window, int x, int y)
+{
+    CoreWindow^ coreWindow = CoreWindow::GetForCurrentThread();
+    coreWindow->PointerPosition = Windows::Foundation::Point(x, y);
+}
+
 void
 WINRT_InitMouse(_THIS)
 {
@@ -207,7 +213,7 @@ WINRT_InitMouse(_THIS)
     mouse->CreateSystemCursor = WINRT_CreateSystemCursor;
     mouse->ShowCursor = WINRT_ShowCursor;
     mouse->FreeCursor = WINRT_FreeCursor;
-    //mouse->WarpMouse = WINRT_WarpMouse;
+    mouse->WarpMouse = WINRT_WarpMouse;    // Urho3D: Oh yes it does!
     mouse->SetRelativeMouseMode = WINRT_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(WINRT_CreateDefaultCursor());

@@ -24,6 +24,13 @@
 
 #include "Sample.h"
 
+
+namespace Urho3D
+{
+    class CheckBox;
+    class DropDownList;
+}
+
 /// Text rendering example.
 /// Displays text at various sizes, with checkboxes to change the rendering parameters.
 class Typography : public Sample

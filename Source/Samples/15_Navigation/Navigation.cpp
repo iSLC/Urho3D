@@ -44,7 +44,6 @@
 
 #include <Urho3D/DebugNew.h>
 
-URHO3D_DEFINE_APPLICATION_MAIN(Navigation)
 
 Navigation::Navigation(Context* context) :
     Sample(context),
@@ -421,7 +420,7 @@ void Navigation::UpdateStreaming()
     const IntVector2 endTile = VectorMin(jackTile + IntVector2::ONE * streamingDistance_, numTiles - IntVector2::ONE);
 
     // Remove tiles
-    for (HashSet<IntVector2>::Iterator i = addedTiles_.Begin(); i != addedTiles_.End();)
+    for (auto i = addedTiles_.Begin(); i != addedTiles_.End();)
     {
         const IntVector2 tileIdx = *i;
         if (beginTile.x_ <= tileIdx.x_ && tileIdx.x_ <= endTile.x_ && beginTile.y_ <= tileIdx.y_ && tileIdx.y_ <= endTile.y_)

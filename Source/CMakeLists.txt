@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2008-2022 the Urho3D project.
+# Copyright (c) 2008-2020 the Urho3D project.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -20,113 +20,61 @@
 # THE SOFTWARE.
 #
 
-# Check existence of various header files and their functions required by some of the third-party libraries and Urho3D library
-# Set the CMake variables in this scope but only add the compiler defines in the respective library's scope
-include (CheckIncludeFile)
-foreach (HEADER stdint.h inttypes.h malloc.h)
-    string (TOUPPER HAVE_${HEADER} HAVE_HEADER)
-    string (REPLACE . _ HAVE_HEADER ${HAVE_HEADER})
-    check_include_file (${HEADER} ${HAVE_HEADER})
-endforeach ()
-include (CheckFunctionExists)
-foreach (FUNCT __sincosf malloc_usable_size)
-    string (TOUPPER HAVE_${FUNCT} HAVE_FUNCT)
-    check_function_exists (${FUNCT} ${HAVE_FUNCT})
-endforeach ()
-include (CheckLibraryExists)
-check_library_exists (m sincosf "" HAVE_SINCOSF)
-if (MINGW)
-    include (CheckStructHasMember)
-    check_struct_has_member (RTL_OSVERSIONINFOW dwOSVersionInfoSize minwindef.h\;winnt.h HAVE_RTL_OSVERSIONINFOW)
+if (MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    # Enable parallel builds
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /MP")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
 endif ()
 
-# Setup RPATH settings
-if (URHO3D_LIB_TYPE STREQUAL SHARED AND NOT WIN32 AND NOT ANDROID AND NOT IOS AND NOT TVOS AND NOT WEB)
-    # Add RPATH entries when building
-    set (CMAKE_SKIP_BUILD_RPATH FALSE)
-    # And set the RPATH entries so that the executable works both in the build tree and install destination
-    set (CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-    if (APPLE)
-        set (CMAKE_MACOSX_RPATH TRUE)
-        set (ORIGIN @loader_path)
+# When crosscompiling, we need several tools built for host system so various build tasks can be completed.
+if (CMAKE_CROSSCOMPILING AND URHO3D_PACKAGING)
+    include (ExternalProject)
+    if (IOS OR TVOS)
+        # When cross-compiling for iOS/tvOS the host environment has been altered by xcodebuild for the said platform, the following fix is required to reset the host environment before spawning another process to configure/generate project file for external project
+        # Also workaround a known CMake/Xcode generator bug which prevents it from installing native tool binaries correctly
+        set (ALTERNATE_COMMAND /usr/bin/env -i PATH=$ENV{PATH} CC=${SAVED_CC} CXX=${SAVED_CXX} CI=$ENV{CI} ${CMAKE_COMMAND} BUILD_COMMAND bash -c "sed -i '' 's/\$$\(EFFECTIVE_PLATFORM_NAME\)//g' CMakeScripts/install_postBuildPhase.make*")
     else ()
-        set (ORIGIN $ORIGIN)
+        set (ALTERNATE_COMMAND ${CMAKE_COMMAND} -E env CC=${SAVED_CC} CXX=${SAVED_CXX} CI=$ENV{CI} ${CMAKE_COMMAND})
     endif ()
-    # Library location relative to the executable in the build tree
-    set (CMAKE_INSTALL_RPATH ${ORIGIN}/../lib)
-    # Library location relative to the executable in the tool directory in the build tree
-    list (APPEND CMAKE_INSTALL_RPATH ${ORIGIN}/../../lib)                               # The tools are installed one directory further down from normal executable
-    # Library location relative to the executable in the install destination
-    list (APPEND CMAKE_INSTALL_RPATH ${ORIGIN}/../lib${LIB_SUFFIX}/${PATH_SUFFIX})      # The library location is based on SDK install destination
-    # Library location relative to the executable in the tool directory in the install destination
-    list (APPEND CMAKE_INSTALL_RPATH ${ORIGIN}/../../lib${LIB_SUFFIX}/${PATH_SUFFIX})
-    # The last entry to the install destination of the library, if the destination location is not in the system default search path, e.g. /usr/local/lib
-    list (FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES ${CMAKE_INSTALL_PREFIX}/lib${LIB_SUFFIX} isSystemDir)
-    if (isSystemDir STREQUAL -1)
-        list (APPEND CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/${DEST_LIBRARY_DIR})
+    # When we are building SDK, we need these tools in it, so macros from UrhoCommon.cmake work.
+    if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set (URHO3D_NATIVE_PREFIX ${CMAKE_BINARY_DIR}/native)
+    else ()
+        set (URHO3D_NATIVE_PREFIX ${CMAKE_INSTALL_PREFIX})
     endif ()
+	set (_CMAKE_GENERATOR_PLATFORM ${CMAKE_GENERATOR_PLATFORM})
+	if (MSVC_IDE)
+		if ("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "AMD64")
+			set (CMAKE_GENERATOR_PLATFORM x64)
+		elseif ("${CMAKE_HOST_SYSTEM_PROCESSOR}" STREQUAL "X86")	# TODO: Needs to be verified.
+			set (CMAKE_GENERATOR_PLATFORM Win32)
+		else ()
+			set (CMAKE_GENERATOR_PLATFORM "${CMAKE_HOST_SYSTEM_PROCESSOR}")
+		endif ()
+	endif ()
+    ExternalProject_Add (Urho3D-Native
+        SOURCE_DIR ${Urho3D_SOURCE_DIR}
+        CMAKE_COMMAND ${ALTERNATE_COMMAND}
+        CMAKE_ARGS -DURHO3D_ENABLE_ALL=OFF -DMINI_URHO=ON -DURHO3D_TOOLS=ON -DBUILD_SHARED_LIBS=OFF
+                   -DURHO3D_SYSTEMUI=OFF -DURHO3D_CSHARP=${URHO3D_CSHARP} -DCMAKE_INSTALL_PREFIX=${URHO3D_NATIVE_PREFIX}
+				   ${EXTRA_GENERATOR_FLAGS}
+    )
+	set (CMAKE_GENERATOR_PLATFORM "${_CMAKE_GENERATOR_PLATFORM}")
+	unset (_CMAKE_GENERATOR_PLATFORM)
+    set (PACKAGE_TOOL    "${URHO3D_NATIVE_PREFIX}/${DEST_BIN_DIR_CONFIG}/PackageTool" CACHE STRING "" FORCE)
+else ()
+    set (PACKAGE_TOOL    "$<TARGET_FILE:PackageTool>"                                 CACHE STRING "" FORCE)
 endif ()
 
-# Add targets
-foreach (TARGET ETCPACK FreeType LZ4 PugiXml rapidjson SDL StanHull STB)
-    add_subdirectory (ThirdParty/${TARGET})
-endforeach ()
-
-if (URHO3D_NETWORK)
-    add_subdirectory (ThirdParty/Civetweb)
-    add_subdirectory (ThirdParty/SLikeNet)
-endif ()
-
-if (URHO3D_IK)
-    add_subdirectory (ThirdParty/ik)
-endif ()
-
-if (URHO3D_NAVIGATION)
-    add_subdirectory (ThirdParty/Detour)
-    add_subdirectory (ThirdParty/DetourCrowd)
-    add_subdirectory (ThirdParty/DetourTileCache)
-    add_subdirectory (ThirdParty/Recast)
-endif ()
-
-if (URHO3D_URHO2D)
-    if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/ThirdParty/spine)
-        add_subdirectory (ThirdParty/spine)
-        # Add definition for Spine
-        add_definitions (-DURHO3D_SPINE)
-    endif ()
-endif ()
-
-if (URHO3D_PHYSICS)
-    add_subdirectory (ThirdParty/Bullet)
-endif ()
-
-if (URHO3D_PHYSICS2D)
-    add_subdirectory (ThirdParty/Box2D)
-endif ()
-
-if (URHO3D_TRACY_PROFILING)
-    add_subdirectory (ThirdParty/Tracy)
-endif ()
-
-if (NOT ANDROID AND NOT ARM AND NOT WEB)
-    if (URHO3D_OPENGL)
-        add_subdirectory (ThirdParty/GLEW)
-    elseif (NOT URHO3D_D3D11)
-        add_subdirectory (ThirdParty/MojoShader)
-    endif ()
-    if (NOT CMAKE_SYSTEM_NAME STREQUAL Linux)
-        add_subdirectory (ThirdParty/LibCpuId)
-    endif ()
-endif ()
-
+add_subdirectory (ThirdParty)
 add_subdirectory (Urho3D)
+add_subdirectory (Samples)
+add_subdirectory (Extras)
+add_subdirectory (Tools)
+add_subdirectory (Tests)
 
-# In order to get clean module segregation, always exclude player/samples from AAR
-if (NOT ANDROID)
-    add_subdirectory (Tools)
-    add_subdirectory (Samples)
-endif ()
-
-if (URHO3D_EXTRAS)
-    add_subdirectory (Extras)
+# Check options outside so user can add Player and/or Editor explicitly afterwards.
+if (URHO3D_PLAYER)
+    add_subdirectory (Player)
 endif ()

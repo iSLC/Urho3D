@@ -24,36 +24,106 @@ if (NOT URHO3D_SAMPLES)
     return ()
 endif ()
 
-# Set project name
-project (Urho3D-Samples)
+if (NOT URHO3D_WIN32_CONSOLE)
+    set (PLATFORM WIN32)
+endif ()
 
-# Find Urho3D library
-find_package (Urho3D REQUIRED)
-include_directories (${URHO3D_INCLUDE_DIRS})
-
-# Include common to all samples
-set (COMMON_SAMPLE_H_FILES "${CMAKE_CURRENT_SOURCE_DIR}/Sample.h" "${CMAKE_CURRENT_SOURCE_DIR}/Sample.inl")
-
-# Define dependency libs
-set (INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
-
-# Macro for adding sample subdirectory
-macro (add_sample_subdirectory SOURCE_DIR)
-    if (DEFINED ENV{included_sample})
-        if (DEFINED ENV{INCLUDED_SAMPLE_${SOURCE_DIR}})
-            add_subdirectory (${SOURCE_DIR} ${ARGN})
-        endif ()
-    elseif (NOT DEFINED ENV{EXCLUDED_SAMPLE_${SOURCE_DIR}})
-        add_subdirectory (${SOURCE_DIR} ${ARGN})
-    endif ()
-endmacro ()
-
-# Add samples
+## Add samples
 file (GLOB_RECURSE DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} CMakeLists.txt)
 list (SORT DIRS)
 foreach (DIR ${DIRS})
     get_filename_component (DIR ${DIR} PATH)
-    if (DIR)
-        add_sample_subdirectory (${DIR})
+    if (DIR AND NOT TARGET ${DIR})
+        add_subdirectory (${DIR})
     endif ()
 endforeach ()
+
+file (GLOB SAMPLE_MANAGER_SOURCE_CODE *.h *.cpp)
+
+if (ANDROID)
+    add_library(Samples MODULE ${SAMPLE_MANAGER_SOURCE_CODE} ${SOURCE_CODE})
+else ()
+    add_executable(Samples ${PLATFORM} MACOSX_BUNDLE ${SAMPLE_MANAGER_SOURCE_CODE} ${SOURCE_CODE})
+endif ()
+target_link_libraries(Samples PUBLIC Urho3D)
+target_include_directories(Samples PRIVATE .)
+set_property(TARGET Samples PROPERTY FOLDER "Sample Projects")
+if (TARGET Utilities2D)
+    target_link_libraries(Samples PUBLIC Utilities2D)
+endif ()
+
+vs_group_subdirectory_targets(${CMAKE_CURRENT_SOURCE_DIR} "Sample Projects")
+
+# Package resources for samples.
+if (URHO3D_PACKAGING)
+    create_pak("${Urho3D_SOURCE_DIR}/bin/Data"               "${CMAKE_BINARY_DIR}/bin/Data.pak")
+    create_pak("${Urho3D_SOURCE_DIR}/bin/CoreData"           "${CMAKE_BINARY_DIR}/bin/CoreData.pak")
+    set (URHO3D_DATA_PAKS "${CMAKE_BINARY_DIR}/bin/Data.pak" "${CMAKE_BINARY_DIR}/bin/CoreData.pak")
+endif ()
+
+if (XCODE)
+    # Default app bundle icon
+    set(RESOURCE_FILES ${Urho3D_SOURCE_DIR}/bin/Data/Textures/UrhoIcon.icns)
+    if (IOS)
+        # Default app icon on the iOS/tvOS home screen
+        list(APPEND RESOURCE_FILES ${Urho3D_SOURCE_DIR}/bin/Data/Textures/UrhoIcon.png)
+    endif ()
+    set_source_files_properties (${RESOURCE_FILES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+    target_sources(Samples PRIVATE ${RESOURCE_FILES})
+
+    if (IOS)
+        set_target_properties(Samples
+            PROPERTIES MACOSX_BUNDLE_BUNDLE_NAME \${PRODUCT_NAME}
+                       MACOSX_BUNDLE_GUI_IDENTIFIER com.github.urho3d.\${PRODUCT_NAME:rfc1034identifier:lower}
+        )
+        if (URHO3D_PACKAGING)
+            set_source_files_properties (${URHO3D_DATA_PAKS} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+            target_sources(Samples PRIVATE ${URHO3D_DATA_PAKS})
+        else ()
+            set_source_files_properties (
+                "${Urho3D_SOURCE_DIR}/bin/Data" "${Urho3D_SOURCE_DIR}/bin/CoreData"
+                PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+            target_sources(Samples PRIVATE
+                "${Urho3D_SOURCE_DIR}/bin/Data" "${Urho3D_SOURCE_DIR}/bin/CoreData")
+        endif ()
+    endif ()
+endif ()
+
+if (MSVC)
+    if (URHO3D_PACKAGING)
+        # Include .pak files under "Resource Files" in VS project.
+        source_group("Resource Files" FILES ${URHO3D_DATA_PAKS})
+        # Ensure file VS wont try to build resources.
+        set_property(SOURCE ${URHO3D_DATA_PAKS} PROPERTY VS_TOOL_OVERRIDE None)
+        # Include .pak files in UWP app. VS_DEPLOYMENT_LOCATION is not set, they will go into root of app dir.
+        set_property(SOURCE ${URHO3D_DATA_PAKS} PROPERTY VS_DEPLOYMENT_CONTENT 1)
+        # Consume file. Without this resources are just ignored.
+        target_sources(Samples PRIVATE ${URHO3D_DATA_PAKS})
+    else ()
+        foreach (subfolder Data CoreData)
+            file(GLOB_RECURSE DATA_FILES RELATIVE "${Urho3D_SOURCE_DIR}/bin" "${Urho3D_SOURCE_DIR}/bin/${subfolder}/**")
+            foreach (filename ${DATA_FILES})
+                set (filepath "${Urho3D_SOURCE_DIR}/bin/${filename}")
+                get_filename_component(dirname "${filename}" DIRECTORY)
+                # Include file in UWP app.
+                set_property(SOURCE ${filepath} PROPERTY VS_DEPLOYMENT_CONTENT 1)
+                # Set file path by which UWP app will access it.
+                set_property(SOURCE ${filepath} PROPERTY VS_DEPLOYMENT_LOCATION "${dirname}")
+                # Ensure file VS wont try to build resources.
+                set_property(SOURCE ${filepath} PROPERTY VS_TOOL_OVERRIDE None)
+                # Include file under "Resource Files" in VS project.
+                source_group("Resource Files/${dirname}" FILES "${filepath}")
+                # Consume file. Without this resources are just ignored.
+                target_sources(Samples PRIVATE "${filepath}")
+            endforeach ()
+        endforeach ()
+    endif ()
+endif ()
+
+if (NOT ANDROID)
+    install(TARGETS Samples
+        RUNTIME DESTINATION ${DEST_BIN_DIR_CONFIG}
+        LIBRARY DESTINATION ${DEST_BIN_DIR_CONFIG}
+        BUNDLE DESTINATION  ${DEST_BIN_DIR_CONFIG}
+    )
+endif ()

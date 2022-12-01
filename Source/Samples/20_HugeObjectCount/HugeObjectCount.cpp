@@ -42,7 +42,6 @@
 
 #include <Urho3D/DebugNew.h>
 
-URHO3D_DEFINE_APPLICATION_MAIN(HugeObjectCount)
 
 HugeObjectCount::HugeObjectCount(Context* context) :
     Sample(context),
@@ -233,7 +232,7 @@ void HugeObjectCount::MoveCamera(float timeStep)
 
 void HugeObjectCount::AnimateObjects(float timeStep)
 {
-    URHO3D_PROFILE(AnimateObjects);
+    URHO3D_PROFILE("AnimateObjects");
 
     const float ROTATE_SPEED = 15.0f;
     // Rotate about the Z axis (roll)

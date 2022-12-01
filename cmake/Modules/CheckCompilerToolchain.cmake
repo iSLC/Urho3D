@@ -29,7 +29,6 @@
 #  ARM
 #  MIPS
 #  POWERPC
-#  WEB
 #  X86
 #  E2K
 #
@@ -60,12 +59,6 @@
 #  IS_TRIVIALLY_COPY_ASSIGNABLE
 #  IS_TRIVIALLY_COPY_CONSTRUCTIBLE
 #  CLANG_PRE_STANDARD (Clang with pre-standard type trait templates)
-
-if (EMSCRIPTEN AND CMAKE_HOST_WIN32)
-    set (EMCC_FIX EMCC_FIX)
-    set (NULL_DEVICE${EMCC_FIX} ${CMAKE_BINARY_DIR}/${CMAKE_FILES_DIRECTORY}/null.c)
-    execute_process (COMMAND ${CMAKE_COMMAND} -E touch ${NULL_DEVICE${EMCC_FIX}})
-endif ()
 
 # Macro for checking if a predefined macro is emitted by the chosen compiler toolchain natively
 macro (check_native_define REGEX OUTPUT_VAR)
@@ -209,8 +202,6 @@ else ()
     # For completeness sake as currently we do not support MIPS and PowerPC (yet)
     check_native_define (__MIPSEL__ MIPS)
     check_native_define ("__(ppc|PPC|powerpc|POWERPC)(64)*__" POWERPC)
-    # For now we only support Emscripten compiler toolchain when targeting Web platform
-    check_native_define (__EMSCRIPTEN__ WEB)
     # Compiler should emit __x86_64__, __i686__, or __i386__, etc when targeting archs using Intel or AMD processors
     check_native_define ("__(i.86|x86_64)__" X86)
     # MCST lcc compiler only emits __e2k__ when targeting arch using MCST Elbrus 2000 processor

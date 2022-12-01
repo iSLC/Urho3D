@@ -20,28 +20,28 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME Bullet)
-
-# Define preprocessor macros
-if (BT_USE_DOUBLE_PRECISION)
-    add_definitions (-DBT_USE_DOUBLE_PRECISION)
-endif ()
-if (BT_THREADSAFE)
-    add_definitions (-DBT_THREADSAFE=1)
-endif ()
-if (BT_USE_OPENMP)
-    add_definitions (-DBT_USE_OPENMP=1)
+# Workaround for MinGW 6.1.0 and above where it throws ICE (internal compilation error) when -O3 is used
+if (MINGW AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.1.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 6.1.0))  # 6.1.0 is the last known bad version
+    string (REPLACE -O3 -O2 CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
 endif ()
 
 # Define source files
-define_source_files (RECURSE GLOB_CPP_PATTERNS src/*.cpp GLOB_H_PATTERNS src/*.h src/*.hpp)
+file (GLOB_RECURSE SOURCE_FILES *.h *.cpp)
+set (SOURCE_FILES ${SOURCE_FILES})
+add_library (Bullet STATIC ${SOURCE_FILES})
+target_include_directories(Bullet SYSTEM
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/Bullet>
+           $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+           $<INSTALL_INTERFACE:${DEST_THIRDPARTY_HEADERS_DIR}/Bullet>
+)
 
-# Define dependency libs
-set (INCLUDE_DIRS src)
+if (URHO3D_SSE)
+    target_compile_definitions(Bullet PUBLIC -DBT_USE_SSE=1)
+endif ()
 
-# Setup target
-setup_library ()
-
-# Install headers for building and using the Urho3D library (install dependency for Urho3D/Physics/PhysicsWorld.h, Urho3D/Physics/RigidBody.h, and Urho3D/Physics/PhysicsUtils.h)
-install_header_files (DIRECTORY src/ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/Bullet FILES_MATCHING PATTERN *.h)  # Note: the trailing slash is significant
+if (NOT MINI_URHO)
+    install(DIRECTORY Bullet DESTINATION ${DEST_THIRDPARTY_HEADERS_DIR} FILES_MATCHING PATTERN *.h)
+    if (NOT URHO3D_MERGE_STATIC_LIBS)
+        install(TARGETS Bullet EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+    endif ()
+endif ()

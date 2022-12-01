@@ -34,8 +34,6 @@
 #include <windows.h>
 #endif
 
-#define STBRP_LARGE_RECTS
-#define STB_RECT_PACK_IMPLEMENTATION
 #include <STB/stb_rect_pack.h>
 
 #include <Urho3D/DebugNew.h>

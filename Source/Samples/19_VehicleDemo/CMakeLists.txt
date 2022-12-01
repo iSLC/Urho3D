@@ -24,20 +24,6 @@ if (NOT URHO3D_PHYSICS)
     return ()
 endif ()
 
-# Define target name
-set (TARGET_NAME 19_VehicleDemo)
-
-# Define source files
-define_source_files (EXTRA_H_FILES ${COMMON_SAMPLE_H_FILES})
-
-# Setup target with resource copying
-if (EMSCRIPTEN)
-    # Override the Urho3D default
-    if (URHO3D_TESTING AND URHO3D_TEST_TIMEOUT LESS 15)
-        set (URHO3D_TEST_TIMEOUT 15)
-    endif ()
-endif ()
-setup_main_executable ()
-
-# Setup test cases
-setup_test ()
+file (GLOB SAMPLE_CODE *.h *.cpp)
+list (APPEND SOURCE_CODE ${SAMPLE_CODE})
+set (SOURCE_CODE "${SOURCE_CODE}" PARENT_SCOPE)

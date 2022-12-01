@@ -43,7 +43,7 @@
 #endif
 
 
-#include <SDL/SDL.h>
+#include <SDL.h>
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/html5.h>

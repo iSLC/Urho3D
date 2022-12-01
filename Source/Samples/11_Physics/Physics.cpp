@@ -48,7 +48,6 @@
 
 #include <Urho3D/DebugNew.h>
 
-URHO3D_DEFINE_APPLICATION_MAIN(Physics)
 
 Physics::Physics(Context* context) :
     Sample(context),
@@ -255,12 +254,22 @@ void Physics::MoveCamera(float timeStep)
     // directory
     if (input->GetKeyPress(KEY_F5))
     {
-        File saveFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Physics.xml", FILE_WRITE);
+        String filePath = GetSubsystem<FileSystem>()->GetProgramDir();
+#if _MSC_VER
+        filePath += "../";
+#endif
+        filePath += "Data/Scenes/Physics.xml";
+        File saveFile(context_, filePath, FILE_WRITE);
         scene_->SaveXML(saveFile);
     }
     if (input->GetKeyPress(KEY_F7))
     {
-        File loadFile(context_, GetSubsystem<FileSystem>()->GetProgramDir() + "Data/Scenes/Physics.xml", FILE_READ);
+        String filePath = GetSubsystem<FileSystem>()->GetProgramDir();
+#if _MSC_VER
+        filePath += "../";
+#endif
+        filePath += "Data/Scenes/Physics.xml";
+        File loadFile(context_, filePath, FILE_READ);
         scene_->LoadXML(loadFile);
     }
 

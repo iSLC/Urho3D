@@ -20,14 +20,10 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME 26_ConsoleInput)
+if (NOT URHO3D_NETWORK)
+    return ()
+endif ()
 
-# Define source files
-define_source_files (EXTRA_H_FILES ${COMMON_SAMPLE_H_FILES})
-
-# Setup target with resource copying
-setup_main_executable ()
-
-# Setup test cases
-setup_test ()
+file (GLOB SAMPLE_CODE *.h *.cpp)
+list (APPEND SOURCE_CODE ${SAMPLE_CODE})
+set (SOURCE_CODE "${SOURCE_CODE}" PARENT_SCOPE)

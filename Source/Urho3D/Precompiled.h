@@ -20,10 +20,11 @@
 // THE SOFTWARE.
 //
 
+#pragma once
+
 #ifdef __cplusplus
 
-#ifndef URHO3D_PCH_INCLUDED
-#define URHO3D_PCH_INCLUDED
+#if URHO3D_PCH
 
 #include "Container/HashMap.h"
 #include "Container/HashSet.h"

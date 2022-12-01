@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "../Container/Str.h"
+
 namespace Urho3D
 {
 

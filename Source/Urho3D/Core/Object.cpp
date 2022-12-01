@@ -309,7 +309,7 @@ void Object::SendEvent(StringHash eventType, VariantMap& eventData)
     if (blockEvents_)
         return;
 
-#ifdef URHO3D_TRACY_PROFILING
+#ifdef URHO3D_PROFILING
     URHO3D_PROFILE_COLOR(SendEvent, URHO3D_PROFILE_EVENT_COLOR);
 
     const String& eventName = GetEventNameRegister().GetString(eventType);

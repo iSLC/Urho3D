@@ -20,18 +20,16 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME MojoShader)
-
-# Define source files
-define_source_files (GLOB_CPP_PATTERNS *.c)
-
+file (GLOB_RECURSE SOURCE_FILES *.c *.h)
+add_library (MojoShader STATIC ${SOURCE_FILES})
 if (MSVC)
-    add_definitions (-D_CRT_SECURE_NO_WARNINGS=1 -TP)
-endif (MSVC)
+    target_compile_definitions (MojoShader PRIVATE -D_CRT_SECURE_NO_WARNINGS=1 -TP)
+endif ()
+target_include_directories(MojoShader
+    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/MojoShader>
+)
 
-# Setup target
-setup_library ()
-
-# Install headers for building the Urho3D library
-install_header_files (DIRECTORY ./ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/MojoShader FILES_MATCHING PATTERN *.h BUILD_TREE_ONLY)  # Note: the trailing slash is significant
+if (NOT URHO3D_MERGE_STATIC_LIBS)
+    install (TARGETS MojoShader EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+endif ()

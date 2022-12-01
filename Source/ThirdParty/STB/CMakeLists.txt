@@ -20,12 +20,23 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME STB)
+file (GLOB_RECURSE SOURCE_FILES *.h *.c)
+add_library(STB STATIC ${SOURCE_FILES})
 
-# Setup target
-add_custom_target (${TARGET_NAME} ALL)   # Dummy target just so that its post-build step can install headers to the build tree
-set (STATIC_LIBRARY_TARGETS ${STATIC_LIBRARY_TARGETS} ${TARGET_NAME} PARENT_SCOPE)
+if (WIN32)
+    target_compile_definitions(STB PUBLIC STBIW_WINDOWS_UTF8=1)
+endif ()
 
-# Install headers for building the Urho3D library
-install_header_files (DIRECTORY ./ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/STB FILES_MATCHING PATTERN *.h USE_FILE_SYMLINK BUILD_TREE_ONLY)  # Note: the trailing slash is significant
+target_include_directories(STB SYSTEM
+    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PUBLIC    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/STB>
+              $<INSTALL_INTERFACE:${DEST_THIRDPARTY_HEADERS_DIR}/STB>
+)
+
+if (NOT MINI_URHO)
+    install (DIRECTORY include/ DESTINATION ${DEST_THIRDPARTY_HEADERS_DIR}/ FILES_MATCHING PATTERN *.h)
+
+    if (NOT URHO3D_MERGE_STATIC_LIBS)
+        install(TARGETS STB EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+    endif ()
+endif ()

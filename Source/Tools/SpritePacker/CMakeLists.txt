@@ -20,11 +20,7 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME SpritePacker)
-
-# Define source files
-define_source_files ()
-
-# Setup target
-setup_executable (TOOL)
+file (GLOB SOURCE_FILES *.cpp *.h)
+add_executable (SpritePacker ${SOURCE_FILES})
+target_link_libraries (SpritePacker Urho3D STB)
+install(TARGETS SpritePacker RUNTIME DESTINATION ${DEST_BIN_DIR_CONFIG})

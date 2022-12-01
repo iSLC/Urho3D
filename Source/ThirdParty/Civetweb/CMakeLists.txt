@@ -20,16 +20,16 @@
 # THE SOFTWARE.
 #
 
-# Define target name
-set (TARGET_NAME Civetweb)
+file (GLOB_RECURSE SOURCE_FILES *.c *.h *.inl)
+add_library (Civetweb STATIC ${SOURCE_FILES})
+target_include_directories(Civetweb
+    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/Civetweb>
+)
 
 # Define preprocessor macros
 # Always disable Common Gateway Interface
-add_definitions(-DNO_CGI -DNO_FILES -DNO_CACHING)
-
-# Allow debug output to console
-# add_definitions(-DDEBUG)
-
+target_compile_definitions(Civetweb PRIVATE -DNO_CGI -DNO_FILES -DNO_CACHING)
 if (WIN32)
     include (CheckStructHasMember)
     check_struct_has_member (struct\ timespec tv_sec time.h HAVE_STRUCT_TIMESPEC_TV_SEC)
@@ -37,70 +37,45 @@ if (WIN32)
         include (CheckSymbolExists)
         check_symbol_exists (_TIMESPEC_DEFINED time.h HAVE__TIMESPEC_DEFINED)
         if (NOT HAVE__TIMESPEC_DEFINED)
-            add_definitions (-D_TIMESPEC_DEFINED)
+            target_compile_definitions(Civetweb PRIVATE -D_TIMESPEC_DEFINED)
         endif ()
     endif ()
+    target_link_libraries(Civetweb ws2_32.lib)
 elseif (APPLE AND (NOT IOS OR IPHONEOS_DEPLOYMENT_TARGET STREQUAL "" OR NOT IPHONEOS_DEPLOYMENT_TARGET VERSION_LESS 10.0))    # We cheat a little bit here with a hard-coded check because iOS 10.3 SDK when targeting 9.3 has strong symbol for iPhoneOS archs but weak symbol for iPhoneSimulator archs
     include (CheckLibraryExists)
     check_library_exists (c clock_gettime "" FOUND_CLOCK_GETTIME_IN_C)
     if (FOUND_CLOCK_GETTIME_IN_C)
-        add_definitions (-DHAVE_CLOCK_GETTIME)
+        target_compile_definitions(Civetweb PRIVATE -DHAVE_CLOCK_GETTIME)
     endif ()
 endif ()
 
-if (NOT URHO3D_SSL)
-    add_definitions(-DNO_SSL)
-elseif (NOT URHO3D_SSL_DYNAMIC)
-    add_definitions(-DNO_SSL_DL)
-endif ()
-
-# Define source files
-define_source_files (GLOB_CPP_PATTERNS src/*.c GLOB_H_PATTERNS include/*.h)
-
-# Define include directory
-set (INCLUDE_DIRS include)
-
-# Setup target
-setup_library ()
-
-# Link OpenSSL libraries
 if (URHO3D_SSL)
-    if (URHO3D_SSL_DYNAMIC)
-        # Unix systems can define the dynamic library names to load
-        if (UNIX AND NOT DARWIN)
-            add_definitions(-DCRYPTO_LIB="libcrypto.so")
-            add_definitions(-DSSL_LIB="libssl.so")
-        endif ()
-        find_library(LIBDL_LIBRARIES dl)
-        include(FindPackageHandleStandardArgs)
-        find_package_handle_standard_args(LibDl DEFAULT_MSG LIBDL_LIBRARIES LIBDL_INCLUDE_DIRS)
-        mark_as_advanced(LIBDL_INCLUDE_DIRS LIBDL_LIBRARIES)
-        find_path(LIBDL_INCLUDE_DIRS
-            NAMES dlfcn.h
-            PATHS ${LIBDL_ROOT}/include/
-        )
-        if (LIBDL_FOUND)
-            if (NOT TARGET LIBDL::LIBDL)
-                add_library(LIBDL::LIBDL UNKNOWN IMPORTED)
-                set_target_properties(LIBDL::LIBDL PROPERTIES
-                    IMPORTED_LOCATION "${LIBDL_LIBRARIES}"
-                    INTERFACE_INCLUDE_DIRECTORIES "${LIBDL_INCLUDE_DIRS}"
-                )
-            endif ()
-        endif ()
-        if (LIBDL_FOUND)
-            target_link_libraries(Civetweb -ldl)
-        endif ()
-    else ()
-        if (APPLE)
-            set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
-        endif ()
-        find_package(OpenSSL REQUIRED)
-        include_directories(${OPENSSL_INCLUDE_DIR})
-        message(STATUS "OpenSSL include directory: ${OPENSSL_INCLUDE_DIR}")
-        add_definitions(-DOPENSSL_API_1_1)
+    target_compile_definitions(Civetweb PRIVATE -DNO_SSL_DL)
+    if (NOT BUILD_SHARED_LIBS)
+        set (OPENSSL_USE_STATIC_LIBS ON)
     endif ()
+    if (MSVC AND URHO3D_STATIC_RUNTIME)
+        set (OPENSSL_MSVC_STATIC_RT ON)
+    endif ()
+    if (NOT DEFINED OPENSSL_ROOT_DIR AND APPLE)
+        set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl")
+    endif ()
+    find_package(OpenSSL REQUIRED)
+    target_link_libraries(Civetweb PRIVATE ${OPENSSL_LIBRARIES})
+    target_include_directories(Civetweb PRIVATE ${OPENSSL_INCLUDE_DIR})
+else ()
+    target_compile_definitions(Civetweb PRIVATE -DNO_SSL)
 endif ()
 
-# Install headers for building the Urho3D library
-install_header_files (DIRECTORY include/ DESTINATION ${DEST_INCLUDE_DIR}/ThirdParty/Civetweb FILES_MATCHING PATTERN *.h BUILD_TREE_ONLY)  # Note: the trailing slash is significant
+# TODO: This needs a better detection.
+target_compile_definitions(Civetweb PRIVATE -DHAVE_POLL=1)
+
+if (BUILD_SHARED_LIBS)
+    target_compile_definitions(Civetweb PRIVATE -DCIVETWEB_DLL_EXPORTS PUBLIC -DCIVETWEB_DLL_IMPORTS)
+endif ()
+
+install (DIRECTORY include/ DESTINATION ${DEST_THIRDPARTY_HEADERS_DIR}/ FILES_MATCHING PATTERN *.h)
+
+if (NOT URHO3D_MERGE_STATIC_LIBS)
+    install(TARGETS Civetweb EXPORT Urho3D ARCHIVE DESTINATION ${DEST_ARCHIVE_DIR_CONFIG})
+endif ()

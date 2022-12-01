@@ -41,7 +41,6 @@
 
 #include <Urho3D/DebugNew.h>
 
-URHO3D_DEFINE_APPLICATION_MAIN(PBRMaterials)
 
 PBRMaterials::PBRMaterials(Context* context) :
     Sample(context),
@@ -69,6 +68,9 @@ void PBRMaterials::Start()
 
     // Subscribe to global events for camera movement
     SubscribeToEvents();
+
+    // Set the mouse mode to use in the sample
+    Sample::InitMouseMode(MM_RELATIVE);
 }
 
 void PBRMaterials::CreateInstructions()

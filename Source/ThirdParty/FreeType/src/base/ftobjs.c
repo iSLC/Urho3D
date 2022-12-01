@@ -44,7 +44,6 @@
 #include "ftbase.h"
 #endif
 
-
 #ifdef FT_DEBUG_LEVEL_TRACE
 
 #include FT_BITMAP_H
@@ -5214,6 +5213,5 @@
 
     return error;
   }
-
 
 /* END */
