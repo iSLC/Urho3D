@@ -26,6 +26,8 @@
 
 #include "../DebugNew.h"
 
+#include <cstring>
+
 namespace Urho3D
 {
 

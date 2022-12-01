@@ -26,6 +26,8 @@
 
 #include "../DebugNew.h"
 
+#include <cassert>
+
 namespace Urho3D
 {
 

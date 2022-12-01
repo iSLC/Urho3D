@@ -23,6 +23,7 @@
 #pragma once
 
 #include "../Container/ListBase.h"
+#include <new>
 #include <initializer_list>
 
 namespace Urho3D

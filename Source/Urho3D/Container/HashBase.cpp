@@ -22,6 +22,8 @@
 
 #include "../Precompiled.h"
 
+#include "../Container/HashBase.h"
+
 #include "../DebugNew.h"
 
 namespace Urho3D
