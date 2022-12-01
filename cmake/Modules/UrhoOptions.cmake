@@ -77,8 +77,6 @@ option(BUILD_SHARED_LIBS                        "Build engine as shared library.
 option(URHO3D_ENABLE_ALL                        "Enable (almost) all engine features."  ON)
 option(URHO3D_STATIC_RUNTIME                    "Link to static runtime"               OFF)
 
-if (${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.16)
-
 # No need to check if cmake supports PCH since we have a hard cmake version requirement for the whole poject that's well above that version
 option(URHO3D_PCH                           "Enable precompiled header"                              ON)
 
