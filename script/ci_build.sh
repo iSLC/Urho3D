@@ -97,7 +97,7 @@ quirks_linux_clang_x64=(
 
 # Find msbuild.exe
 MSBUILD=msbuild
-if [[ "$ci_platform" == "windows" ]];
+if [[ "$ci_platform" == "windows" && "$ci_compiler" == "windows" ]];
 then
     MSBUILD=$(vswhere -products '*' -requires Microsoft.Component.MSBuild -property installationPath -latest)
     MSBUILD=$(echo $MSBUILD | tr "\\" "/" 2>/dev/null)    # Fix slashes
@@ -152,7 +152,7 @@ function action-dependencies() {
     then
         # iOS/MacOS dependencies
         brew install pkg-config ccache
-    elif [[ "$ci_platform" == "windows" ]];
+    elif [[ "$ci_platform" == "windows" && "$ci_compiler" != "mingw" ]];
     then
         # Windows dependencies
         choco install -y ccache
