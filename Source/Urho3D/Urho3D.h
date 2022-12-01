@@ -65,7 +65,7 @@
 
 #define DEFINE_NO_DEPRECATED 0
 #if DEFINE_NO_DEPRECATED
-# define URHO3D_NO_DEPRECATED
+#  define URHO3D_NO_DEPRECATED
 #endif
 
 #else
