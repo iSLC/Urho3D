@@ -206,8 +206,10 @@ bool btKinematicCharacterController::recoverFromPenetration(btCollisionWorld* co
 
 		btCollisionObject* obj0 = static_cast<btCollisionObject*>(collisionPair->m_pProxy0->m_clientObject);
 		btCollisionObject* obj1 = static_cast<btCollisionObject*>(collisionPair->m_pProxy1->m_clientObject);
-
-		if ((obj0 && !obj0->hasContactResponse()) || (obj1 && !obj1->hasContactResponse()))
+		// Urho3D: commented out original
+		//if ((obj0 && !obj0->hasContactResponse()) || (obj1 && !obj1->hasContactResponse()))
+		// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+		if ((obj0 && !hasContactResponse(obj0)) || (obj1 && !hasContactResponse(obj1)))
 			continue;
 
 		if (!needsCollision(obj0, obj1))
@@ -293,7 +295,10 @@ void btKinematicCharacterController::stepUp(btCollisionWorld* world)
 		world->convexSweepTest(m_convexShape, start, end, callback, world->getDispatchInfo().m_allowedCcdPenetration);
 	}
 
-	if (callback.hasHit() && m_ghostObject->hasContactResponse() && needsCollision(m_ghostObject, callback.m_hitCollisionObject))
+	// Urho3D: commented out original
+	//if (callback.hasHit() && m_ghostObject->hasContactResponse() && needsCollision(m_ghostObject, callback.m_hitCollisionObject))
+	// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+	if (callback.hasHit() && hasContactResponse(m_ghostObject) && needsCollision(m_ghostObject, callback.m_hitCollisionObject))
 	{
 		// Only modify the position if the hit was a slope and not a wall or ceiling.
 		if (callback.m_hitNormalWorld.dot(m_up) > 0.0)
@@ -433,7 +438,10 @@ void btKinematicCharacterController::stepForwardAndStrafe(btCollisionWorld* coll
 
 		fraction -= callback.m_closestHitFraction;
 
-		if (callback.hasHit() && m_ghostObject->hasContactResponse() && needsCollision(m_ghostObject, callback.m_hitCollisionObject))
+		// Urho3D: commented out original
+		//if (callback.hasHit() && m_ghostObject->hasContactResponse() && needsCollision(m_ghostObject, callback.m_hitCollisionObject))
+		// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+		if (callback.hasHit() && hasContactResponse(m_ghostObject) && needsCollision(m_ghostObject, callback.m_hitCollisionObject))
 		{
 			// we moved only a fraction
 			//btScalar hitDistance;
@@ -519,7 +527,10 @@ void btKinematicCharacterController::stepDown(btCollisionWorld* collisionWorld, 
 		{
 			m_ghostObject->convexSweepTest(m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
 
-			if (!callback.hasHit() && m_ghostObject->hasContactResponse())
+			// Urho3D: commented out original
+			//if (!callback.hasHit() && m_ghostObject->hasContactResponse())
+			// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+			if (!callback.hasHit() && hasContactResponse(m_ghostObject))
 			{
 				//test a double fall height, to see if the character should interpolate it's fall (full) or not (partial)
 				m_ghostObject->convexSweepTest(m_convexShape, start, end_double, callback2, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
@@ -529,7 +540,10 @@ void btKinematicCharacterController::stepDown(btCollisionWorld* collisionWorld, 
 		{
 			collisionWorld->convexSweepTest(m_convexShape, start, end, callback, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
 
-			if (!callback.hasHit() && m_ghostObject->hasContactResponse())
+			// Urho3D: commented out original
+			//if (!callback.hasHit() && m_ghostObject->hasContactResponse())
+			// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+			if (!callback.hasHit() && hasContactResponse(m_ghostObject))
 			{
 				//test a double fall height, to see if the character should interpolate it's fall (large) or not (small)
 				collisionWorld->convexSweepTest(m_convexShape, start, end_double, callback2, collisionWorld->getDispatchInfo().m_allowedCcdPenetration);
@@ -539,9 +553,15 @@ void btKinematicCharacterController::stepDown(btCollisionWorld* collisionWorld, 
 		btScalar downVelocity2 = (m_verticalVelocity < 0.f ? -m_verticalVelocity : 0.f) * dt;
 		bool has_hit;
 		if (bounce_fix == true)
-			has_hit = (callback.hasHit() || callback2.hasHit()) && m_ghostObject->hasContactResponse() && needsCollision(m_ghostObject, callback.m_hitCollisionObject);
+			// Urho3D: commented out original
+			//has_hit = (callback.hasHit() || callback2.hasHit()) && m_ghostObject->hasContactResponse() && needsCollision(m_ghostObject, callback.m_hitCollisionObject);
+			// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+			has_hit = (callback.hasHit() || callback2.hasHit()) && hasContactResponse(m_ghostObject) && needsCollision(m_ghostObject, callback.m_hitCollisionObject);
 		else
-			has_hit = callback2.hasHit() && m_ghostObject->hasContactResponse() && needsCollision(m_ghostObject, callback2.m_hitCollisionObject);
+			// Urho3D: commented out original
+			//has_hit = callback2.hasHit() && m_ghostObject->hasContactResponse() && needsCollision(m_ghostObject, callback2.m_hitCollisionObject);
+			// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+			has_hit = callback2.hasHit() && hasContactResponse(m_ghostObject) && needsCollision(m_ghostObject, callback2.m_hitCollisionObject);
 
 		btScalar stepHeight = 0.0f;
 		if (m_verticalVelocity < 0.0)
@@ -563,7 +583,10 @@ void btKinematicCharacterController::stepDown(btCollisionWorld* collisionWorld, 
 		break;
 	}
 
-	if ((m_ghostObject->hasContactResponse() && (callback.hasHit() && needsCollision(m_ghostObject, callback.m_hitCollisionObject))) || runonce == true)
+		// Urho3D: commented out original
+	//if ((m_ghostObject->hasContactResponse() && (callback.hasHit() && needsCollision(m_ghostObject, callback.m_hitCollisionObject))) || runonce == true)
+	// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+	if ((hasContactResponse(m_ghostObject) && (callback.hasHit() && needsCollision(m_ghostObject, callback.m_hitCollisionObject))) || runonce == true)
 	{
 		// we dropped a fraction of the height -> hit floor
 		btScalar fraction = (m_currentPosition.getY() - callback.m_hitPointWorld.getY()) / 2;
@@ -1002,4 +1025,10 @@ btQuaternion btKinematicCharacterController::getRotation(btVector3& v0, btVector
 	}
 
 	return shortestArcQuatNormalize2(v0, v1);
+}
+
+// Urho3D: Part of "Disable KinematicCharacterController interactions with bodies." fix
+bool btKinematicCharacterController::hasContactResponse(btCollisionObject* body) const
+{
+	return body == m_ghostObject || body->hasContactResponse();
 }
