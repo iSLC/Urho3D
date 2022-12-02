@@ -111,9 +111,6 @@ protected:
 
 	btQuaternion getRotation(btVector3 & v0, btVector3 & v1) const;
 
-	// Urho3D: Added this to force collision response even when ghost object has CF_NO_CONTACT_RESPONSE flag on.
-	bool hasContactResponse(btCollisionObject* body) const;
-
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
@@ -130,8 +127,8 @@ public:
 	///btActionInterface interface
 	void debugDraw(btIDebugDraw * debugDrawer);
 
-    // Urho3D: Setting new collision shape
-    void setCollisionShape(btConvexShape* shape);
+	// Urho3D: Setting new collision shape
+	void setCollisionShape(btConvexShape* shape);
 
 	void setUp(const btVector3& up);
 

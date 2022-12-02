@@ -20,11 +20,6 @@
 # THE SOFTWARE.
 #
 
-# Workaround for MinGW 6.1.0 and above where it throws ICE (internal compilation error) when -O3 is used
-if (MINGW AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 6.1.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 6.1.0))  # 6.1.0 is the last known bad version
-    string (REPLACE -O3 -O2 CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-endif ()
-
 # Define source files
 file (GLOB_RECURSE SOURCE_FILES *.h *.cpp)
 set (SOURCE_FILES ${SOURCE_FILES})
@@ -37,6 +32,7 @@ target_include_directories(Bullet SYSTEM
 
 if (URHO3D_SSE)
     target_compile_definitions(Bullet PUBLIC -DBT_USE_SSE=1)
+    # @TODO: look if BT_USE_NEON is triggered by BT_USE_SSE
 endif ()
 
 if (NOT MINI_URHO)

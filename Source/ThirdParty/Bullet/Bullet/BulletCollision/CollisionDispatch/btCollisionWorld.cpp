@@ -1,6 +1,6 @@
 /*
 Bullet Continuous Collision Detection and Physics Library
-Copyright (c) 2003-2006 Erwin Coumans  http://continuousphysics.com/Bullet/
+Copyright (c) 2003-2006 Erwin Coumans  https://bulletphysics.org
 
 This software is provided 'as-is', without any express or implied warranty.
 In no event will the authors be held liable for any damages arising from the use of this software.
@@ -12,8 +12,6 @@ subject to the following restrictions:
 2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
 3. This notice may not be removed or altered from any source distribution.
 */
-
-// Modified by Lasse Oorni for Urho3D
 
 #include "btCollisionWorld.h"
 #include "btCollisionDispatcher.h"
@@ -200,7 +198,6 @@ void btCollisionWorld::updateAabbs()
 {
 	BT_PROFILE("updateAabbs");
 
-	btTransform predictedTrans;
 	for (int i = 0; i < m_collisionObjects.size(); i++)
 	{
 		btCollisionObject* colObj = m_collisionObjects[i];
@@ -1039,7 +1036,7 @@ struct btSingleSweepCallback : public btBroadphaseRayCallback
 		  m_castShape(castShape)
 	{
 		btVector3 unnormalizedRayDir = (m_convexToTrans.getOrigin() - m_convexFromTrans.getOrigin());
-		btVector3 rayDir = unnormalizedRayDir.normalized();
+		btVector3 rayDir = unnormalizedRayDir.fuzzyZero() ? btVector3(btScalar(0.0), btScalar(0.0), btScalar(0.0)) : unnormalizedRayDir.normalized();
 		///what about division by zero? --> just set rayDirection[i] to INF/BT_LARGE_FLOAT
 		m_rayDirectionInverse[0] = rayDir[0] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDir[0];
 		m_rayDirectionInverse[1] = rayDir[1] == btScalar(0.0) ? btScalar(BT_LARGE_FLOAT) : btScalar(1.0) / rayDir[1];
@@ -1287,7 +1284,6 @@ public:
 		wv0 = m_worldTrans * triangle[0];
 		wv1 = m_worldTrans * triangle[1];
 		wv2 = m_worldTrans * triangle[2];
-
 		// Urho3D: commented out original
 		//btVector3 center = (wv0 + wv1 + wv2) * btScalar(1. / 3.);
 
@@ -1301,9 +1297,7 @@ public:
 			btVector3 normalColor(1, 1, 0);
 			m_debugDrawer->drawLine(center, center + normal, normalColor);
 		}
-		m_debugDrawer->drawLine(wv0, wv1, m_color);
-		m_debugDrawer->drawLine(wv1, wv2, m_color);
-		m_debugDrawer->drawLine(wv2, wv0, m_color);
+		m_debugDrawer->drawTriangle(wv0, wv1, wv2, m_color, 1.0);
 	}
 };
 

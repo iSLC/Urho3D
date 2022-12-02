@@ -1,6 +1,6 @@
 /*
  Copyright (c) 2011 Apple Inc.
- http://continuousphysics.com/Bullet/
+ https://bulletphysics.org
  
  This software is provided 'as-is', without any express or implied warranty.
  In no event will the authors be held liable for any damages arising from the use of this software.
@@ -14,8 +14,6 @@
  
  This source version has been altered.
  */
-
-// Modified by Yao Wei Tjong & Lasse Oorni for Urho3D
 
 #if defined(_WIN32) || defined(__i386__)
 #define BT_USE_SSE_IN_API
@@ -39,7 +37,6 @@ typedef float float4 __attribute__((vector_size(16)));
 
 // Urho3D: commented out original
 //#if defined BT_USE_SSE || defined _WIN32
-
 // Urho3D: just use BT_USE_SSE as the main switch, Urho3D allow SSE to be disabled
 #if defined BT_USE_SSE
 
@@ -53,13 +50,10 @@ long _maxdot_large(const float *vv, const float *vec, unsigned long count, float
 {
 	const float4 *vertices = (const float4 *)vv;
 	static const unsigned char indexTable[16] = {(unsigned char)-1, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
-
 	// Urho3D: commented out original
 	//float4 dotMax = btAssign128(-BT_INFINITY, -BT_INFINITY, -BT_INFINITY, -BT_INFINITY);
-
 	// Urho3D: cast to float in case BT_INFINITY is double on some MinGW derived compilers to prevent narrowing errors
 	float4 dotMax = btAssign128( static_cast<float>(-BT_INFINITY),  static_cast<float>(-BT_INFINITY), static_cast<float>(-BT_INFINITY), static_cast<float>(-BT_INFINITY) );
-
 	float4 vvec = _mm_loadu_ps(vec);
 	float4 vHi = btCastiTo128f(_mm_shuffle_epi32(btCastfTo128i(vvec), 0xaa));  /// zzzz
 	float4 vLo = _mm_movelh_ps(vvec, vvec);                                    /// xyxy
@@ -452,13 +446,10 @@ long _mindot_large(const float *vv, const float *vec, unsigned long count, float
 {
 	const float4 *vertices = (const float4 *)vv;
 	static const unsigned char indexTable[16] = {(unsigned char)-1, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0};
-
 	// Urho3D: commented out original
 	//float4 dotmin = btAssign128(BT_INFINITY, BT_INFINITY, BT_INFINITY, BT_INFINITY);
-
 	// Urho3D: cast to float in case BT_INFINITY is double on some MinGW derived compilers to prevent narrowing errors
 	float4 dotmin = btAssign128( static_cast<float>(BT_INFINITY), static_cast<float>(BT_INFINITY), static_cast<float>(BT_INFINITY), static_cast<float>(BT_INFINITY) );
-
 	float4 vvec = _mm_loadu_ps(vec);
 	float4 vHi = btCastiTo128f(_mm_shuffle_epi32(btCastfTo128i(vvec), 0xaa));  /// zzzz
 	float4 vLo = _mm_movelh_ps(vvec, vvec);                                    /// xyxy
@@ -917,10 +908,8 @@ static long _mindot_large_sel(const float *vv, const float *vec, unsigned long c
 
 // Urho3D: commented out original
 //#if defined __arm__
-
 // Urho3D: enable NEON on generic ARM
 #if defined __arm__ && __APPLE__
-
 #define vld1q_f32_aligned_postincrement(_ptr) ({ float32x4_t _r; asm( "vld1.f32 {%0}, [%1, :128]!\n" : "=w" (_r), "+r" (_ptr) ); /*return*/ _r; })
 #else
 //support 64bit arm
