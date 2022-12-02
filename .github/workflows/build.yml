@@ -304,7 +304,8 @@ jobs:
           name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ github.sha }}'
           path: ${{ env.ci_sdk_dir }}
 
-  MacOS: 🍏
+  MacOS:
+    name: 🍏
     #if: github.event.pull_request.draft == false
     if: false
     runs-on: macos-11
