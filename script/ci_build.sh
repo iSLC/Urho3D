@@ -7,6 +7,7 @@
 # ci_compiler:     msvc|gcc|gcc-*|clang|clang-*|mingw
 # ci_build_type:   dbg|rel
 # ci_lib_type:     lib|dll
+# ci_gfx_backend:  D3D9|D3D11|OpenGL|GLES2|GLES3
 # ci_source_dir:   source code directory
 # ci_build_dir:    cmake cache directory
 # ci_sdk_dir:      sdk installation directory
@@ -18,6 +19,9 @@ ci_cmake_params_user="$@"
 ci_compiler=${ci_compiler:-"default"}
 ci_build_type=${ci_build_type:-"rel"}
 ci_lib_type=${ci_lib_type:-"dll"}
+
+# default graphics backend
+ci_gfx_backend=${ci_gfx_backend:-"default"}
 
 # fix paths on windows by replacing \ with /.
 ci_source_dir=$(echo $ci_source_dir | tr "\\" "/" 2>/dev/null)
@@ -34,6 +38,7 @@ echo "ci_lib_type=$ci_lib_type"
 echo "ci_source_dir=$ci_source_dir"
 echo "ci_build_dir=$ci_build_dir"
 echo "ci_sdk_dir=$ci_sdk_dir"
+echo "ci_gfx_backend=$ci_gfx_backend"
 
 declare -A types=(
     [dbg]='Debug'
@@ -63,21 +68,18 @@ lib_types_dll=('-DBUILD_SHARED_LIBS=ON')
 # !! ccache only supports GCC precompiled headers. https://ccache.dev/manual/latest.html#_precompiled_headers
 quirks_mingw=(
     '-DURHO3D_PROFILING=OFF'
-    '-DURHO3D_CSHARP=OFF'
     '-DURHO3D_TESTING=OFF'
-    '-DURHO3D_GRAPHICS_API=OpenGL'
     '-DURHO3D_PCH=OFF'
 )
 quirks_msvc=(
     '-DURHO3D_PCH=OFF'
 )
 quirks_ios=(
-    '-DURHO3D_CSHARP=OFF'
+    
 )
 quirks_android=(
-    '-DURHO3D_CSHARP=OFF'
+    
 )
-quirks_dll=('-DURHO3D_CSHARP=ON')
 quirks_windows_msvc_x64=('-A' 'x64')
 quirks_windows_msvc_x86=('-A' 'Win32')
 quirks_clang=('-DTRACY_NO_PARALLEL_ALGORITHMS=ON')                  # Includes macos and ios
@@ -97,7 +99,7 @@ quirks_linux_clang_x64=(
 
 # Find msbuild.exe
 MSBUILD=msbuild
-if [[ "$ci_platform" == "windows" && "$ci_compiler" == "windows" ]];
+if [[ "$ci_platform" == "windows" && "$ci_compiler" == "msvc" ]];
 then
     MSBUILD=$(vswhere -products '*' -requires Microsoft.Component.MSBuild -property installationPath -latest)
     MSBUILD=$(echo $MSBUILD | tr "\\" "/" 2>/dev/null)    # Fix slashes
@@ -198,6 +200,14 @@ function action-generate() {
         ci_cmake_params+=(
             "-DCMAKE_C_COMPILER_LAUNCHER=ccache"
             "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+        )
+    fi
+
+    # if not specified, let cmake pick the default
+    if [[ "$ci_gfx_backend" != "default" ]];
+    then
+        ci_cmake_params+=(
+            "-DURHO3D_GRAPHICS_API=${ci_gfx_backend}"
         )
     fi
 

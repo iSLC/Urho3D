@@ -60,6 +60,10 @@ jobs:
           - rel
         ci_compiler:
           - msvc
+        ci_gfx_backend:
+          - D3D9
+          - D3D11
+          - OpenGL
 
     env:
       ci_platform: windows
@@ -67,6 +71,7 @@ jobs:
       ci_lib_type: ${{ matrix.ci_lib_type }}
       ci_build_type: ${{ matrix.ci_build_type }}
       ci_compiler: ${{ matrix.ci_compiler }}
+      ci_gfx_backend: ${{ matrix.ci_gfx_backend }}
       ci_artifacts: ${{ (github.ref == 'refs/heads/master') &&
                         (matrix.ci_build_type == 'rel')     &&
                         (matrix.ci_arch == 'x64')           &&
@@ -83,9 +88,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ github.sha }}
+          key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ matrix.ci_gfx_backend }}-${{ github.sha }}
           restore-keys: |
-            ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}
+            ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ matrix.ci_gfx_backend }}
 
       - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1.13
@@ -139,6 +144,10 @@ jobs:
           - rel
         ci_compiler:
           - mingw
+        ci_gfx_backend:
+          - D3D9
+          - D3D11
+          - OpenGL
 
     env:
       ci_platform: windows
@@ -146,6 +155,7 @@ jobs:
       ci_lib_type: ${{ matrix.ci_lib_type }}
       ci_build_type: ${{ matrix.ci_build_type }}
       ci_compiler: ${{ matrix.ci_compiler }}
+      ci_gfx_backend: ${{ matrix.ci_gfx_backend }}
       ci_artifacts: ${{ (github.ref == 'refs/heads/master') &&
                         (matrix.ci_build_type == 'rel')     &&
                         (matrix.ci_arch == 'x64')           &&
@@ -162,9 +172,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ env.CCACHE_DIR }}
-          key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ github.sha }}
+          key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ matrix.ci_gfx_backend }}-${{ github.sha }}
           restore-keys: |
-            ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}
+            ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ matrix.ci_gfx_backend }}
 
       - name: 'Setup MSYS2 x86'
         if: matrix.ci_arch == 'x86'
