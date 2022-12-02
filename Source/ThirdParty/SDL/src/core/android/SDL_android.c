@@ -25,6 +25,7 @@
 #include "SDL_hints.h"
 #include "SDL_main.h"
 #include "SDL_timer.h"
+#include "SDL_version.h"
 
 #ifdef __ANDROID__
 
@@ -63,6 +64,9 @@
 #define ENCODING_PCM_FLOAT  4
 
 /* Java class SDLActivity */
+JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(
+        JNIEnv *env, jclass cls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(
         JNIEnv *env, jclass cls);
 
@@ -167,6 +171,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePermissionResult)(
         jint requestCode, jboolean result);
 
 static JNINativeMethod SDLActivity_tab[] = {
+    { "nativeGetVersion",           "()Ljava/lang/String;", SDL_JAVA_INTERFACE(nativeGetVersion) },
     { "nativeSetupJNI",             "()I", SDL_JAVA_INTERFACE(nativeSetupJNI) },
     { "nativeRunMain",              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)I", SDL_JAVA_INTERFACE(nativeRunMain) },
     { "onNativeDropFile",           "(Ljava/lang/String;)V", SDL_JAVA_INTERFACE(onNativeDropFile) },
@@ -207,14 +212,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
         JNIEnv *env, jclass cls,
         jchar chUnicode);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
-        JNIEnv *env, jclass cls,
-        jstring text, jint newCursorPosition);
-
 static JNINativeMethod SDLInputConnection_tab[] = {
     { "nativeCommitText",                   "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText) },
-    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) },
-    { "nativeSetComposingText",             "(Ljava/lang/String;I)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText) }
+    { "nativeGenerateScancodeForUnichar",   "(C)V", SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar) }
 };
 
 /* Java class SDLAudioManager */
@@ -545,6 +545,16 @@ const char* SDL_Android_GetFilesDir()
     return mFilesDir;
 }
 
+/* Get SDL version -- called before SDL_main() to verify JNI bindings */
+JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetVersion)(JNIEnv *env, jclass cls)
+{
+    char version[128];
+
+    SDL_snprintf(version, sizeof(version), "%d.%d.%d", SDL_MAJOR_VERSION, SDL_MINOR_VERSION, SDL_PATCHLEVEL);
+
+    return (*env)->NewStringUTF(env, version);
+}
+
 /* Activity initialization -- called before SDL_main() to initialize JNI bindings */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cls)
 {
@@ -757,10 +767,16 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
             SDL_bool isstack;
 
             /* Prepare the arguments. */
-            // Urho3D: Remove any assumption on the arguments, except that the first argument will be the program name set by SDLActivity or its subclass
             len = (*env)->GetArrayLength(env, array);
+            // Urho3D: commented out original
+            //argv = SDL_small_alloc(char *, 1 + len + 1, &isstack);  /* !!! FIXME: check for NULL */
+            // Urho3D: Remove any assumption on the arguments, except that the first argument will be the program name set by SDLActivity or its subclass
             argv = SDL_small_alloc(char *, len + 1, &isstack);  /* !!! FIXME: check for NULL */
             argc = 0;
+            /* Use the name "app_process" so PHYSFS_platformCalcBaseDir() works.
+               https://bitbucket.org/MartinFelis/love-android-sdl2/issue/23/release-build-crash-on-start
+             */
+            argv[argc++] = SDL_strdup("app_process");
             for (i = 0; i < len; ++i) {
                 const char *utf;
                 char *arg = NULL;
@@ -782,11 +798,9 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
 
             // Urho3D: Set the files dir
             jobject context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
-            jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
-                "getFilesDir", "()Ljava/io/File;");
+            jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), "getFilesDir", "()Ljava/io/File;");
             jobject dir = (*env)->CallObjectMethod(env, context, mid);
-            mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, dir),
-                "getAbsolutePath", "()Ljava/lang/String;");
+            mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, dir), "getAbsolutePath", "()Ljava/lang/String;");
             jstring filesDir = (jstring)(*env)->CallObjectMethod(env, dir, mid);
 
             const char *str;
@@ -1196,7 +1210,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeLocaleChanged)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
                                     JNIEnv *env, jclass cls)
 {
-    // Urho3D: added log print
+    // Urho3D: Added log print
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeQuit()");
     // Urho3D: Free the memory that we allocate during init
     if (mFilesDir) {
@@ -1304,17 +1318,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
                                     jchar chUnicode)
 {
     SDL_SendKeyboardUnicodeKey(chUnicode);
-}
-
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
-                                    JNIEnv *env, jclass cls,
-                                    jstring text, jint newCursorPosition)
-{
-    const char *utftext = (*env)->GetStringUTFChars(env, text, NULL);
-
-    SDL_SendEditingText(utftext, 0, 0);
-
-    (*env)->ReleaseStringUTFChars(env, text, utftext);
 }
 
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
@@ -2291,7 +2294,7 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 //////////////////////////////////////////////////////////////////////////////
 */
 
-// Urho3D - function to return a list of files under a given path in "assets" directory (caller is responsible to free the C string array)
+// Urho3D: Function to return a list of files under a given path in "assets" directory (caller is responsible to free the C string array)
 char** SDL_Android_GetFileList(const char* path, int* count)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
@@ -2308,8 +2311,7 @@ char** SDL_Android_GetFileList(const char* path, int* count)
     jobject context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
 
     /* assetManager = context.getAssets(); */
-    jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
-            "getAssets", "()Landroid/content/res/AssetManager;");
+    jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context), "getAssets", "()Landroid/content/res/AssetManager;");
     jobject assetManager = (*env)->CallObjectMethod(env, context, mid);
 
     /* stringArray = assetManager.list(path) */
@@ -2338,7 +2340,7 @@ char** SDL_Android_GetFileList(const char* path, int* count)
     return cStringArray;
 }
 
-// Urho3D - helper function to free the file list returned by SDL_Android_GetFileList()
+// Urho3D: Helper function to free the file list returned by SDL_Android_GetFileList()
 void SDL_Android_FreeFileList(char*** array, int* count)
 {
     int i = *count;

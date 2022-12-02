@@ -213,7 +213,7 @@ WINRT_InitMouse(_THIS)
     mouse->CreateSystemCursor = WINRT_CreateSystemCursor;
     mouse->ShowCursor = WINRT_ShowCursor;
     mouse->FreeCursor = WINRT_FreeCursor;
-    mouse->WarpMouse = WINRT_WarpMouse;    // Urho3D: Oh yes it does!
+    mouse->WarpMouse = WINRT_WarpMouse; // Urho3D: Oh yes it does!
     mouse->SetRelativeMouseMode = WINRT_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(WINRT_CreateDefaultCursor());

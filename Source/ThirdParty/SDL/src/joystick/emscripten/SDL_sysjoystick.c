@@ -186,12 +186,6 @@ EMSCRIPTEN_JoystickInit(void)
     int retval, i, numjs;
     EmscriptenGamepadEvent gamepadState;
 
-    retval = emscripten_sample_gamepad_data();
-    /* Check if gamepad is supported by browser */
-    if (retval == EMSCRIPTEN_RESULT_NOT_SUPPORTED) {
-        return SDL_SetError("Gamepads not supported");
-    }
-
     numjoysticks = 0;
 
     retval = emscripten_sample_gamepad_data();
@@ -400,12 +394,9 @@ EMSCRIPTEN_JoystickClose(SDL_Joystick *joystick)
 static SDL_JoystickGUID
 EMSCRIPTEN_JoystickGetDeviceGUID(int device_index)
 {
-    SDL_JoystickGUID guid;
-    /* the GUID is just the first 16 chars of the name for now */
+    /* the GUID is just the name for now */
     const char *name = EMSCRIPTEN_JoystickGetDeviceName(device_index);
-    SDL_zero(guid);
-    SDL_memcpy(&guid, name, SDL_min(sizeof(guid), SDL_strlen(name)));
-    return guid;
+    return SDL_CreateJoystickGUIDForName(name);
 }
 
 static int

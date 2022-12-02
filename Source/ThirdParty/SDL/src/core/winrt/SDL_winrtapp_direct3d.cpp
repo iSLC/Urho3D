@@ -24,7 +24,7 @@
 #include <functional>
 #include <string>
 #include <sstream>
-//using namespace std;  // Urho3D fix
+//using namespace std;  // Urho3D: fix
 
 
 /* Windows includes */

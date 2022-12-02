@@ -32,7 +32,7 @@
 #include <functional>
 #include <string>
 #include <sstream>
-//using namespace std;  // Urho3D fix
+//using namespace std;  // Urho3D: fix
 
 /* Windows includes */
 #include <agile.h>
@@ -154,6 +154,8 @@ WINRT_CreateDevice(void)
     device->ShowScreenKeyboard = WINRT_ShowScreenKeyboard;
     device->HideScreenKeyboard = WINRT_HideScreenKeyboard;
     device->IsScreenKeyboardShown = WINRT_IsScreenKeyboardShown;
+
+    WINTRT_InitialiseInputPaneEvents(device);
 #endif
 
 #ifdef SDL_VIDEO_OPENGL_EGL
@@ -262,9 +264,10 @@ WINRT_VideoInit(_THIS)
     return 0;
 }
 
-// Urho3D: Copy D3D11_DXGIFormatToSDLPixelFormat() from SDL_render_d3d11.c, because we build without renderer.
+// Urho3D: commented out original
 //extern "C"
 //Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat);
+// Urho3D: Copy D3D11_DXGIFormatToSDLPixelFormat() from SDL_render_d3d11.c, because we build without renderer.
 static Uint32 D3D11_DXGIFormatToSDLPixelFormat(DXGI_FORMAT dxgiFormat)
 {
     switch (dxgiFormat) {
@@ -536,7 +539,7 @@ WINRT_DetectWindowFlags(SDL_Window * window)
 
 #if SDL_WINRT_USE_APPLICATIONVIEW
     if (data->appView) {
-        is_fullscreen = data->appView->IsFullScreen;
+        is_fullscreen = data->appView->IsFullScreenMode;
     }
 #elif (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION == NTDDI_WIN8)
     is_fullscreen = true;

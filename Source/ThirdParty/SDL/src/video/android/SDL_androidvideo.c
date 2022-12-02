@@ -192,7 +192,7 @@ Android_VideoInit(_THIS)
     mode.refresh_rate    = Android_ScreenRate;
     mode.driverdata      = NULL;
 
-    // Urho3D: merge patch found in https://bugzilla.libsdl.org/show_bug.cgi?id=2291 submitted by Thomas Faller
+    // Urho3D: Merge patch found in https://bugzilla.libsdl.org/show_bug.cgi?id=2291 submitted by Thomas Faller
     SDL_PixelFormat pixelFormat;
     Uint32 mask;
     int bitCount;
@@ -216,6 +216,7 @@ Android_VideoInit(_THIS)
             bitCount += 1;
         SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, bitCount);
     }
+    // Urho3D: End of patch
 
     display_index = SDL_AddBasicVideoDisplay(&mode);
     if (display_index < 0) {
@@ -274,6 +275,9 @@ Uint32 format_to_pixelFormat(int format) {
         pf = SDL_PIXELFORMAT_RGBA5551;
     } else if (format == 7) {
         pf = SDL_PIXELFORMAT_RGBA4444;
+    } else if (format == 0x115) {
+        /* HAL_PIXEL_FORMAT_BGR_565 */
+        pf = SDL_PIXELFORMAT_RGB565;
     } else {
         pf = SDL_PIXELFORMAT_UNKNOWN;
     }

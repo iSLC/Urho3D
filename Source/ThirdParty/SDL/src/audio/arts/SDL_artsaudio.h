@@ -18,14 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
-// Modified by Yao Wei Tjong for Urho3D
-
 #include "../../SDL_internal.h"
 
 #ifndef SDL_artsaudio_h_
 #define SDL_artsaudio_h_
 
+// Urho3D: commented out original
+//#include <artsc.h>
 // Urho3D - bug fix - use the correct include path to avoid adding artsc-specific include directory into header search path
 #include <artsc/artsc.h>
 

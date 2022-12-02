@@ -46,7 +46,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
     switch (pathType) {
         case SDL_WINRT_PATH_INSTALLED_LOCATION:
         {
-            static std::wstring path;
+            static wstring path;
             if (path.empty()) {
 #if defined(NTDDI_WIN10_19H1) && (NTDDI_VERSION >= NTDDI_WIN10_19H1) && (WINAPI_FAMILY == WINAPI_FAMILY_PC_APP) /* Only PC supports mods */
                 /* Windows 1903 supports mods, via the EffectiveLocation API */
@@ -64,7 +64,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
 
         case SDL_WINRT_PATH_LOCAL_FOLDER:
         {
-            static std::wstring path;
+            static wstring path;
             if (path.empty()) {
                 path = ApplicationData::Current->LocalFolder->Path->Data();
             }
@@ -74,7 +74,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
 #if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
         case SDL_WINRT_PATH_ROAMING_FOLDER:
         {
-            static std::wstring path;
+            static wstring path;
             if (path.empty()) {
                 path = ApplicationData::Current->RoamingFolder->Path->Data();
             }
@@ -83,7 +83,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
 
         case SDL_WINRT_PATH_TEMP_FOLDER:
         {
-            static std::wstring path;
+            static wstring path;
             if (path.empty()) {
                 path = ApplicationData::Current->TemporaryFolder->Path->Data();
             }
@@ -102,7 +102,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
 extern "C" const char *
 SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType)
 {
-    typedef std::unordered_map<SDL_WinRT_Path, std::string> UTF8PathMap;
+    typedef unordered_map<SDL_WinRT_Path, string> UTF8PathMap;
     static UTF8PathMap utf8Paths;
 
     UTF8PathMap::iterator searchResult = utf8Paths.find(pathType);

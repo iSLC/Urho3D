@@ -74,15 +74,20 @@ android_egl_context_restore(SDL_Window *window)
     if (window) {
         SDL_Event event;
         SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-        // Urho3D: make sure there is a valid stored context to restore
+        // Urho3D: commented out original
+        //if (SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context) < 0) {
+        // Urho3D: Make sure there is a valid stored context to restore
         if (data->egl_context && SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context) < 0) {
-            // Urho3D: if the old context could not be restored, leave it to the Graphics subsystem to create a new one
+            // Urho3D: If the old context could not be restored, leave it to the Graphics subsystem to create a new one
             data->egl_context = NULL;
             /* The context is no longer valid, create a new one */
-            /*data->egl_context = (EGLContext) SDL_GL_CreateContext(window);
+            // Urho3D: commented out original
+            /*
+            data->egl_context = (EGLContext) SDL_GL_CreateContext(window);
             SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context);
             event.type = SDL_RENDER_DEVICE_RESET;
-            SDL_PushEvent(&event);*/
+            SDL_PushEvent(&event);
+            */
         }
         data->backup_done = 0;
     }

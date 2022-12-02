@@ -22,12 +22,14 @@
 /*
  * @author Mark Callow, www.edgewise-consulting.com.
  *
- * Thanks to Alex Szpakowski, @slime73 on GitHub, for his gist showing
- * how to add a CAMetalLayer backed view.
+ * Thanks to @slime73 on GitHub for their gist showing how to add a CAMetalLayer
+ * backed view.
  */
 
 #include "../../SDL_internal.h"
 
+// Urho3D: commented out original
+//#if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
 // Urho3D - iOS/tvOS simulator does not have Metal support
 #if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) && !defined(TARGET_IPHONE_SIMULATOR)
 
@@ -88,11 +90,7 @@ UIKit_Metal_CreateView(_THIS, SDL_Window * window)
          * dimensions of the screen rather than the dimensions in points
          * yielding high resolution on retine displays.
          */
-        if ([data.uiwindow.screen respondsToSelector:@selector(nativeScale)]) {
-            scale = data.uiwindow.screen.nativeScale;
-        } else {
-            scale = data.uiwindow.screen.scale;
-        }
+        scale = data.uiwindow.screen.nativeScale;
     }
 
     metalview = [[SDL_uikitmetalview alloc] initWithFrame:data.uiwindow.bounds

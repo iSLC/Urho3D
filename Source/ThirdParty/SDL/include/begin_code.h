@@ -63,7 +63,9 @@
 #else
 #   define DECLSPEC
 #endif
+
 /* Some compilers use a special export keyword */
+// Urho3D: commented out original
 /*
 #ifndef DECLSPEC
 # if defined(__WIN32__) || defined(__WINRT__) || defined(__CYGWIN__) || defined(__GDK__)

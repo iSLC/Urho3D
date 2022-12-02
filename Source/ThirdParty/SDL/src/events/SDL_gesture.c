@@ -174,7 +174,9 @@ int SDL_SaveDollarTemplate(SDL_GestureID gestureId, SDL_RWops *dst)
     for (i = 0; i < SDL_numGestureTouches; i++) {
         SDL_GestureTouch* touch = &SDL_gestureTouch[i];
         for (j = 0; j < touch->numDollarTemplates; j++) {
-            // Urho3D: gesture IDs are stored as 32bit, so check the low bits only. Fix index variable (i -> j)
+            // Urho3D: commented out original
+            //if (touch->dollarTemplate[j].hash == gestureId) {
+            // Urho3D: Gesture IDs are stored as 32bit, so check the low bits only
             if ((touch->dollarTemplate[j].hash & 0xffffffff) == (gestureId & 0xffffffff)) {
                 return SaveTemplate(&touch->dollarTemplate[j], dst);
             }
@@ -183,7 +185,7 @@ int SDL_SaveDollarTemplate(SDL_GestureID gestureId, SDL_RWops *dst)
     return SDL_SetError("Unknown gestureId");
 }
 
-// Urho3D: added function
+// Urho3D: Added function
 static void SDL_RemoveDollarTemplate_one(SDL_GestureTouch* inTouch, int index)
 {
     if (index < inTouch->numDollarTemplates - 1) {
@@ -201,7 +203,7 @@ static void SDL_RemoveDollarTemplate_one(SDL_GestureTouch* inTouch, int index)
     --inTouch->numDollarTemplates;
 }
 
-// Urho3D: added function
+// Urho3D: Added function
 int SDL_RemoveDollarTemplate(SDL_GestureID gestureId)
 {
     int i,j,ret = 0;
@@ -218,7 +220,7 @@ int SDL_RemoveDollarTemplate(SDL_GestureID gestureId)
     return ret;
 }
 
-// Urho3D: added function
+// Urho3D: Added function
 void SDL_RemoveAllDollarTemplates(void)
 {
     int i;

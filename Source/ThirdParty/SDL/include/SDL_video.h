@@ -796,8 +796,10 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title,
  * \since This function is available since SDL 2.0.0.
  *
  * \sa SDL_CreateWindow
- * \sa SDL_DestroyWindowSDL_LoadDollarTemplates
+ * \sa SDL_DestroyWindow
  */
+// Urho3D: commented out original
+//extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowFrom(const void *data);
 // Urho3D: added window flags parameter
 extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowFrom(const void *data, Uint32 flags);
 
@@ -1046,6 +1048,27 @@ extern DECLSPEC void SDLCALL SDL_GetWindowSize(SDL_Window * window, int *w,
 extern DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window * window,
                                                      int *top, int *left,
                                                      int *bottom, int *right);
+
+/**
+ * Get the size of a window in pixels.
+ *
+ * This may differ from SDL_GetWindowSize() if we're rendering to a high-DPI
+ * drawable, i.e. the window was created with `SDL_WINDOW_ALLOW_HIGHDPI` on a
+ * platform with high-DPI support (Apple calls this "Retina"), and not
+ * disabled by the `SDL_HINT_VIDEO_HIGHDPI_DISABLED` hint.
+ *
+ * \param window the window from which the drawable size should be queried
+ * \param w a pointer to variable for storing the width in pixels, may be NULL
+ * \param h a pointer to variable for storing the height in pixels, may be
+ *          NULL
+ *
+ * \since This function is available since SDL 2.26.0.
+ *
+ * \sa SDL_CreateWindow
+ * \sa SDL_GetWindowSize
+ */
+extern DECLSPEC void SDLCALL SDL_GetWindowSizeInPixels(SDL_Window * window,
+                                                       int *w, int *h);
 
 /**
  * Set the minimum size of a window's client area.
@@ -1790,6 +1813,9 @@ extern DECLSPEC void SDLCALL SDL_EnableScreenSaver(void);
  *
  * If you disable the screensaver, it is automatically re-enabled when SDL
  * quits.
+ *
+ * The screensaver is disabled by default since SDL 2.0.2. Before SDL 2.0.2
+ * the screensaver was enabled by default.
  *
  * \since This function is available since SDL 2.0.0.
  *
