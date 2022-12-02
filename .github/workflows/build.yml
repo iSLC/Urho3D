@@ -118,11 +118,11 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} install
 
-      - uses: actions/upload-artifact@v3
-        if: env.ci_artifacts == 'true'
-        with:
-          name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ github.sha }}'
-          path: ${{ env.ci_sdk_dir }}
+      #- uses: actions/upload-artifact@v3
+      #  if: env.ci_artifacts == 'true'
+      #  with:
+      #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_gfx_backend }}-${{ github.sha }}'
+      #    path: ${{ env.ci_sdk_dir }}
 
   MinGW:
     name: 💠
@@ -227,11 +227,11 @@ jobs:
         shell: msys2 {0}
         run: ${{ env.ci_build_script }} install
 
-      - uses: actions/upload-artifact@v3
-        if: env.ci_artifacts == 'true'
-        with:
-          name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ github.sha }}'
-          path: ${{ env.ci_sdk_dir }}
+      #- uses: actions/upload-artifact@v3
+      #  if: env.ci_artifacts == 'true'
+      #  with:
+      #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_gfx_backend }}-${{ github.sha }}'
+      #    path: ${{ env.ci_sdk_dir }}
 
   Linux:
     name: 🐧
@@ -308,11 +308,11 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} install
 
-      - uses: actions/upload-artifact@v3
-        if: env.ci_artifacts == 'true'
-        with:
-          name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ github.sha }}'
-          path: ${{ env.ci_sdk_dir }}
+      #- uses: actions/upload-artifact@v3
+      #  if: env.ci_artifacts == 'true'
+      #  with:
+      #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ github.sha }}'
+      #    path: ${{ env.ci_sdk_dir }}
 
   MacOS:
     name: 🍏
@@ -394,11 +394,12 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} install
 
-      - uses: actions/upload-artifact@v3
-        if: env.ci_artifacts == 'true'
-        with:
-          name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ github.sha }}'
-          path: ${{ env.ci_sdk_dir }}
+      #- uses: actions/upload-artifact@v3
+      #  if: env.ci_artifacts == 'true'
+      #  with:
+      #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ github.sha }}'
+      #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ github.sha }}'
+      #    path: ${{ env.ci_sdk_dir }}
 
   Android:
     name: 🤖
@@ -453,11 +454,11 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} build-android
 
-      - uses: actions/upload-artifact@v3
-        if: env.ci_artifacts == 'true'
-        with:
-          name: 'urho3d-${{ github.job }}-${{ github.sha }}'
-          path: '**/*.apk'
+      #- uses: actions/upload-artifact@v3
+      #  if: env.ci_artifacts == 'true'
+      #  with:
+      #    name: 'urho3d-${{ github.job }}-${{ github.sha }}'
+      #    path: '**/*.apk'
 
   iOS:
     name: 🍎
@@ -519,8 +520,8 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} build
 
-      - uses: actions/upload-artifact@v3
-        if: env.ci_artifacts == 'true'
-        with:
-          name: 'urho3d-${{ github.job }}-${{ github.sha }}'
-          path: '**/*.app'
+      #- uses: actions/upload-artifact@v3
+      #  if: env.ci_artifacts == 'true'
+      #  with:
+      #    name: 'urho3d-${{ github.job }}-${{ github.sha }}'
+      #    path: '**/*.app'
