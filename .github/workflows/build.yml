@@ -41,8 +41,8 @@ jobs:
       - run: exit 0
 
   Windows:
-    #if: github.event.pull_request.draft == false
-    if: false
+    name: 🔲
+    if: github.event.pull_request.draft == false
     runs-on: windows-2022
     needs: [CheckSkipCI]
 
@@ -67,15 +67,10 @@ jobs:
       ci_lib_type: ${{ matrix.ci_lib_type }}
       ci_build_type: ${{ matrix.ci_build_type }}
       ci_compiler: ${{ matrix.ci_compiler }}
-      ci_artifacts: ${{ (
-                          github.ref == 'refs/heads/master'           ||
-                          startsWith(github.ref, 'refs/tags/nuget/')  ||
-                          startsWith(github.ref, 'refs/heads/nuget/')
-                        )                                             &&
-                        (matrix.ci_build_type == 'rel')               &&
-                        (matrix.ci_arch == 'x64')                     &&
-                        (matrix.ci_lib_type == 'dll')                 &&
-                        (matrix.ci_compiler == 'msvc')
+      ci_artifacts: ${{ (github.ref == 'refs/heads/master') &&
+                        (matrix.ci_build_type == 'rel')     &&
+                        (matrix.ci_arch == 'x64')           &&
+                        (matrix.ci_lib_type == 'dll')
                     }}
 
     steps:
@@ -125,6 +120,7 @@ jobs:
           path: ${{ env.ci_sdk_dir }}
 
   MinGW:
+    name: 💠
     if: github.event.pull_request.draft == false
     runs-on: windows-2022
     needs: [CheckSkipCI]
@@ -150,15 +146,10 @@ jobs:
       ci_lib_type: ${{ matrix.ci_lib_type }}
       ci_build_type: ${{ matrix.ci_build_type }}
       ci_compiler: ${{ matrix.ci_compiler }}
-      ci_artifacts: ${{ (
-                          github.ref == 'refs/heads/master'           ||
-                          startsWith(github.ref, 'refs/tags/nuget/')  ||
-                          startsWith(github.ref, 'refs/heads/nuget/')
-                        )                                             &&
-                        (matrix.ci_build_type == 'rel')               &&
-                        (matrix.ci_arch == 'x64')                     &&
-                        (matrix.ci_lib_type == 'dll')                 &&
-                        (matrix.ci_compiler == 'msvc')
+      ci_artifacts: ${{ (github.ref == 'refs/heads/master') &&
+                        (matrix.ci_build_type == 'rel')     &&
+                        (matrix.ci_arch == 'x64')           &&
+                        (matrix.ci_lib_type == 'dll')
                     }}
 
     steps:
@@ -233,6 +224,7 @@ jobs:
           path: ${{ env.ci_sdk_dir }}
 
   Linux:
+    name: 🐧
     #if: github.event.pull_request.draft == false
     if: false
     runs-on: ubuntu-20.04
@@ -248,7 +240,7 @@ jobs:
           - dll
           - lib
         ci_build_type:
-          - dbg
+          #- dbg
           - rel
         ci_compiler:
           - gcc
@@ -260,14 +252,10 @@ jobs:
       ci_lib_type: ${{ matrix.ci_lib_type }}
       ci_build_type: ${{ matrix.ci_build_type }}
       ci_compiler: ${{ matrix.ci_compiler }}
-      ci_artifacts: ${{ (
-                          github.ref == 'refs/heads/master'           ||
-                          startsWith(github.ref, 'refs/tags/nuget/')  ||
-                          startsWith(github.ref, 'refs/heads/nuget/')
-                        )                                             &&
-                        (matrix.ci_build_type == 'rel')               &&
-                        (matrix.ci_arch == 'x64')                     &&
-                        (matrix.ci_lib_type == 'dll')                 &&
+      ci_artifacts: ${{ (github.ref == 'refs/heads/master') &&
+                        (matrix.ci_build_type == 'rel')     &&
+                        (matrix.ci_arch == 'x64')           &&
+                        (matrix.ci_lib_type == 'dll')       &&
                         (matrix.ci_compiler == 'gcc')
                     }}
 
@@ -285,13 +273,7 @@ jobs:
           restore-keys: |
             ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}
 
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        if: matrix.ci_lib_type == 'dll'
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Setup cmake
+      - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1.13
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
@@ -322,7 +304,7 @@ jobs:
           name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ github.sha }}'
           path: ${{ env.ci_sdk_dir }}
 
-  MacOS:
+  MacOS: 🍏
     #if: github.event.pull_request.draft == false
     if: false
     runs-on: macos-11
@@ -338,7 +320,7 @@ jobs:
           - dll
           - lib
         ci_build_type:
-          - dbg
+          #- dbg
           - rel
         ci_compiler:
           - clang
@@ -349,14 +331,10 @@ jobs:
       ci_lib_type: ${{ matrix.ci_lib_type }}
       ci_build_type: ${{ matrix.ci_build_type }}
       ci_compiler: ${{ matrix.ci_compiler }}
-      ci_artifacts: ${{ (
-                          github.ref == 'refs/heads/master'           ||
-                          startsWith(github.ref, 'refs/tags/nuget/')  ||
-                          startsWith(github.ref, 'refs/heads/nuget/')
-                        )                                             &&
-                        (matrix.ci_build_type == 'rel')               &&
-                        (matrix.ci_arch == 'x64')                     &&
-                        (matrix.ci_lib_type == 'dll')                 &&
+      ci_artifacts: ${{ (github.ref == 'refs/heads/master') &&
+                        (matrix.ci_build_type == 'rel')     &&
+                        (matrix.ci_arch == 'x64')           &&
+                        (matrix.ci_lib_type == 'dll')       &&
                         (matrix.ci_compiler == 'clang')
                     }}
 
@@ -384,7 +362,7 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      - name: Setup cmake
+      - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1.13
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
@@ -412,6 +390,7 @@ jobs:
           path: ${{ env.ci_sdk_dir }}
 
   Android:
+    name: 🤖
     #if: github.event.pull_request.draft == false
     if: false
     runs-on: ubuntu-20.04
@@ -421,7 +400,7 @@ jobs:
       fail-fast: false
       matrix:
         ci_build_type:
-          - dbg
+          #- dbg
           - rel
 
     env:
@@ -430,13 +409,7 @@ jobs:
       ci_lib_type: ${{ matrix.ci_lib_type }}
       ci_build_type: ${{ matrix.ci_build_type }}
       ci_compiler: ${{ matrix.ci_compiler }}
-      ci_artifacts: ${{ (
-                          github.ref == 'refs/heads/master'           ||
-                          startsWith(github.ref, 'refs/tags/nuget/')  ||
-                          startsWith(github.ref, 'refs/heads/nuget/')
-                        )                                             &&
-                        (matrix.ci_build_type == 'rel')
-                    }}
+      ci_artifacts: ${{ (github.ref == 'refs/heads/master') && (matrix.ci_build_type == 'rel') }}
 
     steps:
       - uses: actions/checkout@v3
@@ -452,13 +425,7 @@ jobs:
           restore-keys: |
             ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_build_type }}
 
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        if: matrix.ci_lib_type == 'dll'
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Setup cmake
+      - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1.13
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
@@ -482,6 +449,7 @@ jobs:
           path: '**/*.apk'
 
   iOS:
+    name: 🍎
     #if: github.event.pull_request.draft == false
     if: false
     runs-on: macos-11
@@ -494,7 +462,7 @@ jobs:
           # - dll           # TODO: Linker error failing to find SDL_main.
           - lib
         ci_build_type:
-          - dbg
+          #- dbg
           - rel
 
     env:
@@ -503,13 +471,7 @@ jobs:
       ci_lib_type: ${{ matrix.ci_lib_type }}
       ci_build_type: ${{ matrix.ci_build_type }}
       ci_compiler: ${{ matrix.ci_compiler }}
-      ci_artifacts: ${{ (
-                          github.ref == 'refs/heads/master'           ||
-                          startsWith(github.ref, 'refs/tags/nuget/')  ||
-                          startsWith(github.ref, 'refs/heads/nuget/')
-                        )                                             &&
-                        (matrix.ci_build_type == 'rel')
-                    }}
+      ci_artifacts: ${{ (github.ref == 'refs/heads/master') && (matrix.ci_build_type == 'rel') }}
 
     steps:
       - uses: actions/checkout@v3
@@ -525,13 +487,7 @@ jobs:
           restore-keys: |
             ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}
 
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v1
-        if: matrix.ci_lib_type == 'dll'
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      - name: Setup cmake
+      - name: Setup CMake
         uses: jwlawson/actions-setup-cmake@v1.13
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
