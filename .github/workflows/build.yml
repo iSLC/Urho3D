@@ -110,7 +110,6 @@ jobs:
         run: ${{ env.ci_build_script }} build-${{ env.ci_compiler }}
 
       - name: Test
-        if: matrix.ci_compiler == 'msvc'
         shell: bash
         run: ${{ env.ci_build_script }} test
 
@@ -219,7 +218,6 @@ jobs:
         run: ${{ env.ci_build_script }} build-${{ env.ci_compiler }}
 
       - name: Test
-        if: matrix.ci_compiler == 'msvc'
         shell: msys2 {0}
         run: ${{ env.ci_build_script }} test
 
