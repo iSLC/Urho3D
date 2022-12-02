@@ -21,7 +21,7 @@
 #
 
 # Set CMake minimum version. Also set in android/build.gradle for android projects.
-cmake_minimum_required (VERSION 3.22)
+cmake_minimum_required (VERSION 3.21)
 
 # Set C++ standard
 if (NOT DEFINED CMAKE_CXX_STANDARD)
