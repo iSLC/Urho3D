@@ -163,11 +163,7 @@ public:
     }
 
     /// Destruct.
-    ~String()
-    {
-        if (capacity_)
-            delete[] buffer_;
-    }
+    ~String();
 
     /// Assign a string.
     String& operator =(const String& rhs)

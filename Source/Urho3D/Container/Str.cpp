@@ -177,6 +177,20 @@ String::String(char value, unsigned length) :
         buffer_[i] = value;
 }
 
+String::~String()
+{
+    if (capacity_)
+        #ifdef __GNUC__
+            // Compiler doesn't know that the condition above makes this situation unreachable
+            #pragma GCC diagnostic push
+            #pragma GCC diagnostic ignored "-Wfree-nonheap-object"
+        #endif
+        delete[] buffer_;
+        #ifdef __GNUC__
+            #pragma GCC diagnostic pop
+        #endif
+}
+
 String& String::operator +=(int rhs)
 {
     return *this += String(rhs);
