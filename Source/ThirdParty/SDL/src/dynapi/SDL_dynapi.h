@@ -75,7 +75,7 @@
 #ifndef SDL_DYNAMIC_API
 // Urho3D: commented out original
 //#define SDL_DYNAMIC_API 1
-// Urho3D: disabled dynamic API
+// Urho3D: Disabled dynamic API
 #define SDL_DYNAMIC_API 0
 #endif
 

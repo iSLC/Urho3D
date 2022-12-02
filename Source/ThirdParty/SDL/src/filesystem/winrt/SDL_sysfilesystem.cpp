@@ -37,7 +37,7 @@ extern "C" {
 #include <string>
 #include <unordered_map>
 
-//using namespace std;  // Urho3D fix
+//using namespace std;  // Urho3D: fix
 using namespace Windows::Storage;
 
 extern "C" const wchar_t *

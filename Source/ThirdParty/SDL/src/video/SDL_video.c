@@ -1879,7 +1879,7 @@ SDL_CreateWindowFrom(const void *data, Uint32 flags)
     }
     _this->windows = window;
 
-    // Urho3D: load OpenGL if initializing an external OpenGL window
+    // Urho3D: Load OpenGL if initializing an external OpenGL window
     if (flags & SDL_WINDOW_OPENGL) {
         if (!_this->GL_CreateContext) {
             SDL_SetError("No OpenGL support in video driver");

@@ -3582,7 +3582,7 @@ endif()
 ########################################################################################################################
 
 # General includes
-# Urho3D - use 'generated' path suffix for generated config header file, the suffic prevents overwriting the header file with the same name in the source tree in case of non out-of-source build tree is being used
+# Urho3D: Use 'generated' path suffix for generated config header file, the suffic prevents overwriting the header file with the same name in the source tree in case of non out-of-source build tree is being used
 target_include_directories (SDL2-static SYSTEM
   PUBLIC $<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>>
          $<BUILD_INTERFACE:${SDL2_BINARY_DIR}/include/SDL/generated>

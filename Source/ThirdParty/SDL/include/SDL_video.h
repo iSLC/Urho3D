@@ -800,7 +800,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title,
  */
 // Urho3D: commented out original
 //extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowFrom(const void *data);
-// Urho3D: added window flags parameter
+// Urho3D: Added window flags parameter
 extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindowFrom(const void *data, Uint32 flags);
 
 /**

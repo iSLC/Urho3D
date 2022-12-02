@@ -369,7 +369,7 @@ static void Internal_Android_Destroy_AssetManager(void);
 static AAssetManager *asset_manager = NULL;
 static jobject javaAssetManagerRef = 0;
 
-// Urho3D: application files dir
+// Urho3D: Application files dir
 static char* mFilesDir = 0;
 
 /*******************************************************************************
@@ -539,7 +539,7 @@ void checkJNIReady(void)
     SDL_SetMainReady();
 }
 
-// Urho3D: added function
+// Urho3D: Added function
 const char* SDL_Android_GetFilesDir()
 {
     return mFilesDir;

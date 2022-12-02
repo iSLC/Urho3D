@@ -25,7 +25,7 @@
 
 // Urho3D: commented out original
 //#include <artsc.h>
-// Urho3D - bug fix - use the correct include path to avoid adding artsc-specific include directory into header search path
+// Urho3D: Bug fix - use the correct include path to avoid adding artsc-specific include directory into header search path
 #include <artsc/artsc.h>
 
 #include "../SDL_sysaudio.h"
