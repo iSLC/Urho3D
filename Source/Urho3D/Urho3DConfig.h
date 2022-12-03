@@ -886,36 +886,48 @@
 // Whether `float` type can represent the special value "positive infinity"
 #ifdef __FLT_HAS_INFINITY__
     #define UH_FLT_HAS_INFINITY __FLT_HAS_INFINITY__
+#elif defined(UH_MSC)
+    #define UH_FLT_HAS_INFINITY true
 #else
     #error UH_FLT_HAS_INFINITY not implemented.
 #endif
 // Whether `double` type can represent the special value "positive infinity"
 #ifdef __DBL_HAS_INFINITY__
     #define UH_DBL_HAS_INFINITY __DBL_HAS_INFINITY__
+#elif defined(UH_MSC)
+    #define UH_DBL_HAS_INFINITY true
 #else
     #error UH_DBL_HAS_INFINITY not implemented.
 #endif
 // Whether `long double` type can represent the special value "positive infinity"
 #ifdef __LDBL_HAS_INFINITY__
     #define UH_LDBL_HAS_INFINITY __LDBL_HAS_INFINITY__
+#elif defined(UH_MSC)
+    #define UH_LDBL_HAS_INFINITY true
 #else
     #error UH_LDBL_HAS_INFINITY not implemented.
 #endif
 // Whether `float` type can represent the special value "quiet not-a-number" (NaN)
 #ifdef __FLT_HAS_QUIET_NAN__
     #define UH_FLT_HAS_QUIET_NAN __FLT_HAS_QUIET_NAN__
+#elif defined(UH_MSC)
+    #define UH_FLT_HAS_QUIET_NAN true
 #else
     #error UH_FLT_HAS_QUIET_NAN not implemented.
 #endif
 // Whether `double` type can represent the special value "quiet not-a-number" (NaN)
 #ifdef __DBL_HAS_QUIET_NAN__
     #define UH_DBL_HAS_QUIET_NAN __DBL_HAS_QUIET_NAN__
+#elif defined(UH_MSC)
+    #define UH_DBL_HAS_QUIET_NAN true
 #else
     #error UH_DBL_HAS_QUIET_NAN not implemented.
 #endif
 // Whether `long double` type can represent the special value "quiet not-a-number" (NaN)
 #ifdef __LDBL_HAS_QUIET_NAN__
     #define UH_LDBL_HAS_QUIET_NAN __LDBL_HAS_QUIET_NAN__
+#elif defined(UH_MSC)
+    #define UH_LDBL_HAS_QUIET_NAN true
 #else
     #error UH_LDBL_HAS_QUIET_NAN not implemented.
 #endif
