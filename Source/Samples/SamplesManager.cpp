@@ -144,7 +144,7 @@ void SamplesManager::Start()
 
     // Get logo texture
     ResourceCache* cache = GetSubsystem<ResourceCache>();
-    Texture2D* logoTexture = cache->GetResource<Texture2D>("Textures/UrhoIcon.png");
+    Texture2D* logoTexture = cache->GetResource<Texture2D>("Textures/LogoLarge.png");
     if (!logoTexture)
         return;
 
