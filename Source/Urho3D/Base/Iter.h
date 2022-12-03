@@ -49,14 +49,14 @@ template <class T> struct RandomAccessIterator
     constexpr T& operator *() const { return *ptr_; }
 
     /// Preincrement the pointer.
-    URHO_CPP14(constexpr) RandomAccessIterator<T>& operator ++()
+    UH_LEAST_CPP14(constexpr) RandomAccessIterator<T>& operator ++()
     {
         ++ptr_;
         return *this;
     }
 
     /// Postincrement the pointer.
-    URHO_CPP14(constexpr) RandomAccessIterator<T> operator ++(int)
+    UH_LEAST_CPP14(constexpr) RandomAccessIterator<T> operator ++(int)
     {
         RandomAccessIterator<T> it = *this;
         ++ptr_;
@@ -64,14 +64,14 @@ template <class T> struct RandomAccessIterator
     }
 
     /// Predecrement the pointer.
-    URHO_CPP14(constexpr) RandomAccessIterator<T>& operator --()
+    UH_LEAST_CPP14(constexpr) RandomAccessIterator<T>& operator --()
     {
         --ptr_;
         return *this;
     }
 
     /// Postdecrement the pointer.
-    URHO_CPP14(constexpr) RandomAccessIterator<T> operator --(int)
+    UH_LEAST_CPP14(constexpr) RandomAccessIterator<T> operator --(int)
     {
         RandomAccessIterator<T> it = *this;
         --ptr_;
@@ -79,14 +79,14 @@ template <class T> struct RandomAccessIterator
     }
 
     /// Add an offset to the pointer.
-    URHO_CPP14(constexpr) RandomAccessIterator<T>& operator +=(int value)
+    UH_LEAST_CPP14(constexpr) RandomAccessIterator<T>& operator +=(int value)
     {
         ptr_ += value;
         return *this;
     }
 
     /// Subtract an offset from the pointer.
-    URHO_CPP14(constexpr) RandomAccessIterator<T>& operator -=(int value)
+    UH_LEAST_CPP14(constexpr) RandomAccessIterator<T>& operator -=(int value)
     {
         ptr_ -= value;
         return *this;
@@ -145,7 +145,7 @@ template <class T> struct RandomAccessConstIterator
     }
 
     /// Assign from a non-const iterator.
-    URHO_CPP14(constexpr) RandomAccessConstIterator<T>& operator =(const RandomAccessIterator<T>& rhs)
+    UH_LEAST_CPP14(constexpr) RandomAccessConstIterator<T>& operator =(const RandomAccessIterator<T>& rhs)
     {
         ptr_ = rhs.ptr_;
         return *this;
@@ -158,14 +158,14 @@ template <class T> struct RandomAccessConstIterator
     constexpr const T& operator *() const { return *ptr_; }
 
     /// Preincrement the pointer.
-    URHO_CPP14(constexpr) RandomAccessConstIterator<T>& operator ++()
+    UH_LEAST_CPP14(constexpr) RandomAccessConstIterator<T>& operator ++()
     {
         ++ptr_;
         return *this;
     }
 
     /// Postincrement the pointer.
-    URHO_CPP14(constexpr) RandomAccessConstIterator<T> operator ++(int)
+    UH_LEAST_CPP14(constexpr) RandomAccessConstIterator<T> operator ++(int)
     {
         RandomAccessConstIterator<T> it = *this;
         ++ptr_;
@@ -173,14 +173,14 @@ template <class T> struct RandomAccessConstIterator
     }
 
     /// Predecrement the pointer.
-    URHO_CPP14(constexpr) RandomAccessConstIterator<T>& operator --()
+    UH_LEAST_CPP14(constexpr) RandomAccessConstIterator<T>& operator --()
     {
         --ptr_;
         return *this;
     }
 
     /// Postdecrement the pointer.
-    URHO_CPP14(constexpr) RandomAccessConstIterator<T> operator --(int)
+    UH_LEAST_CPP14(constexpr) RandomAccessConstIterator<T> operator --(int)
     {
         RandomAccessConstIterator<T> it = *this;
         --ptr_;
@@ -188,14 +188,14 @@ template <class T> struct RandomAccessConstIterator
     }
 
     /// Add an offset to the pointer.
-    URHO_CPP14(constexpr) RandomAccessConstIterator<T>& operator +=(int value)
+    UH_LEAST_CPP14(constexpr) RandomAccessConstIterator<T>& operator +=(int value)
     {
         ptr_ += value;
         return *this;
     }
 
     /// Subtract an offset from the pointer.
-    URHO_CPP14(constexpr) RandomAccessConstIterator<T>& operator -=(int value)
+    UH_LEAST_CPP14(constexpr) RandomAccessConstIterator<T>& operator -=(int value)
     {
         ptr_ -= value;
         return *this;
