@@ -1,0 +1,1 @@
+https://github.com/anrieff/libcpuid/releases/tag/v0.6.2

@@ -159,7 +159,7 @@ set (THIRD_PARTY_DEPENDENCIES
     DetourTileCache
     Recast
     Box2D
-    LibCpuId
+    LibCPUID
     GLEW
     MojoShader
     ETCPACK

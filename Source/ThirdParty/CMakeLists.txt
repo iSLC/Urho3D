@@ -83,7 +83,7 @@ if (NOT MINI_URHO)
 endif ()
 
 if (DESKTOP AND NOT LINUX)
-    add_subdirectory (LibCpuId)
+    add_subdirectory (LibCPUID)
 endif ()
 
 vs_group_subdirectory_targets(${CMAKE_CURRENT_SOURCE_DIR} ThirdParty)
