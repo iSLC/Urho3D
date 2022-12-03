@@ -112,3 +112,6 @@ Thumbs.db
 # Doxygen mess from absence of 'dot' dependency
 CMakeDoxyFile.in
 CMakeDoxygenDefaults.cmake
+
+# Don't hide the Doctest cmake folder
+!/Source/ThirdParty/Doctest/cmake/*
