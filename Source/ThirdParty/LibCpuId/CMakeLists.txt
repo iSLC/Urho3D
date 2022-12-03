@@ -42,15 +42,15 @@ set(SOURCE_FILES
   include/LibCPUID/libcpuid.h
 )
 
-# Define generated source files
-if(MSVC AND U3D_64BIT)
-  enable_language(ASM_MASM)
-  list(APPEND SOURCE_FILES src/masm-x64.asm)
-endif()
-
 # Windows specific source files
 if(WIN32)
   list(APPEND SOURCE_FILES src/msrdriver.c)
+endif()
+
+# Define generated source files
+if(MSVC AND URHO3D_64BIT)
+  enable_language(ASM_MASM)
+  list(APPEND SOURCE_FILES src/masm-x64.asm)
 endif()
 
 # Create the library
@@ -67,8 +67,8 @@ endif()
 # Include folders
 target_include_directories(LibCPUID
   INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/LibCPUID>
-          $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  PRIVATE   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/LibCPUID>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
 if (NOT MINI_URHO)
