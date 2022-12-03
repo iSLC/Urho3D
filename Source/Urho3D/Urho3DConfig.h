@@ -23,6 +23,14 @@
 #pragma once
 
 /*
+ * Fundamental headers.
+*/
+#include <cstddef>
+#include <climits>
+#include <cstdint>
+#include <cfloat>
+
+/*
  * Macro concatenation helpers.
 */
 
@@ -747,14 +755,14 @@
 /*
  * Whether `char` is unsigned.
 */
-#ifdef __CHAR_UNSIGNED__
+#if defined(__CHAR_UNSIGNED__) || (CHAR_MIN == 0)
     #define UH_CHAR_UNSIGNED
     #define UH_CHAR_SIGN_SELECT(SC, UC) (UC)
 #else
     #define UH_CHAR_SIGN_SELECT(SC, UC) (SC)
 #endif
 /** Whether `wchar_t` is unsigned. */
-#ifdef __WCHAR_UNSIGNED__
+#if defined(__WCHAR_UNSIGNED__) || defined(UH_MSC) // I don't want to include wchar.h so I can use (WCHAR_MIN == 0) for MSC
     #define UH_WCHAR_UNSIGNED
     #define UH_WCHAR_SIGN_SELECT(SC, UC) (UC)
 #else
@@ -1074,14 +1082,6 @@
 
 // Select the value according to the availability of __restrict__ or __restrict.
 #define UH_RESTRICT_OR(RV, OV) UH_RESTRICT_ONLY(RV) UH_EXCEPT_RESTRICT(OV)
-
-/*
- * Fundamental headers.
-*/
-#include <cstddef>
-#include <climits>
-#include <cstdint>
-#include <cfloat>
 
 /*
  * Fundamental types and checks.
