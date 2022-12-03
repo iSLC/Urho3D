@@ -6,6 +6,11 @@
 
 #include <Urho3D/Urho3D.h>
 
+#ifdef UH_MSC
+    <cstring>
+    <cstdlib>
+#endif
+
 namespace Urho3D
 {
 

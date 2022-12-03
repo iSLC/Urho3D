@@ -1,7 +1,6 @@
 #include "../Base/Foundation.h"
 
 #include <cassert>
-#include <cstdlib>
 
 namespace Urho3D
 {
