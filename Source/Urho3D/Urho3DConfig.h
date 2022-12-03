@@ -206,7 +206,7 @@
 
 // Select the value according to the available compatibility.
 #define UH_GNUC_COMPAT_OR(GV, OV) UH_GNUC_COMPAT_ONLY(GV) UH_EXCEPT_GNUC_COMPAT(OV)
-#define UH_MSC_COMPAT_OR(MV, OV) UH_MSC_COMPAT_ONLY(GV) UH_EXCEPT_MSC_COMPAT(OV)
+#define UH_MSC_COMPAT_OR(MV, OV) UH_MSC_COMPAT_ONLY(MV) UH_EXCEPT_MSC_COMPAT(OV)
 
 // Version is 0xVVRRPPPP
 #define UH_VERSION_NUMBER(v, r, p) (((v) << 24) + ((r) << 16) + (p))
@@ -433,6 +433,12 @@
     #else
         #error Unknown processor
     #endif
+    // Unicode Windows API
+    #if defined(_UNICODE) || defined(UNICODE)
+        #define UH_WINDOWS_UNICODE
+    #else
+        #undef UH_WINDOWS_UNICODE
+    #endif
 #elif defined(__ANDROID__)
     #define UH_ANDROID 1
     #define UH_PLATFORM_ANDROID 1
@@ -538,91 +544,66 @@
     #define UH_LINUX_ONLY(VALUE)
     #define UH_IOS_ONLY(VALUE)
     #define UH_OSX_ONLY(VALUE)
-    #define UH_WEB_ONLY(VALUE)
     #define UH_EXCEPT_WINDOWS(VALUE)
     #define UH_EXCEPT_ANDROID(VALUE) VALUE
     #define UH_EXCEPT_LINUX(VALUE) VALUE
     #define UH_EXCEPT_IOS(VALUE) VALUE
     #define UH_EXCEPT_OSX(VALUE) VALUE
-    #define UH_EXCEPT_WEB(VALUE) VALUE
 #elif defined(UH_ANDROID)
     #define UH_WINDOWS_ONLY(VALUE)
     #define UH_ANDROID_ONLY(VALUE) VALUE
     #define UH_LINUX_ONLY(VALUE)
     #define UH_IOS_ONLY(VALUE)
     #define UH_OSX_ONLY(VALUE)
-    #define UH_WEB_ONLY(VALUE)
     #define UH_EXCEPT_WINDOWS(VALUE) VALUE
     #define UH_EXCEPT_ANDROID(VALUE)
     #define UH_EXCEPT_LINUX(VALUE) VALUE
     #define UH_EXCEPT_IOS(VALUE) VALUE
     #define UH_EXCEPT_OSX(VALUE) VALUE
-    #define UH_EXCEPT_WEB(VALUE) VALUE
 #elif defined(UH_LINUX)
     #define UH_WINDOWS_ONLY(VALUE)
     #define UH_ANDROID_ONLY(VALUE)
     #define UH_LINUX_ONLY(VALUE) VALUE
     #define UH_IOS_ONLY(VALUE)
     #define UH_OSX_ONLY(VALUE)
-    #define UH_WEB_ONLY(VALUE)
     #define UH_EXCEPT_WINDOWS(VALUE) VALUE
     #define UH_EXCEPT_ANDROID(VALUE) VALUE
     #define UH_EXCEPT_LINUX(VALUE)
     #define UH_EXCEPT_IOS(VALUE) VALUE
     #define UH_EXCEPT_OSX(VALUE) VALUE
-    #define UH_EXCEPT_WEB(VALUE) VALUE
 #elif defined(UH_IOS)
     #define UH_WINDOWS_ONLY(VALUE)
     #define UH_ANDROID_ONLY(VALUE)
     #define UH_LINUX_ONLY(VALUE)
     #define UH_IOS_ONLY(VALUE) VALUE
     #define UH_OSX_ONLY(VALUE)
-    #define UH_WEB_ONLY(VALUE)
     #define UH_EXCEPT_WINDOWS(VALUE) VALUE
     #define UH_EXCEPT_ANDROID(VALUE) VALUE
     #define UH_EXCEPT_LINUX(VALUE) VALUE
     #define UH_EXCEPT_IOS(VALUE)
     #define UH_EXCEPT_OSX(VALUE) VALUE
-    #define UH_EXCEPT_WEB(VALUE) VALUE
 #elif defined(UH_OSX)
     #define UH_WINDOWS_ONLY(VALUE)
     #define UH_ANDROID_ONLY(VALUE)
     #define UH_LINUX_ONLY(VALUE)
     #define UH_IOS_ONLY(VALUE)
     #define UH_OSX_ONLY(VALUE) VALUE
-    #define UH_WEB_ONLY(VALUE)
     #define UH_EXCEPT_WINDOWS(VALUE) VALUE
     #define UH_EXCEPT_ANDROID(VALUE) VALUE
     #define UH_EXCEPT_LINUX(VALUE) VALUE
     #define UH_EXCEPT_IOS(VALUE) VALUE
     #define UH_EXCEPT_OSX(VALUE)
-    #define UH_EXCEPT_WEB(VALUE) VALUE
-#elif defined(UH_WEB)
-    #define UH_WINDOWS_ONLY(VALUE)
-    #define UH_ANDROID_ONLY(VALUE)
-    #define UH_LINUX_ONLY(VALUE)
-    #define UH_IOS_ONLY(VALUE)
-    #define UH_OSX_ONLY(VALUE)
-    #define UH_WEB_ONLY(VALUE) VALUE
-    #define UH_EXCEPT_WINDOWS(VALUE) VALUE
-    #define UH_EXCEPT_ANDROID(VALUE) VALUE
-    #define UH_EXCEPT_LINUX(VALUE) VALUE
-    #define UH_EXCEPT_IOS(VALUE) VALUE
-    #define UH_EXCEPT_OSX(VALUE) VALUE
-    #define UH_EXCEPT_WEB(VALUE)
 #else
     #define UH_WINDOWS_ONLY(VALUE)
     #define UH_ANDROID_ONLY(VALUE)
     #define UH_LINUX_ONLY(VALUE)
     #define UH_IOS_ONLY(VALUE)
     #define UH_OSX_ONLY(VALUE)
-    #define UH_WEB_ONLY(VALUE)
     #define UH_EXCEPT_WINDOWS(VALUE) VALUE
     #define UH_EXCEPT_ANDROID(VALUE) VALUE
     #define UH_EXCEPT_LINUX(VALUE) VALUE
     #define UH_EXCEPT_IOS(VALUE) VALUE
     #define UH_EXCEPT_OSX(VALUE) VALUE
-    #define UH_EXCEPT_WEB(VALUE) VALUE
 #endif
 
 // Select the value according to the current platform.
@@ -631,7 +612,22 @@
 #define UH_LINUX_OR(LV, OV) UH_LINUX_ONLY(LV) UH_EXCEPT_LINUX(OV)
 #define UH_IOS_OR(IV, OV) UH_IOS_ONLY(IV) UH_EXCEPT_IOS(OV)
 #define UH_OSX_OR(MV, OV) UH_OSX_ONLY(MV) UH_EXCEPT_OSX(OV)
-#define UH_WEB_OR(WV, OV) UH_WEB_ONLY(WV) UH_EXCEPT_WEB(OV)
+
+/*
+ * Windows unicode API.
+*/
+#ifdef UH_WINDOWS_UNICODE
+    #define UH_WINDOWS_UNICODE_ONLY(VALUE) VALUE
+    #define UH_EXCEPT_WINDOWS_UNICODE(VALUE)
+    #define UH_WAPIS(S) UH_CONCAT_(L, S)
+#else
+    #define UH_WINDOWS_UNICODE_ONLY(VALUE)
+    #define UH_EXCEPT_WINDOWS_UNICODE(VALUE) VALUE
+    #define UH_WAPIS(S) S
+#endif
+
+// Select the value according to the current unicode API status.
+#define UH_WINDOWS_UNICODE_OR(WV, AV) UH_WINDOWS_UNICODE_ONLY(WV) UH_EXCEPT_WINDOWS_UNICODE(AV)
 
 /*
  * Symbol exporting macros.
@@ -781,10 +777,18 @@
 */
 
 #if defined(UH_IS_DEBUG) && !defined(UH_NO_ASSERT)
-    // Invoke the assert handler only if the expression `e` yields a false value
-    #define UH_ASSERT(e) (UH_LIKELY(!!(e)) ? void(0) : []() { AssertHandler(#e, __FILE__, __LINE__); }());
-    // Forcefully invoke the assert handler without depending the expression to trigger it
-    #define UH_ASSERT_NOW(e) AssertHandler(#e, __FILE__, __LINE__);
+    // MSVC has only _wassert. MinGW switches between _wassert and _assert when _UNICODE macro definition is present (or not).
+    #ifdef UH_MSC
+        // Invoke the assert handler only if the expression `e` yields a false value
+        #define UH_ASSERT(e) (void)((!!(expression)) || (AssertHandler(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__), 0));
+        // Forcefully invoke the assert handler without depending the expression to trigger it
+        #define UH_ASSERT_NOW(e) AssertHandler(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__);
+    #else
+        // Invoke the assert handler only if the expression `e` yields a false value
+        #define UH_ASSERT(e) (UH_LIKELY(!!(e)) ? void(0) : []() { AssertHandler(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__); }());
+        // Forcefully invoke the assert handler without depending the expression to trigger it
+        #define UH_ASSERT_NOW(e) AssertHandler(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__);
+    #endif
     // Evaluate the specified expression `e`
     #define UH_ASSERT_ONLY(e) e
     // Does nothing
@@ -1045,6 +1049,31 @@
 #else
     #undef UH_HAVE_BUILTIN_CONSTANT_P
 #endif
+
+/*
+ * Restricted pointers.
+*/
+
+#ifdef UH_GNUC_COMPAT
+    #ifdef UH_MINGW
+        #define UH_RESTRICT __restrict
+    #else
+        #define UH_RESTRICT __restrict__
+    #endif
+    #define UH_RESTRICT_ONLY(VALUE) VALUE
+    #define UH_EXCEPT_RESTRICT(VALUE)
+#elif defined(US_MSC)
+    #define UH_RESTRICT __restrict
+    #define UH_RESTRICT_ONLY(VALUE) VALUE
+    #define UH_EXCEPT_RESTRICT(VALUE)
+#else
+    #define UH_RESTRICT
+    #define UH_RESTRICT_ONLY(VALUE)
+    #define UH_EXCEPT_RESTRICT(VALUE) VALUE
+#endif
+
+// Select the value according to the availability of __restrict__ or __restrict.
+#define UH_RESTRICT_OR(RV, OV) UH_RESTRICT_ONLY(RV) UH_EXCEPT_RESTRICT(OV)
 
 /*
  * Fundamental headers.
