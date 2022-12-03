@@ -68,7 +68,6 @@ lib_types_dll=('-DBUILD_SHARED_LIBS=ON')
 # !! ccache only supports GCC precompiled headers. https://ccache.dev/manual/latest.html#_precompiled_headers
 quirks_mingw=(
     '-DURHO3D_PROFILING=OFF'
-    '-DURHO3D_TESTING=OFF'
     '-DURHO3D_PCH=OFF'
 )
 quirks_msvc=(
