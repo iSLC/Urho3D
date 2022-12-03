@@ -328,7 +328,12 @@ public:
 	/// Set the sleep state of the body. A sleeping body has very
 	/// low CPU cost.
 	/// @param flag set to true to wake the body, false to put it to sleep.
+// Urho3D: Temporary fix for "redeclared without dllimport attribute after being referenced with dll linkage" warning.
+#ifdef _WIN32
+	inline
+#endif
 	void SetAwake(bool flag);
+
 
 	/// Get the sleeping state of this body.
 	/// @return true if the body is awake.
