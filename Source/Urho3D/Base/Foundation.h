@@ -7,8 +7,8 @@
 #include <Urho3D/Urho3D.h>
 
 #ifdef UH_MSC
-    <cstring>
-    <cstdlib>
+    #include <cstring>
+    #include <cstdlib>
 #endif
 
 namespace Urho3D
@@ -212,7 +212,7 @@ inline char * StrCat(char * d, const char * s) noexcept { return UH_GNUC_COMPAT_
 /// Wrapper for: strncat
 inline char * StrCat(char * d, const char * s, size_t n) noexcept { return UH_GNUC_COMPAT_OR(__builtin_strncat, strncat)(d, s, n); }
 
-/* ====================================================================================================================
+/*
  * String examination.
 */
 /// Wrapper for: strlen
