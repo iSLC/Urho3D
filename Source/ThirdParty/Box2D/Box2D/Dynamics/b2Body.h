@@ -334,7 +334,6 @@ public:
 #endif
 	void SetAwake(bool flag);
 
-
 	/// Get the sleeping state of this body.
 	/// @return true if the body is awake.
 	bool IsAwake() const;
