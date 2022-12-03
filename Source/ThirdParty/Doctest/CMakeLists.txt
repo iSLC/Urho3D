@@ -22,10 +22,13 @@
 
 file (GLOB_RECURSE SOURCE_FILES *.cpp *.h)
 add_library (Doctest STATIC ${SOURCE_FILES})
-target_include_directories(Doctest
-    INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+
+target_include_directories(Doctest INTERFACE
+    PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     PRIVATE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/doctest>
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
+
 target_compile_definitions(Doctest PUBLIC DOCTEST_CONFIG_USE_STD_HEADERS)
 
 if (NOT URHO3D_MERGE_STATIC_LIBS)

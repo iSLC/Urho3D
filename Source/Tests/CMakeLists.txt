@@ -24,7 +24,12 @@ if (NOT URHO3D_TESTING)
     return ()
 endif ()
 
+include (../ThirdParty/Doctest/cmake/doctest.cmake)
+
 file (GLOB_RECURSE TEST_SOURCE_CODE RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.cpp)
 set (TARGET_NAME Tests)
 add_executable(${TARGET_NAME} ${TEST_SOURCE_CODE})
+
 target_link_libraries(${TARGET_NAME} PRIVATE Urho3D Doctest)
+
+doctest_discover_tests(${TARGET_NAME})

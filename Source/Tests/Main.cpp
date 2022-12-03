@@ -1,9 +1,5 @@
 #include "doctest/doctest_fwd.h"
 
-TEST_CASE("Dummy case") {
-    CHECK(true);
-}
-
 int main(int argc, char** argv) {
     doctest::Context context;
 
