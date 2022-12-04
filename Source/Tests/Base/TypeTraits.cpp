@@ -21,7 +21,8 @@ struct Dummy {
     int m;
     int f() { return 0; }
 };
-enum class DummyEnum { E };
+enum DummyEnum { };
+enum class DummyEnumCls { E };
 using NullPtr_t = decltype(nullptr);
 
 // Test IntegralConstant type.
@@ -275,11 +276,11 @@ TEST_CASE("IsUnion")
 // Test IsClass type-trait.
 TEST_CASE("IsClass")
 {
-    struct A {};
-    class B {};
-    enum class E {};
+    struct A { };
+    class B { };
+    enum class E { };
     union U {
-        class UC {};
+        class UC { };
     };
 
     CHECK_EQ(Urho3D::IsClass< A >::value, std::is_class< A >::value);
@@ -294,9 +295,9 @@ TEST_CASE("IsClass")
     CHECK_EQ(Urho3D::IsClass< B >::value, Urho3D::IsClass_v< B >);
 }
 
-int IsFunction_Test(int i) { return i; } // function
-template < class > struct IsFunctin_PMT {};
-template < class T, class U > struct IsFunctin_PMT< U T:: * > { using member_type = U; };
+int IsFunction_Dummy(int i) { return i; } // function
+template < class > struct IsFunction_PMT { };
+template < class T, class U > struct IsFunction_PMT< U T:: * > { using member_type = U; };
 // Test IsFunction type-trait.
 TEST_CASE("IsFunction")
 {
@@ -308,14 +309,14 @@ TEST_CASE("IsFunction")
         float fun5() const &;
         static char fun6() { return 'A'; }
     };
-    int(*b)(int) = IsFunction_Test; // pointer to function
+    int(*b)(int) = IsFunction_Dummy; // pointer to function
     struct C { int operator()(int i){return i;} } c; // function-like class
-    using fun5_t = IsFunctin_PMT< decltype(&A::fun5) >::member_type; // T is int() const &
+    using fun5_t = IsFunction_PMT< decltype(&A::fun5) >::member_type; // T is int() const &
 
     CHECK_EQ(Urho3D::IsFunction< A >::value, std::is_function< A >::value);
     CHECK_EQ(Urho3D::IsFunction< int(int) >::value, std::is_function< int(int) >::value);
     CHECK_EQ(Urho3D::IsFunction< int(*)(int) >::value, std::is_function< int(*)(int) >::value);
-    CHECK_EQ(Urho3D::IsFunction< decltype(IsFunction_Test) >::value, std::is_function< decltype(IsFunction_Test) >::value);
+    CHECK_EQ(Urho3D::IsFunction< decltype(IsFunction_Dummy) >::value, std::is_function< decltype(IsFunction_Dummy) >::value);
     CHECK_EQ(Urho3D::IsFunction< int >::value, std::is_function< int >::value);
     CHECK_EQ(Urho3D::IsFunction< fun5_t >::value, std::is_function< fun5_t >::value);
     CHECK_EQ(Urho3D::IsFunction< decltype(&A::fun1) >::value, std::is_function< decltype(&A::fun1) >::value);
@@ -507,7 +508,7 @@ TEST_CASE_TEMPLATE("IsScalar", T,
     NullPtr_t,
     decltype(&Dummy::m),
     decltype(&Dummy::f),
-    decltype(DummyEnum::E)
+    decltype(DummyEnumCls::E)
 ) {
     CHECK_EQ(Urho3D::IsScalar< T >::value, std::is_scalar< T >::value);
     CHECK_EQ(Urho3D::IsScalar< T * >::value, std::is_scalar< T * >::value);
@@ -635,7 +636,376 @@ TEST_CASE("IsMemberObjectPointer")
     CHECK_EQ(Urho3D::IsMemberObjectPointer< decltype(&A::f) >::value, std::is_member_object_pointer< decltype(&A::f) >::value);
     CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*) >::value, Urho3D::IsMemberObjectPointer_v< int(A::*) >);
     CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*)() >::value, Urho3D::IsMemberObjectPointer_v< int(A::*)() >);
-    CHECK_EQ(Urho3D::IsMemberFunctionPointer< A * >::value, Urho3D::IsMemberFunctionPointer_v< A * >);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< A * >::value, Urho3D::IsMemberObjectPointer_v< A * >);
+}
+
+// Test IsConst type-trait.
+TEST_CASE("IsConst")
+{
+    CHECK_EQ(Urho3D::IsConst< int >::value, std::is_const< int >::value);
+    CHECK_EQ(Urho3D::IsConst< const int >::value, std::is_const< const int >::value);
+    CHECK_EQ(Urho3D::IsConst< const int * >::value, std::is_const< const int * >::value);
+    CHECK_EQ(Urho3D::IsConst< int * const >::value, std::is_const< int * const >::value);
+    CHECK_EQ(Urho3D::IsConst< const int & >::value, std::is_const< const int & >::value);
+    CHECK_EQ(Urho3D::IsConst< int >::value, Urho3D::IsConst_v< int >);
+    CHECK_EQ(Urho3D::IsConst< const int >::value, Urho3D::IsConst_v< const int >);
+}
+
+// Test IsVolatile type-trait.
+TEST_CASE("IsVolatile")
+{
+    CHECK_EQ(Urho3D::IsVolatile< int >::value, std::is_volatile< int >::value);
+    CHECK_EQ(Urho3D::IsVolatile< volatile int >::value, std::is_volatile< volatile int >::value);
+    CHECK_EQ(Urho3D::IsVolatile< volatile int * >::value, std::is_volatile< volatile int * >::value);
+    CHECK_EQ(Urho3D::IsVolatile< int * volatile >::value, std::is_volatile< int * volatile >::value);
+    CHECK_EQ(Urho3D::IsVolatile< int >::value, Urho3D::IsVolatile_v< int >);
+    CHECK_EQ(Urho3D::IsVolatile< volatile int >::value, Urho3D::IsVolatile_v< volatile int >);
+}
+
+// Test IsTrivial type-trait.
+TEST_CASE("IsTrivial")
+{
+    using A = Dummy;
+    struct B {
+        B() { }
+    };
+    struct C : B { };
+    struct D { virtual void fn() { } };
+
+    CHECK_EQ(Urho3D::IsTrivial< A >::value, std::is_trivial< A >::value);
+    CHECK_EQ(Urho3D::IsTrivial< B >::value, std::is_trivial< B >::value);
+    CHECK_EQ(Urho3D::IsTrivial< C >::value, std::is_trivial< C >::value);
+    CHECK_EQ(Urho3D::IsTrivial< D >::value, std::is_trivial< D >::value);
+    CHECK_EQ(Urho3D::IsTrivial< A >::value, Urho3D::IsTrivial_v< A >);
+    CHECK_EQ(Urho3D::IsTrivial< B >::value, Urho3D::IsTrivial_v< B >);
+}
+
+// Test IsTriviallyCopyable type-trait.
+TEST_CASE("IsTriviallyCopyable")
+{
+    using A = Dummy;
+    struct B {
+        B(B const&) { } // copy ctor
+    };
+    struct C {
+        virtual void fn() { }
+    };
+    struct D {
+        int m;
+        D(D const&) = default; // -> trivially copyable
+        D(int x): m(x + 1) { }
+    };
+
+    CHECK_EQ(Urho3D::IsTriviallyCopyable< A >::value, std::is_trivially_copyable< A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyable< B >::value, std::is_trivially_copyable< B >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyable< C >::value, std::is_trivially_copyable< C >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyable< D >::value, std::is_trivially_copyable< D >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyable< A >::value, Urho3D::IsTriviallyCopyable_v< A >);
+    CHECK_EQ(Urho3D::IsTriviallyCopyable< C >::value, Urho3D::IsTriviallyCopyable_v< C >);
+}
+
+// Test IsStandardLayout type-trait.
+TEST_CASE("IsStandardLayout")
+{
+    using A = Dummy;
+    struct B {
+        int m1;
+    private:
+        int m2;
+    };
+    struct C : A {
+        int x;
+    };
+    struct D {
+        virtual void fn() { };
+    };
+    CHECK_EQ(Urho3D::IsStandardLayout< A >::value, std::is_standard_layout< A >::value);
+    CHECK_EQ(Urho3D::IsStandardLayout< B >::value, std::is_standard_layout< B >::value);
+    CHECK_EQ(Urho3D::IsStandardLayout< C >::value, std::is_standard_layout< C >::value);
+    CHECK_EQ(Urho3D::IsStandardLayout< D >::value, std::is_standard_layout< D >::value);
+    CHECK_EQ(Urho3D::IsStandardLayout< A >::value, Urho3D::IsStandardLayout_v< A >);
+    CHECK_EQ(Urho3D::IsStandardLayout< B >::value, Urho3D::IsStandardLayout_v< B >);
+}
+
+// Test IsPOD type-trait.
+TEST_CASE("IsPOD")
+{
+    using A = Dummy;
+    struct B {
+        int m1;
+    private:
+        int m2;
+    };
+    struct C : A { };
+    struct D : A {
+        int x;
+    };
+    struct E : A {
+        E() { }
+    };
+    struct F {
+        virtual void fn() { };
+    };
+    CHECK_EQ(Urho3D::IsPOD< A >::value, std::is_pod< A >::value);
+    CHECK_EQ(Urho3D::IsPOD< B >::value, std::is_pod< B >::value);
+    CHECK_EQ(Urho3D::IsPOD< C >::value, std::is_pod< C >::value);
+    CHECK_EQ(Urho3D::IsPOD< D >::value, std::is_pod< D >::value);
+    CHECK_EQ(Urho3D::IsPOD< E >::value, std::is_pod< E >::value);
+    CHECK_EQ(Urho3D::IsPOD< F >::value, std::is_pod< F >::value);
+    CHECK_EQ(Urho3D::IsPOD< A >::value, Urho3D::IsPOD_v< A >);
+    CHECK_EQ(Urho3D::IsPOD< F >::value, Urho3D::IsPOD_v< F >);
+}
+
+// Test IsLiteralType type-trait.
+TEST_CASE("IsLiteralType")
+{
+    using A = Dummy;
+    struct B {
+        virtual ~B() { };
+    };
+#ifdef UH_GNUC
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#elif defined(UH_CLANG)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    CHECK_EQ(Urho3D::IsLiteralType< A >::value, std::is_literal_type< A >::value);
+    CHECK_EQ(Urho3D::IsLiteralType< B >::value, std::is_literal_type< B >::value);
+    CHECK_EQ(Urho3D::IsLiteralType< int >::value, std::is_literal_type< int >::value);
+    CHECK_EQ(Urho3D::IsLiteralType< int & >::value, std::is_literal_type< int & >::value);
+    CHECK_EQ(Urho3D::IsLiteralType< int * >::value, std::is_literal_type< int * >::value);
+#ifdef UH_GNUC
+    #pragma GCC diagnostic pop
+#elif defined(UH_CLANG)
+    #pragma clang diagnostic pop
+#endif
+    CHECK_EQ(Urho3D::IsLiteralType< A >::value, Urho3D::IsLiteralType_v< A >);
+    CHECK_EQ(Urho3D::IsLiteralType< B >::value, Urho3D::IsLiteralType_v< B >);
+}
+
+struct IsEmpty_Dummy {
+    static int m;
+};
+// Test IsEmpty type-trait.
+TEST_CASE("IsEmpty")
+{
+    struct A { };
+    struct B {
+        int m;
+    };
+    struct D {
+        virtual ~D() { }
+    };
+    union E { };
+#if UH_CPP_STANDARD >= UH_CPP20_STANDARD
+    struct F {
+        [[no_unique_address]] E e;
+    };
+#endif
+    struct G {
+        int:0;  
+        // C++ standard allow "as a special case, an unnamed bit-field with a width of zero 
+        // specifies alignment of the next bit-field at an allocation unit boundary.
+        // Only when declaring an unnamed bit-field may the width be zero."
+    };
+
+    CHECK_EQ(Urho3D::IsEmpty< A >::value, std::is_empty< A >::value);
+    CHECK_EQ(Urho3D::IsEmpty< B >::value, std::is_empty< B >::value);
+    CHECK_EQ(Urho3D::IsEmpty< IsEmpty_Dummy >::value, std::is_empty< IsEmpty_Dummy >::value);
+    CHECK_EQ(Urho3D::IsEmpty< D >::value, std::is_empty< D >::value);
+    CHECK_EQ(Urho3D::IsEmpty< E >::value, std::is_empty< E >::value);
+#if UH_CPP_STANDARD >= UH_CPP20_STANDARD
+    CHECK_EQ(Urho3D::IsEmpty< F >::value, std::is_empty< F >::value);
+#endif
+    CHECK_EQ(Urho3D::IsEmpty< G >::value, std::is_empty< G >::value);
+    CHECK_EQ(Urho3D::IsEmpty< A >::value, Urho3D::IsEmpty_v< A >);
+    CHECK_EQ(Urho3D::IsEmpty< B >::value, Urho3D::IsEmpty_v< B >);
+}
+
+// Test IsPolymorphic type-trait.
+TEST_CASE("IsPolymorphic")
+{
+    using A = Dummy;
+    struct B {
+        virtual void fn() { }
+    };
+    struct C : B { };
+    struct D {
+        virtual ~D() = default;
+    };
+
+    CHECK_EQ(Urho3D::IsPolymorphic< int >::value, std::is_polymorphic< int >::value);
+    CHECK_EQ(Urho3D::IsPolymorphic< A >::value, std::is_polymorphic< A >::value);
+    CHECK_EQ(Urho3D::IsPolymorphic< B >::value, std::is_polymorphic< B >::value);
+    CHECK_EQ(Urho3D::IsPolymorphic< C >::value, std::is_polymorphic< C >::value);
+    CHECK_EQ(Urho3D::IsPolymorphic< D >::value, std::is_polymorphic< D >::value);
+    CHECK_EQ(Urho3D::IsPolymorphic< A >::value, Urho3D::IsPolymorphic_v< A >);
+    CHECK_EQ(Urho3D::IsPolymorphic< B >::value, Urho3D::IsPolymorphic_v< B >);
+}
+
+// Test IsAbstract type-trait.
+TEST_CASE("IsAbstract")
+{
+    using A = Dummy;
+    struct B {
+        virtual void fn() { };
+    };
+    struct C {
+        virtual void fn() = 0;
+    };
+    struct D : C { };
+
+    CHECK_EQ(Urho3D::IsAbstract< int >::value, std::is_abstract< int >::value);
+    CHECK_EQ(Urho3D::IsAbstract< A >::value, std::is_abstract< A >::value);
+    CHECK_EQ(Urho3D::IsAbstract< B >::value, std::is_abstract< B >::value);
+    CHECK_EQ(Urho3D::IsAbstract< C >::value, std::is_abstract< C >::value);
+    CHECK_EQ(Urho3D::IsAbstract< D >::value, std::is_abstract< D >::value);
+    CHECK_EQ(Urho3D::IsAbstract< A >::value, Urho3D::IsAbstract_v< A >);
+    CHECK_EQ(Urho3D::IsAbstract< C >::value, Urho3D::IsAbstract_v< C >);
+}
+
+// Test IsFinal type-trait.
+TEST_CASE("IsFinal")
+{
+    using A = Dummy;
+    class B final {};
+
+    CHECK_EQ(Urho3D::IsFinal< int >::value, std::is_final< int >::value);
+    CHECK_EQ(Urho3D::IsFinal< A >::value, std::is_final< A >::value);
+    CHECK_EQ(Urho3D::IsFinal< B >::value, std::is_final< B >::value);
+    CHECK_EQ(Urho3D::IsFinal< A >::value, Urho3D::IsFinal_v< A >);
+    CHECK_EQ(Urho3D::IsFinal< B >::value, Urho3D::IsFinal_v< B >);
+}
+
+// Test IsAggregate type-trait.
+TEST_CASE("IsAggregate")
+{
+    struct A { int x, y; };
+    struct B {
+        B(int, const char *) { }
+    };
+
+    CHECK_EQ(Urho3D::IsAggregate< int >::value, std::is_aggregate< int >::value);
+    CHECK_EQ(Urho3D::IsAggregate< A >::value, std::is_aggregate< A >::value);
+    CHECK_EQ(Urho3D::IsAggregate< B >::value, std::is_aggregate< B >::value);
+    CHECK_EQ(Urho3D::IsAggregate< A >::value, Urho3D::IsAggregate_v< A >);
+    CHECK_EQ(Urho3D::IsAggregate< B >::value, Urho3D::IsAggregate_v< B >);
+}
+
+enum DummyEnumInt : int { };
+enum DummyEnumUint : unsigned { };
+enum class DummyEnumClsInt : int { E };
+enum class DummyEnumClsUInt : unsigned { E };
+
+// Test IsSigned type-trait.
+TEST_CASE_TEMPLATE("IsSigned", T,
+    Dummy,
+    bool,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long,
+    float,    
+    double,
+    long double,
+    XChar8_t,
+    NullPtr_t,
+    DummyEnum,
+    DummyEnumCls,
+    DummyEnumInt,
+    DummyEnumUint,
+    DummyEnumClsInt,
+    DummyEnumClsUInt
+) {
+    CHECK_EQ(Urho3D::IsSigned< T >::value, std::is_signed< T >::value);
+    CHECK_EQ(Urho3D::IsSigned< T * >::value, std::is_signed< T * >::value);
+    CHECK_EQ(Urho3D::IsSigned< T & >::value, std::is_signed< T & >::value);
+    CHECK_EQ(Urho3D::IsSigned< const T >::value, std::is_signed< const T >::value);
+    CHECK_EQ(Urho3D::IsSigned< const T * >::value, std::is_signed< const T * >::value);
+    CHECK_EQ(Urho3D::IsSigned< const T & >::value, std::is_signed< const T & >::value);
+    CHECK_EQ(Urho3D::IsSigned< T >::value, Urho3D::IsSigned_v< T >);
+}
+
+// Test IsUnsigned type-trait.
+TEST_CASE_TEMPLATE("IsUnsigned", T,
+    Dummy,
+    bool,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long,
+    float,    
+    double,
+    long double,
+    XChar8_t,
+    NullPtr_t,
+    DummyEnum,
+    DummyEnumCls,
+    DummyEnumInt,
+    DummyEnumUint,
+    DummyEnumClsInt,
+    DummyEnumClsUInt
+) {
+    CHECK_EQ(Urho3D::IsUnsigned< T >::value, std::is_unsigned< T >::value);
+    CHECK_EQ(Urho3D::IsUnsigned< T * >::value, std::is_unsigned< T * >::value);
+    CHECK_EQ(Urho3D::IsUnsigned< T & >::value, std::is_unsigned< T & >::value);
+    CHECK_EQ(Urho3D::IsUnsigned< const T >::value, std::is_unsigned< const T >::value);
+    CHECK_EQ(Urho3D::IsUnsigned< const T * >::value, std::is_unsigned< const T * >::value);
+    CHECK_EQ(Urho3D::IsUnsigned< const T & >::value, std::is_unsigned< const T & >::value);
+    CHECK_EQ(Urho3D::IsUnsigned< T >::value, Urho3D::IsUnsigned_v< T >);
+}
+
+// Test IsBoundedArray type-trait.
+TEST_CASE("IsBoundedArray")
+{
+    using A = Dummy;
+
+    CHECK_EQ(Urho3D::IsBoundedArray< A >::value, UH_LEAST_CPP20_OR(std::is_bounded_array< A >::value, false));
+    CHECK_EQ(Urho3D::IsBoundedArray< A[] >::value, UH_LEAST_CPP20_OR(std::is_bounded_array< A[] >::value, false));
+    CHECK_EQ(Urho3D::IsBoundedArray< A[3] >::value, UH_LEAST_CPP20_OR(std::is_bounded_array< A[3] >::value, true));
+    CHECK_EQ(Urho3D::IsBoundedArray< float >::value, UH_LEAST_CPP20_OR(std::is_bounded_array< float >::value, false));
+    CHECK_EQ(Urho3D::IsBoundedArray< int >::value, UH_LEAST_CPP20_OR(std::is_bounded_array< int >::value, false));
+    CHECK_EQ(Urho3D::IsBoundedArray< int[] >::value, UH_LEAST_CPP20_OR(std::is_bounded_array< int[] >::value, false));
+    CHECK_EQ(Urho3D::IsBoundedArray< int[3] >::value, UH_LEAST_CPP20_OR(std::is_bounded_array< int[3] >::value, true));
+    CHECK_EQ(Urho3D::IsBoundedArray< A >::value, Urho3D::IsBoundedArray_v< A >);
+    CHECK_EQ(Urho3D::IsBoundedArray< A[3] >::value, Urho3D::IsBoundedArray_v< A[3] >);
+}
+
+// Test IsUnboundedArray type-trait.
+TEST_CASE("IsUnboundedArray")
+{
+    using A = Dummy;
+
+    CHECK_EQ(Urho3D::IsUnboundedArray< A >::value, UH_LEAST_CPP20_OR(std::is_unbounded_array< A >::value, false));
+    CHECK_EQ(Urho3D::IsUnboundedArray< A[] >::value, UH_LEAST_CPP20_OR(std::is_unbounded_array< A[] >::value, true));
+    CHECK_EQ(Urho3D::IsUnboundedArray< A[3] >::value, UH_LEAST_CPP20_OR(std::is_unbounded_array< A[3] >::value, false));
+    CHECK_EQ(Urho3D::IsUnboundedArray< float >::value, UH_LEAST_CPP20_OR(std::is_unbounded_array< float >::value, false));
+    CHECK_EQ(Urho3D::IsUnboundedArray< int >::value, UH_LEAST_CPP20_OR(std::is_unbounded_array< int >::value, false));
+    CHECK_EQ(Urho3D::IsUnboundedArray< int[] >::value, UH_LEAST_CPP20_OR(std::is_unbounded_array< int[] >::value, true));
+    CHECK_EQ(Urho3D::IsUnboundedArray< int[3] >::value, UH_LEAST_CPP20_OR(std::is_unbounded_array< int[3] >::value, false));
+    CHECK_EQ(Urho3D::IsUnboundedArray< A >::value, Urho3D::IsUnboundedArray_v< A >);
+    CHECK_EQ(Urho3D::IsUnboundedArray< A[3] >::value, Urho3D::IsUnboundedArray_v< A[3] >);
 }
 
 TEST_SUITE_END();

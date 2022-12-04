@@ -334,26 +334,50 @@
     #define UH_LEAST_CPP14(x) x
     #define UH_LEAST_CPP17(x) x
     #define UH_LEAST_CPP20(x) x
+    #define UH_LEAST_CPP11_OR(x, y) x
+    #define UH_LEAST_CPP14_OR(x, y) x
+    #define UH_LEAST_CPP17_OR(x, y) x
+    #define UH_LEAST_CPP20_OR(x, y) x
+// C++ >= 11/14/17+
 #elif UH_CPP_STANDARD >= UH_CPP17_STANDARD
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x) x
     #define UH_LEAST_CPP17(x) x
     #define UH_LEAST_CPP20(x)
+    #define UH_LEAST_CPP11_OR(x, y) x
+    #define UH_LEAST_CPP14_OR(x, y) x
+    #define UH_LEAST_CPP17_OR(x, y) x
+    #define UH_LEAST_CPP20_OR(x, y) y
+// C++ >= 11/14+
 #elif UH_CPP_STANDARD >= UH_CPP14_STANDARD
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x) x
     #define UH_LEAST_CPP17(x)
     #define UH_LEAST_CPP20(x)
+    #define UH_LEAST_CPP11_OR(x, y) x
+    #define UH_LEAST_CPP14_OR(x, y) x
+    #define UH_LEAST_CPP17_OR(x, y) y
+    #define UH_LEAST_CPP20_OR(x, y) y
+// C++ >= 11+
 #elif UH_CPP_STANDARD >= UH_CPP11_STANDARD
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x)
     #define UH_LEAST_CPP17(x)
     #define UH_LEAST_CPP20(x)
+    #define UH_LEAST_CPP11_OR(x, y) x
+    #define UH_LEAST_CPP14_OR(x, y) y
+    #define UH_LEAST_CPP17_OR(x, y) y
+    #define UH_LEAST_CPP20_OR(x, y) y
+// C++ < 11
 #else
     #define UH_LEAST_CPP11(x)
     #define UH_LEAST_CPP14(x)
     #define UH_LEAST_CPP17(x)
     #define UH_LEAST_CPP20(x)
+    #define UH_LEAST_CPP11_OR(x, y) y
+    #define UH_LEAST_CPP14_OR(x, y) y
+    #define UH_LEAST_CPP17_OR(x, y) y
+    #define UH_LEAST_CPP20_OR(x, y) y
 #endif
 
 // Select the expression according to the available c++ standard.
