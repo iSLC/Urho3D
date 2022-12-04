@@ -1802,4 +1802,37 @@ TEST_CASE("AddRvalueReference")
     CHECK(Urho3D::IsSame< typename Urho3D::AddRvalueReference< int && >::type, Urho3D::AddRvalueReference_t< int && > >::value);
 }
 
+template < class T, class U > using RemovePointer_Same = Urho3D::IsSame< typename Urho3D::RemovePointer< T >::type, U >;
+template < class T, class U > using RemovePointer_Same2 = std::is_same< typename std::remove_pointer< T >::type, U >;
+// Test RemovePointer type-trait.
+TEST_CASE("RemovePointer")
+{
+    CHECK_EQ(RemovePointer_Same< int, int >::value, RemovePointer_Same2< int, int >::value);
+    CHECK_EQ(RemovePointer_Same< int *, int >::value, RemovePointer_Same2< int *, int >::value);
+    CHECK_EQ(RemovePointer_Same< int **, int * >::value, RemovePointer_Same2< int **, int * >::value);
+    CHECK_EQ(RemovePointer_Same< const int *, const int >::value, RemovePointer_Same2< const int *, const int >::value);
+    CHECK_EQ(RemovePointer_Same< const volatile int *, const volatile int >::value, RemovePointer_Same2< const volatile int *, const volatile int >::value);
+    CHECK_EQ(RemovePointer_Same< int * const, int >::value, RemovePointer_Same2< int * const, int >::value);
+    CHECK_EQ(RemovePointer_Same< int * const volatile, int >::value, RemovePointer_Same2< int * const volatile, int >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemovePointer< int >::type, Urho3D::RemovePointer_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemovePointer< int * >::type, Urho3D::RemovePointer_t< int * > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemovePointer< int ** >::type, Urho3D::RemovePointer_t< int ** > >::value);
+}
+
+template < class T, class U > using AddPointer_Same = Urho3D::IsSame< typename Urho3D::AddPointer< T >::type, U >;
+template < class T, class U > using AddPointer_Same2 = std::is_same< typename std::add_pointer< T >::type, U >;
+// Test AddPointer type-trait.
+TEST_CASE("AddPointer")
+{
+    CHECK_EQ(AddPointer_Same< int, int * >::value, AddPointer_Same2< int, int * >::value);
+    CHECK_EQ(AddPointer_Same< int &, int * >::value, AddPointer_Same2< int &, int * >::value);
+    CHECK_EQ(AddPointer_Same< int *, int ** >::value, AddPointer_Same2< int *, int ** >::value);
+    CHECK_EQ(AddPointer_Same< const int, const int * >::value, AddPointer_Same2< const int, const int * >::value);
+    CHECK_EQ(AddPointer_Same< const volatile int, const volatile int * >::value, AddPointer_Same2< const volatile int, const volatile int * >::value);
+    CHECK_EQ(AddPointer_Same< int(int), int(*)(int) >::value, AddPointer_Same2< int(int), int(*)(int) >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddPointer< int >::type, Urho3D::AddPointer_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddPointer< int & >::type, Urho3D::AddPointer_t< int & > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddPointer< int * >::type, Urho3D::AddPointer_t< int * > >::value);
+}
+
 TEST_SUITE_END();
