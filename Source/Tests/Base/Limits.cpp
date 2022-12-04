@@ -17,8 +17,11 @@ struct Unspecialized {
     bool operator == (const Unspecialized &) const { return true; }
 };
 
-#ifndef UH_HAS_CHAR8_TYPE
-    using char8_t = unsigned char;
+// MSVC has issues if used a conditional macro in the variadic macro parameter list
+#ifdef UH_HAS_CHAR8_TYPE
+    using XChar8_t = char8_t;
+#else
+    using XChar8_t = unsigned char;
 #endif
 
 // Check our numeric limits if they're identical with the SDL ones
@@ -28,7 +31,6 @@ TEST_CASE_TEMPLATE("NumericLimits", T,
     signed char,
     unsigned char,
     wchar_t,
-    char8_t,
     char16_t,
     char32_t,
     short,
@@ -41,7 +43,8 @@ TEST_CASE_TEMPLATE("NumericLimits", T,
     unsigned long long,
     float,    
     double,
-    long double
+    long double,
+    XChar8_t
 ) {
     using URH = Urho3D::NumericLimits< T >;
     using STL = std::numeric_limits< T >;
