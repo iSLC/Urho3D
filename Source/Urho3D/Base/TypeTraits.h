@@ -963,14 +963,30 @@ template < class T > auto Helper_TryAddPointer(int) -> TypeIdentity< RemoveRefer
 template < class T > auto Helper_TryAddPointer(...) -> TypeIdentity< T >;
 
 // Helper used to make the specified type a signed while retaining properties and qualifiers.
-template < class T, bool S = IsSigned_v< T > > struct Helper_MakeUnsigned { typedef T type; };
-template < class T > struct Helper_MakeUnsigned< T, true > { typedef MatchCV_t< T, typename Helper_SelectUnsigned< sizeof(T) >::type > type; };
-template < bool S > struct Helper_MakeUnsigned< bool, S >; // Leave boolean undefined.
+template < class T, class U = RemoveCV_t< T >, bool S = IsSigned_v< T >> struct Helper_MakeUnsigned { typedef T type; };
+template < class T, class U > struct Helper_MakeUnsigned< T, U, true >
+{ typedef MatchCV_t< T, typename Helper_SelectUnsigned< sizeof(T) >::type > type; };
+// Handle `long` type as a special type to retain the long type properties.
+template < class T > struct Helper_MakeUnsigned< T, signed long, true > { typedef MatchCV_t< T, unsigned long > type;  };
+template < class T > struct Helper_MakeUnsigned< T, unsigned long, false > { typedef T type; }; // Leave type as is
+// Apparently, you're supposed to return unsigned char regardless of the sign of `char` (no leaving untouched).
+template < class T > struct Helper_MakeUnsigned< T, char, true > { typedef MatchCV_t< T, unsigned char > type;  };
+template < class T > struct Helper_MakeUnsigned< T, char, false > { typedef MatchCV_t< T, unsigned char > type;  };
+// Leave boolean undefined.
+template < class T, bool S > struct Helper_MakeUnsigned< T, bool, S >;
 
 // Helper used to make the specified type a signed while retaining properties and qualifiers.
-template < class T, bool S = IsSigned_v< T > > struct Helper_MakeSigned { typedef T type; };
-template < class T > struct Helper_MakeSigned< T, false > { typedef MatchCV_t< T, typename Helper_SelectSigned< sizeof(T) >::type > type; };
-template < bool S > struct Helper_MakeSigned< bool, S >; // Leave boolean undefined.
+template < class T, class U = RemoveCV_t< T >, bool S = IsSigned_v< T >> struct Helper_MakeSigned { typedef T type; };
+template < class T, class U > struct Helper_MakeSigned< T, U, false >
+{ typedef MatchCV_t< T, typename Helper_SelectSigned< sizeof(T) >::type > type; };
+// Handle `long` type as a special type to retain the long type properties.
+template < class T > struct Helper_MakeSigned< T, signed long, true > { typedef T type; }; // Leave type as is
+template < class T > struct Helper_MakeSigned< T, unsigned long, false > { typedef MatchCV_t< T, signed long > type; };
+// Apparently, you're supposed to return signed char regardless of the sign of `char` (no leaving untouched).
+template < class T > struct Helper_MakeSigned< T, char, true > { typedef MatchCV_t< T, signed char > type; };
+template < class T > struct Helper_MakeSigned< T, char, false > { typedef MatchCV_t< T, signed char > type; };
+// Leave boolean undefined.
+template < class T, bool S > struct Helper_MakeSigned< T, bool, S >;
 
 // Helper used to provide the nested type type, which is a trivial standard-layout type
 // suitable for use as uninitialized storage for any object whose size is at most N
