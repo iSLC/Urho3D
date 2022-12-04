@@ -1972,4 +1972,90 @@ TEST_CASE("RemoveCvRef")
     CHECK(Urho3D::IsSame< typename Urho3D::RemoveCvRef< const int & >::type, Urho3D::RemoveCvRef_t< const int & > >::value);
 }
 
+// Test Conjunction type-trait.
+TEST_CASE("Conjunction")
+{
+    using namespace Urho3D;
+
+    CHECK_EQ(Conjunction< TrueType  >::value, std::conjunction< std::true_type >::value);
+    CHECK_EQ(Conjunction< FalseType  >::value, std::conjunction< std::false_type >::value);
+
+    CHECK_EQ(Conjunction< TrueType, TrueType >::value,
+             std::conjunction< std::true_type, std::true_type >::value);
+    CHECK_EQ(Conjunction< FalseType, FalseType >::value,
+             std::conjunction< std::false_type, std::false_type >::value);
+
+    CHECK_EQ(Conjunction< TrueType, TrueType, TrueType >::value,
+             std::conjunction< std::true_type, std::true_type, std::true_type >::value);
+    CHECK_EQ(Conjunction< FalseType, FalseType, FalseType >::value,
+             std::conjunction< std::false_type, std::false_type, std::false_type >::value);
+
+    CHECK_EQ(Conjunction< TrueType, TrueType, TrueType, TrueType >::value,
+             std::conjunction< std::true_type, std::true_type, std::true_type, std::true_type >::value);
+    CHECK_EQ(Conjunction< FalseType, FalseType, FalseType, FalseType >::value,
+             std::conjunction< std::false_type, std::false_type, std::false_type, std::false_type >::value);
+
+    CHECK_EQ(Conjunction< TrueType, TrueType, TrueType, TrueType, FalseType >::value,
+             std::conjunction< std::true_type, std::true_type, std::true_type, std::true_type, std::false_type >::value);
+
+    CHECK_EQ(Conjunction< FalseType, TrueType, TrueType, TrueType, TrueType >::value,
+             std::conjunction< std::false_type, std::true_type, std::true_type, std::true_type, std::true_type >::value);
+
+    CHECK_EQ(Conjunction< TrueType, TrueType, FalseType, TrueType, TrueType >::value,
+             std::conjunction< std::true_type, std::true_type, std::false_type, std::true_type, std::true_type >::value);
+
+    CHECK_EQ(Conjunction< TrueType >::value, Conjunction_v< TrueType >);
+    CHECK_EQ(Conjunction< TrueType, TrueType >::value, Conjunction_v< TrueType, TrueType >);
+    CHECK_EQ(Conjunction< TrueType, FalseType, TrueType >::value, Conjunction_v< TrueType, FalseType, TrueType >);
+}
+
+// Test Disjunction type-trait.
+TEST_CASE("Disjunction")
+{
+    using namespace Urho3D;
+
+    CHECK_EQ(Disjunction< TrueType  >::value, std::disjunction< std::true_type >::value);
+    CHECK_EQ(Disjunction< FalseType  >::value, std::disjunction< std::false_type >::value);
+
+    CHECK_EQ(Disjunction< TrueType, TrueType >::value,
+             std::disjunction< std::true_type, std::true_type >::value);
+    CHECK_EQ(Disjunction< FalseType, FalseType >::value,
+             std::disjunction< std::false_type, std::false_type >::value);
+
+    CHECK_EQ(Disjunction< TrueType, TrueType, TrueType >::value,
+             std::disjunction< std::true_type, std::true_type, std::true_type >::value);
+    CHECK_EQ(Disjunction< FalseType, FalseType, FalseType >::value,
+             std::disjunction< std::false_type, std::false_type, std::false_type >::value);
+
+    CHECK_EQ(Disjunction< TrueType, TrueType, TrueType, TrueType >::value,
+             std::disjunction< std::true_type, std::true_type, std::true_type, std::true_type >::value);
+    CHECK_EQ(Disjunction< FalseType, FalseType, FalseType, FalseType >::value,
+             std::disjunction< std::false_type, std::false_type, std::false_type, std::false_type >::value);
+
+    CHECK_EQ(Disjunction< TrueType, TrueType, TrueType, TrueType, FalseType >::value,
+             std::disjunction< std::true_type, std::true_type, std::true_type, std::true_type, std::false_type >::value);
+
+    CHECK_EQ(Disjunction< FalseType, TrueType, TrueType, TrueType, TrueType >::value,
+             std::disjunction< std::false_type, std::true_type, std::true_type, std::true_type, std::true_type >::value);
+
+    CHECK_EQ(Disjunction< TrueType, TrueType, FalseType, TrueType, TrueType >::value,
+             std::disjunction< std::true_type, std::true_type, std::false_type, std::true_type, std::true_type >::value);
+
+    CHECK_EQ(Disjunction< TrueType >::value, Disjunction_v< TrueType >);
+    CHECK_EQ(Disjunction< TrueType, TrueType >::value, Disjunction_v< TrueType, TrueType >);
+    CHECK_EQ(Disjunction< TrueType, FalseType, TrueType >::value, Disjunction_v< TrueType, FalseType, TrueType >);
+}
+
+// Test Negation type-trait.
+TEST_CASE("Negation")
+{
+    using namespace Urho3D;
+
+    CHECK_EQ(Negation< TrueType  >::value, std::negation< std::true_type >::value);
+    CHECK_EQ(Negation< FalseType  >::value, std::negation< std::false_type >::value);
+
+    CHECK_EQ(Negation< TrueType >::value, Negation_v< TrueType >);
+    CHECK_EQ(Negation< FalseType >::value, Negation_v< FalseType >);
+}
+
 TEST_SUITE_END();
