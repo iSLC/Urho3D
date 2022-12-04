@@ -1008,4 +1008,484 @@ TEST_CASE("IsUnboundedArray")
     CHECK_EQ(Urho3D::IsUnboundedArray< A[3] >::value, Urho3D::IsUnboundedArray_v< A[3] >);
 }
 
+class IsConstructible_t {
+    int i;
+    double d;
+public:
+    IsConstructible_t(int n) : i(n), d() { }
+    IsConstructible_t(int n, double f) noexcept : i(n), d(f) { }
+};
+
+// Test IsConstructible type-trait.
+TEST_CASE("IsConstructible")
+{
+    using A = IsConstructible_t;
+
+    CHECK_EQ(Urho3D::IsConstructible< int, int >::value, std::is_constructible< int, int >::value);
+    CHECK_EQ(Urho3D::IsConstructible< A, int >::value, std::is_constructible< A, int >::value);
+    CHECK_EQ(Urho3D::IsConstructible< A, float >::value, std::is_constructible< A, float >::value);
+    CHECK_EQ(Urho3D::IsConstructible< A, int, double >::value, std::is_constructible< A, int, double >::value);
+    CHECK_EQ(Urho3D::IsConstructible< A, const A & >::value, std::is_constructible< A, const A & >::value);
+    CHECK_EQ(Urho3D::IsConstructible< A, int >::value, Urho3D::IsConstructible_v< A, int >);
+    CHECK_EQ(Urho3D::IsConstructible< A, float >::value, Urho3D::IsConstructible_v< A, float >);
+    CHECK_EQ(Urho3D::IsConstructible< A, int, double >::value, Urho3D::IsConstructible_v< A, int, double >);
+    CHECK_EQ(Urho3D::IsConstructible< A, const A & >::value, Urho3D::IsConstructible_v< A, const A & >);
+}
+
+// Test IsTriviallyConstructible type-trait.
+TEST_CASE("IsTriviallyConstructible")
+{
+    using A = IsConstructible_t;
+
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< int, int >::value, std::is_trivially_constructible< int, int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< A, int >::value, std::is_trivially_constructible< A, int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< A, float >::value, std::is_trivially_constructible< A, float >::value);
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< A, int, double >::value, std::is_trivially_constructible< A, int, double >::value);
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< A, const A & >::value, std::is_trivially_constructible< A, const A & >::value);
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< A, int >::value, Urho3D::IsTriviallyConstructible_v< A, int >);
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< A, float >::value, Urho3D::IsTriviallyConstructible_v< A, float >);
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< A, int, double >::value, Urho3D::IsTriviallyConstructible_v< A, int, double >);
+    CHECK_EQ(Urho3D::IsTriviallyConstructible< A, const A & >::value, Urho3D::IsTriviallyConstructible_v< A, const A & >);
+}
+
+// Test IsNoThrowConstructible type-trait.
+TEST_CASE("IsNoThrowConstructible")
+{
+    using A = IsConstructible_t;
+
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< int, int >::value, std::is_nothrow_constructible< int, int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< A, int >::value, std::is_nothrow_constructible< A, int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< A, float >::value, std::is_nothrow_constructible< A, float >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< A, int, double >::value, std::is_nothrow_constructible< A, int, double >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< A, const A & >::value, std::is_nothrow_constructible< A, const A & >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< A, int >::value, Urho3D::IsNoThrowConstructible_v< A, int >);
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< A, float >::value, Urho3D::IsNoThrowConstructible_v< A, float >);
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< A, int, double >::value, Urho3D::IsNoThrowConstructible_v< A, int, double >);
+    CHECK_EQ(Urho3D::IsNoThrowConstructible< A, const A & >::value, Urho3D::IsNoThrowConstructible_v< A, const A & >);
+}
+
+// Test IsDefaultConstructible type-trait.
+TEST_CASE("IsDefaultConstructible")
+{
+    struct A { };
+    struct B {
+        B() { }
+    };
+    struct C {
+        C(int) { }
+    };
+
+    CHECK_EQ(Urho3D::IsDefaultConstructible< int >::value, std::is_default_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsDefaultConstructible< A >::value, std::is_default_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsDefaultConstructible< B >::value, std::is_default_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsDefaultConstructible< C >::value, std::is_default_constructible< C >::value);
+    CHECK_EQ(Urho3D::IsDefaultConstructible< A >::value, Urho3D::IsDefaultConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsDefaultConstructible< C >::value, Urho3D::IsDefaultConstructible_v< C >);
+}
+
+// Test IsTriviallyDefaultConstructible type-trait.
+TEST_CASE("IsTriviallyDefaultConstructible")
+{
+    struct A { };
+    struct B {
+        B() { }
+    };
+    struct C {
+        C(int) { }
+        virtual void fn() { }
+    };
+
+    CHECK_EQ(Urho3D::IsTriviallyDefaultConstructible< int >::value, std::is_trivially_default_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyDefaultConstructible< A >::value, std::is_trivially_default_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyDefaultConstructible< B >::value, std::is_trivially_default_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsTriviallyDefaultConstructible< C >::value, std::is_trivially_default_constructible< C >::value);
+    CHECK_EQ(Urho3D::IsTriviallyDefaultConstructible< A >::value, Urho3D::IsTriviallyDefaultConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsTriviallyDefaultConstructible< C >::value, Urho3D::IsTriviallyDefaultConstructible_v< C >);
+}
+
+// Test IsNoThrowDefaultConstructible type-trait.
+TEST_CASE("IsNoThrowDefaultConstructible")
+{
+    struct A { };
+    struct B {
+        B() { }
+    };
+    struct C {
+        C() noexcept { }
+    };
+
+    CHECK_EQ(Urho3D::IsNoThrowDefaultConstructible< int >::value, std::is_nothrow_default_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDefaultConstructible< A >::value, std::is_nothrow_default_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDefaultConstructible< B >::value, std::is_nothrow_default_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDefaultConstructible< C >::value, std::is_nothrow_default_constructible< C >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDefaultConstructible< A >::value, Urho3D::IsNoThrowDefaultConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsNoThrowDefaultConstructible< B >::value, Urho3D::IsNoThrowDefaultConstructible_v< B >);
+}
+
+// Test IsCopyConstructible type-trait.
+TEST_CASE("IsCopyConstructible")
+{
+    struct A { };
+    struct B {
+        B(B &&) { }
+    };
+    struct C {
+        C(const C &){ }
+    };
+
+    CHECK_EQ(Urho3D::IsCopyConstructible< int >::value, std::is_copy_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsCopyConstructible< A >::value, std::is_copy_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsCopyConstructible< B >::value, std::is_copy_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsCopyConstructible< C >::value, std::is_copy_constructible< C >::value);
+    CHECK_EQ(Urho3D::IsCopyConstructible< A >::value, Urho3D::IsCopyConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsCopyConstructible< B >::value, Urho3D::IsCopyConstructible_v< B >);
+}
+
+// Test IsTriviallyCopyConstructible type-trait.
+TEST_CASE("IsTriviallyCopyConstructible")
+{
+    struct A { };
+    struct B {
+        B(const B &) { }
+    };
+    struct C {
+        virtual void fn() { }
+    };
+
+    CHECK_EQ(Urho3D::IsTriviallyCopyConstructible< int >::value, std::is_trivially_copy_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyConstructible< A >::value, std::is_trivially_copy_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyConstructible< B >::value, std::is_trivially_copy_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyConstructible< C >::value, std::is_trivially_copy_constructible< C >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyConstructible< A >::value, Urho3D::IsTriviallyCopyConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsTriviallyCopyConstructible< B >::value, Urho3D::IsTriviallyCopyConstructible_v< B >);
+}
+
+// Test IsNothrowCopyConstructible type-trait.
+TEST_CASE("IsNothrowCopyConstructible")
+{
+    struct A { };
+    struct B {
+        B(const B &){ }
+    };
+    struct C {
+        C(const C &) noexcept { }
+    };
+
+    CHECK_EQ(Urho3D::IsNothrowCopyConstructible< int >::value, std::is_nothrow_copy_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsNothrowCopyConstructible< A >::value, std::is_nothrow_copy_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsNothrowCopyConstructible< B >::value, std::is_nothrow_copy_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsNothrowCopyConstructible< C >::value, std::is_nothrow_copy_constructible< C >::value);
+    CHECK_EQ(Urho3D::IsNothrowCopyConstructible< A >::value, Urho3D::IsNothrowCopyConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsNothrowCopyConstructible< B >::value, Urho3D::IsNothrowCopyConstructible_v< B >);
+}
+
+// Test IsMoveConstructible type-trait.
+TEST_CASE("IsMoveConstructible")
+{
+    struct A { };
+    struct B {
+        B(B &&) = delete;
+    };
+
+    CHECK_EQ(Urho3D::IsMoveConstructible< int >::value, std::is_move_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsMoveConstructible< A >::value, std::is_move_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsMoveConstructible< B >::value, std::is_move_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsMoveConstructible< A >::value, Urho3D::IsMoveConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsMoveConstructible< B >::value, Urho3D::IsMoveConstructible_v< B >);
+}
+
+// Test IsTriviallyMoveConstructible type-trait.
+TEST_CASE("IsTriviallyMoveConstructible")
+{
+    struct A { };
+    struct B {
+        B(B &&) { }
+    };
+    struct C {
+        virtual void fn() { }
+    };
+
+    CHECK_EQ(Urho3D::IsTriviallyMoveConstructible< int >::value, std::is_trivially_move_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyMoveConstructible< A >::value, std::is_trivially_move_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyMoveConstructible< B >::value, std::is_trivially_move_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsTriviallyMoveConstructible< C >::value, std::is_trivially_move_constructible< C >::value);
+    CHECK_EQ(Urho3D::IsTriviallyMoveConstructible< A >::value, Urho3D::IsTriviallyMoveConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsTriviallyMoveConstructible< C >::value, Urho3D::IsTriviallyMoveConstructible_v< C >);
+}
+
+// Test IsNoThrowMoveConstructible type-trait.
+TEST_CASE("IsNoThrowMoveConstructible")
+{
+    struct A { };
+    struct B {
+        B(B &&) { }
+    };
+    struct C {
+        C(C &&) noexcept { }
+    };
+
+    CHECK_EQ(Urho3D::IsNoThrowMoveConstructible< int >::value, std::is_nothrow_move_constructible< int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveConstructible< A >::value, std::is_nothrow_move_constructible< A >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveConstructible< B >::value, std::is_nothrow_move_constructible< B >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveConstructible< C >::value, std::is_nothrow_move_constructible< C >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveConstructible< A >::value, Urho3D::IsNoThrowMoveConstructible_v< A >);
+    CHECK_EQ(Urho3D::IsNoThrowMoveConstructible< C >::value, Urho3D::IsNoThrowMoveConstructible_v< C >);
+}
+
+// Test IsAssignable type-trait.
+TEST_CASE("IsAssignable")
+{
+    using A = Dummy;
+    struct B {
+        B & operator = (const A &) { return *this; }
+    };
+
+    CHECK_EQ(Urho3D::IsAssignable< int, int >::value, std::is_assignable< int, int >::value);
+    CHECK_EQ(Urho3D::IsAssignable< int &, int >::value, std::is_assignable< int &, int >::value);
+    CHECK_EQ(Urho3D::IsAssignable< int, double >::value, std::is_assignable< int, double >::value);
+    CHECK_EQ(Urho3D::IsAssignable< int&, double >::value, std::is_assignable< int&, double >::value);
+    CHECK_EQ(Urho3D::IsAssignable< A, B >::value, std::is_assignable< A, B >::value);
+    CHECK_EQ(Urho3D::IsAssignable< B, A >::value, std::is_assignable< B, A >::value);
+    CHECK_EQ(Urho3D::IsAssignable< A &, const A & >::value, std::is_assignable< A &, const A & >::value);
+    CHECK_EQ(Urho3D::IsAssignable< int, int >::value, Urho3D::IsAssignable_v< int, int >);
+    CHECK_EQ(Urho3D::IsAssignable< int &, int >::value, Urho3D::IsAssignable_v< int &, int >);
+}
+
+// Test IsTriviallyAssignable type-trait.
+TEST_CASE("IsTriviallyAssignable")
+{
+    using A = Dummy;
+    struct B : A { };
+    struct C {
+        C & operator = (const A &) { return *this; }
+    };
+
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< int, int >::value, std::is_trivially_assignable< int, int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< int &, int >::value, std::is_trivially_assignable< int &, int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< int, double >::value, std::is_trivially_assignable< int, double >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< int&, double >::value, std::is_trivially_assignable< int&, double >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< A, A >::value, std::is_trivially_assignable< A, A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< A, B >::value, std::is_trivially_assignable< A, B >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< B, A >::value, std::is_trivially_assignable< B, A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< C, A >::value, std::is_trivially_assignable< C, A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< A &, const A & >::value, std::is_trivially_assignable< A &, const A & >::value);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< int, int >::value, Urho3D::IsTriviallyAssignable_v< int, int >);
+    CHECK_EQ(Urho3D::IsTriviallyAssignable< int &, int >::value, Urho3D::IsTriviallyAssignable_v< int &, int >);
+}
+
+// Test IsNoThrowAssignable type-trait.
+TEST_CASE("IsNoThrowAssignable")
+{
+    using A = Dummy;
+    struct B {
+        B & operator = (const A &) noexcept { return *this; }
+        B & operator = (const B &) { return *this; }
+    };
+
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< int, int >::value, std::is_nothrow_assignable< int, int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< int &, int >::value, std::is_nothrow_assignable< int &, int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< int, double >::value, std::is_nothrow_assignable< int, double >::value);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< int&, double >::value, std::is_nothrow_assignable< int&, double >::value);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< A, B >::value, std::is_nothrow_assignable< A, B >::value);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< B, A >::value, std::is_nothrow_assignable< B, A >::value);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< B, B >::value, std::is_nothrow_assignable< B, B >::value);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< A &, const A & >::value, std::is_nothrow_assignable< A &, const A & >::value);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< int, int >::value, Urho3D::IsNoThrowAssignable_v< int, int >);
+    CHECK_EQ(Urho3D::IsNoThrowAssignable< int &, int >::value, Urho3D::IsNoThrowAssignable_v< int &, int >);
+}
+
+// Test IsCopyAssignable type-trait.
+TEST_CASE("IsCopyAssignable")
+{
+    using A = Dummy;
+    struct B {
+        B & operator = (const B &) = delete;
+    };
+
+    CHECK_EQ(Urho3D::IsCopyAssignable< int >::value, std::is_copy_assignable< int >::value);
+    CHECK_EQ(Urho3D::IsCopyAssignable< int[2] >::value, std::is_copy_assignable< int[2] >::value);
+    CHECK_EQ(Urho3D::IsCopyAssignable< A >::value, std::is_copy_assignable< A >::value);
+    CHECK_EQ(Urho3D::IsCopyAssignable< B >::value, std::is_copy_assignable< B >::value);
+    CHECK_EQ(Urho3D::IsCopyAssignable< A >::value, Urho3D::IsCopyAssignable_v< A >);
+    CHECK_EQ(Urho3D::IsCopyAssignable< B >::value, Urho3D::IsCopyAssignable_v< B >);
+}
+
+// Test IsTriviallyCopyAssignable type-trait.
+TEST_CASE("IsTriviallyCopyAssignable")
+{
+    using A = Dummy;
+    struct B {
+        B & operator = (const B &) { return *this; }
+    };
+
+    CHECK_EQ(Urho3D::IsTriviallyCopyAssignable< int >::value, std::is_trivially_copy_assignable< int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyAssignable< int[2] >::value, std::is_trivially_copy_assignable< int[2] >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyAssignable< A >::value, std::is_trivially_copy_assignable< A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyAssignable< B >::value, std::is_trivially_copy_assignable< B >::value);
+    CHECK_EQ(Urho3D::IsTriviallyCopyAssignable< A >::value, Urho3D::IsTriviallyCopyAssignable_v< A >);
+    CHECK_EQ(Urho3D::IsTriviallyCopyAssignable< B >::value, Urho3D::IsTriviallyCopyAssignable_v< B >);
+}
+
+// Test IsNoThrowCopyAssignable type-trait.
+TEST_CASE("IsNoThrowCopyAssignable")
+{
+    using A = Dummy;
+    struct B {
+        B & operator = (const B &) { return *this; }
+    };
+    struct C {
+        C & operator = (const C &) noexcept { return *this; }
+    };
+
+    CHECK_EQ(Urho3D::IsNoThrowCopyAssignable< int >::value, std::is_nothrow_copy_assignable< int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowCopyAssignable< int[2] >::value, std::is_nothrow_copy_assignable< int[2] >::value);
+    CHECK_EQ(Urho3D::IsNoThrowCopyAssignable< A >::value, std::is_nothrow_copy_assignable< A >::value);
+    CHECK_EQ(Urho3D::IsNoThrowCopyAssignable< B >::value, std::is_nothrow_copy_assignable< B >::value);
+    CHECK_EQ(Urho3D::IsNoThrowCopyAssignable< C >::value, std::is_nothrow_copy_assignable< C >::value);
+    CHECK_EQ(Urho3D::IsNoThrowCopyAssignable< A >::value, Urho3D::IsNoThrowCopyAssignable_v< A >);
+    CHECK_EQ(Urho3D::IsNoThrowCopyAssignable< C >::value, Urho3D::IsNoThrowCopyAssignable_v< C >);
+}
+
+// Test IsMoveAssignable type-trait.
+TEST_CASE("IsMoveAssignable")
+{
+    using A = Dummy;
+    struct B {
+        B & operator = (B &&) = delete;
+    };
+
+    CHECK_EQ(Urho3D::IsMoveAssignable< int >::value, std::is_move_assignable< int >::value);
+    CHECK_EQ(Urho3D::IsMoveAssignable< int[2] >::value, std::is_move_assignable< int[2] >::value);
+    CHECK_EQ(Urho3D::IsMoveAssignable< A >::value, std::is_move_assignable< A >::value);
+    CHECK_EQ(Urho3D::IsMoveAssignable< B >::value, std::is_move_assignable< B >::value);
+    CHECK_EQ(Urho3D::IsMoveAssignable< A >::value, Urho3D::IsMoveAssignable_v< A >);
+    CHECK_EQ(Urho3D::IsMoveAssignable< B >::value, Urho3D::IsMoveAssignable_v< B >);
+}
+
+// Test IsTriviallyMoveAssignable type-trait.
+TEST_CASE("IsTriviallyMoveAssignable")
+{
+    using A = Dummy;
+    struct B {
+        B & operator = (B &&) { return *this; }
+    };
+
+    CHECK_EQ(Urho3D::IsTriviallyMoveAssignable< int >::value, std::is_trivially_move_assignable< int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyMoveAssignable< int[2] >::value, std::is_trivially_move_assignable< int[2] >::value);
+    CHECK_EQ(Urho3D::IsTriviallyMoveAssignable< A >::value, std::is_trivially_move_assignable< A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyMoveAssignable< B >::value, std::is_trivially_move_assignable< B >::value);
+    CHECK_EQ(Urho3D::IsTriviallyMoveAssignable< A >::value, Urho3D::IsTriviallyMoveAssignable_v< A >);
+    CHECK_EQ(Urho3D::IsTriviallyMoveAssignable< B >::value, Urho3D::IsTriviallyMoveAssignable_v< B >);
+}
+
+// Test IsNoThrowMoveAssignable type-trait.
+TEST_CASE("IsNoThrowMoveAssignable")
+{
+    using A = Dummy;
+#if defined(UH_MSC) && !defined(UH_CLANG)
+    #pragma warning(disable: 26439) // This kind of function may not throw. Declare it 'noexcept'.
+#endif
+    struct B {
+        B & operator = (B &&) { return *this; }
+    };
+    struct C {
+        C & operator = (C &&) noexcept { return *this; }
+    };
+
+    CHECK_EQ(Urho3D::IsNoThrowMoveAssignable< int >::value, std::is_nothrow_move_assignable< int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveAssignable< int[2] >::value, std::is_nothrow_move_assignable< int[2] >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveAssignable< A >::value, std::is_nothrow_move_assignable< A >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveAssignable< B >::value, std::is_nothrow_move_assignable< B >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveAssignable< C >::value, std::is_nothrow_move_assignable< C >::value);
+    CHECK_EQ(Urho3D::IsNoThrowMoveAssignable< A >::value, Urho3D::IsNoThrowMoveAssignable_v< A >);
+    CHECK_EQ(Urho3D::IsNoThrowMoveAssignable< C >::value, Urho3D::IsNoThrowMoveAssignable_v< C >);
+}
+
+// Test IsDestructible type-trait.
+TEST_CASE("IsDestructible")
+{
+    using A = Dummy;
+    struct B {
+        ~B() = delete;
+    };
+#if defined(UH_MSC) && !defined(UH_CLANG)
+    #pragma warning(disable: 4624) // 'derived class' : destructor was implicitly defined as deleted because a base class destructor is inaccessible or deleted.
+#endif
+    struct C : B {};
+
+    CHECK_EQ(Urho3D::IsDestructible< int >::value, std::is_destructible< int >::value);
+    CHECK_EQ(Urho3D::IsDestructible< int[2] >::value, std::is_destructible< int[2] >::value);
+    CHECK_EQ(Urho3D::IsDestructible< A >::value, std::is_destructible< A >::value);
+    CHECK_EQ(Urho3D::IsDestructible< B >::value, std::is_destructible< B >::value);
+    CHECK_EQ(Urho3D::IsDestructible< C >::value, std::is_destructible< C >::value);
+    CHECK_EQ(Urho3D::IsDestructible< A >::value, Urho3D::IsDestructible_v< A >);
+    CHECK_EQ(Urho3D::IsDestructible< B >::value, Urho3D::IsDestructible_v< B >);
+}
+
+// Test IsTriviallyDestructible type-trait.
+TEST_CASE("IsTriviallyDestructible")
+{
+    using A = Dummy;
+    struct B {
+        ~B() { }
+    };
+
+    CHECK_EQ(Urho3D::IsTriviallyDestructible< int >::value, std::is_trivially_destructible< int >::value);
+    CHECK_EQ(Urho3D::IsTriviallyDestructible< int[2] >::value, std::is_trivially_destructible< int[2] >::value);
+    CHECK_EQ(Urho3D::IsTriviallyDestructible< A >::value, std::is_trivially_destructible< A >::value);
+    CHECK_EQ(Urho3D::IsTriviallyDestructible< B >::value, std::is_trivially_destructible< B >::value);
+    CHECK_EQ(Urho3D::IsTriviallyDestructible< A >::value, Urho3D::IsTriviallyDestructible_v< A >);
+    CHECK_EQ(Urho3D::IsTriviallyDestructible< B >::value, Urho3D::IsTriviallyDestructible_v< B >);
+}
+
+// Test IsNoThrowDestructible type-trait.
+TEST_CASE("IsNoThrowDestructible")
+{
+    using A = Dummy;
+    struct B {
+        ~B() { }
+    };
+    struct C {
+        ~C() noexcept(false) { }
+    };
+
+    CHECK_EQ(Urho3D::IsNoThrowDestructible< int >::value, std::is_nothrow_destructible< int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDestructible< int[2] >::value, std::is_nothrow_destructible< int[2] >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDestructible< A >::value, std::is_nothrow_destructible< A >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDestructible< B >::value, std::is_nothrow_destructible< B >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDestructible< C >::value, std::is_nothrow_destructible< C >::value);
+    CHECK_EQ(Urho3D::IsNoThrowDestructible< A >::value, Urho3D::IsNoThrowDestructible_v< A >);
+    CHECK_EQ(Urho3D::IsNoThrowDestructible< C >::value, Urho3D::IsNoThrowDestructible_v< C >);
+}
+
+// Test HasVirtualDestructor type-trait.
+TEST_CASE("HasVirtualDestructor")
+{
+    using A = Dummy;
+    struct B {
+        virtual ~B() { }
+    };
+    struct C : B { };
+
+    CHECK_EQ(Urho3D::HasVirtualDestructor< int >::value, std::has_virtual_destructor< int >::value);
+    CHECK_EQ(Urho3D::HasVirtualDestructor< int[2] >::value, std::has_virtual_destructor< int[2] >::value);
+    CHECK_EQ(Urho3D::HasVirtualDestructor< A >::value, std::has_virtual_destructor< A >::value);
+    CHECK_EQ(Urho3D::HasVirtualDestructor< B >::value, std::has_virtual_destructor< B >::value);
+    CHECK_EQ(Urho3D::HasVirtualDestructor< C >::value, std::has_virtual_destructor< C >::value);
+    CHECK_EQ(Urho3D::HasVirtualDestructor< A >::value, Urho3D::HasVirtualDestructor_v< A >);
+    CHECK_EQ(Urho3D::HasVirtualDestructor< C >::value, Urho3D::HasVirtualDestructor_v< C >);
+}
+
+// Test IsSwappableWith type-trait.
+TEST_CASE("IsSwappableWith")
+{
+    //...
+}
+
+// Test IsSwappableWith type-trait.
+TEST_CASE("IsSwappable")
+{
+    //...
+}
+
 TEST_SUITE_END();

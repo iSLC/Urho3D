@@ -836,40 +836,44 @@ template < class T > struct Helper_IsNoThrowMoveAssignable< T, true > : public I
 // MSVC has the __is_destructible builtin.
 #ifndef UH_MSC
 // Only necessary for non-MSVC compilers.
-struct Helper_DoIsDestructible
+struct Helper_DoIsDestructibleImpl
 {
-    template < class T, class = decltype(declval< T & >().~T()) > static TrueType Test(int);
-    template < class > static FalseType Test(...); //NOLINT
+    template < class T, typename = decltype(declval< T & >().~T()) > static TrueType Test(int);
+    template < class > static FalseType Test(...);
+};
+template < class T > struct Helper_IsDestructibleImpl : public Helper_DoIsDestructibleImpl
+{
+    typedef decltype(Test< T >(0)) type;
 };
 // Helper used to check if the specified type has a non-deleted destructor.
-template < class T > struct Helper_IsDestructible : public Helper_DoIsDestructible { typedef decltype(Test< T >(0)) type; };
-
-// More helpers to clean up the type before doing the destructor detection.
 template < class T,
-       bool = Disjunction_v< IsVoid< T >, IsBoundedArray< T >, IsFunction< T > >,
-       bool = Disjunction_v< IsReference< T >, IsScalar< T > >
-> struct Helper_IsDestructibleSafe;
-template < class T> struct Helper_IsDestructibleSafe< T, false, false >
-    : public Helper_IsDestructible< RemoveAllExtents_t< T > >::type { };
+    bool = Disjunction_v< IsVoid< T >, IsUnboundedArray< T >, IsFunction< T > >,
+    bool = Disjunction_v< IsReference< T >, IsScalar< T > >>
+struct Helper_IsDestructibleSafe;
+// More helpers to clean up the type before doing the destructor detection.
+template < class T > struct Helper_IsDestructibleSafe< T, false, false >
+    : public Helper_IsDestructibleImpl< RemoveAllExtents_t< T > > { };
 template < class T > struct Helper_IsDestructibleSafe< T, true, false > : public FalseType { };
 template < class T > struct Helper_IsDestructibleSafe< T, false, true > : public TrueType { };
 
 // Only necessary for non-MSVC compilers.
-struct Helper_DoIsNoThrowDestructible
+struct Helper_DoIsNoThrowDestructibleImpl
 {
-    template < class T > static BoolConstant< noexcept(declval< T & >().~T()) > Test(int); //NOLINT
-    template < class > static FalseType Test(...); //NOLINT
+    template < class T > static BoolConstant< noexcept(declval< T & >().~T()) > Test(int);
+    template < class > static FalseType Test(...);
+};
+template < class T > struct Helper_IsNoThrowDestructibleImpl : public Helper_DoIsNoThrowDestructibleImpl
+{
+    typedef decltype(Test< T >(0)) type;
 };
 // Helper used to check if the specified type has a non-deleted non-throwing destructor.
-template < class T > struct Helper_IsNoThrowDestructible : public Helper_DoIsNoThrowDestructible { typedef decltype(Test< T >(0)) type; };
-
-// More helpers to clean up the type before doing the destructor detection.
 template < class T,
-       bool = Disjunction_v< IsVoid< T >, IsBoundedArray< T >, IsFunction< T > >,
-       bool = Disjunction_v< IsReference< T >, IsScalar< T > >
+    bool = Disjunction_v< IsVoid< T >, IsUnboundedArray< T >, IsFunction< T > >,
+    bool = Disjunction_v< IsReference< T >, IsScalar< T > >
 > struct Helper_IsNoThrowDestructibleSafe;
+// More helpers to clean up the type before doing the destructor detection.
 template < class T > struct Helper_IsNoThrowDestructibleSafe< T, false, false >
-    : public Helper_IsNoThrowDestructible< RemoveAllExtents_t< T > >::type { };
+    : public Helper_IsNoThrowDestructibleImpl< RemoveAllExtents_t< T > >::type { };
 template < class T > struct Helper_IsNoThrowDestructibleSafe< T, true, false > : public FalseType { };
 template < class T > struct Helper_IsNoThrowDestructibleSafe< T, false, true > : public TrueType { };
 #endif
@@ -1267,7 +1271,7 @@ template < class T > struct HasVirtualDestructor : public BoolConstant< __has_vi
 /// Check whether objects of type `T` can be swapped with objects of type `U`. \remark See `std::is_swappable_with`
 template < class T, class U > struct IsSwappableWith : public Impl::Helper_IsSwappableWith< T, U >::type { };
 /// Check whether objects of type `T` can be swapped between them. \remark See `std::is_swappable`
-template < class T > struct IsSwappable : public Impl::Helper_IsSwappable<T>::type { };
+template < class T > struct IsSwappable : public Impl::Helper_IsSwappable< T >::type { };
 
 /// Same as \ref IsSwappableWith but is known to not throw exceptions. \remark See `std::is_nothrow_swappable_with`
 template < class T, class U > struct IsNoThrowSwappableWith : public Impl::Helper_IsNoThrowSwappableWith< T, U >::type { };
