@@ -1758,4 +1758,48 @@ TEST_CASE("AddCV")
     CHECK(Urho3D::IsSame< typename Urho3D::AddCV< int >::type, Urho3D::AddCV_t< int > >::value);
 }
 
+template < class T, class U > using RemoveReference_Same = Urho3D::IsSame< typename Urho3D::RemoveReference< T >::type, U >;
+template < class T, class U > using RemoveReference_Same2 = std::is_same< typename std::remove_reference< T >::type, U >;
+// Test RemoveReference type-trait.
+TEST_CASE("RemoveReference")
+{
+    CHECK_EQ(RemoveReference_Same< int, int >::value, RemoveReference_Same2< int, int >::value);
+    CHECK_EQ(RemoveReference_Same< int &, int >::value, RemoveReference_Same2< int &, int >::value);
+    CHECK_EQ(RemoveReference_Same< int &&, int >::value, RemoveReference_Same2< int &&, int >::value);
+    CHECK_EQ(RemoveReference_Same< const int, const int >::value, RemoveReference_Same2< const int, const int >::value);
+    CHECK_EQ(RemoveReference_Same< const int &, const int >::value, RemoveReference_Same2< const int &, const int >::value);
+    CHECK_EQ(RemoveReference_Same< const int &&, const int >::value, RemoveReference_Same2< const int &&, const int >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveReference< int >::type, Urho3D::RemoveReference_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveReference< int & >::type, Urho3D::RemoveReference_t< int & > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveReference< int && >::type, Urho3D::RemoveReference_t< int && > >::value);
+}
+
+template < class T, class U > using AddLvalueReference_Same = Urho3D::IsSame< typename Urho3D::AddLvalueReference< T >::type, U >;
+template < class T, class U > using AddLvalueReference_Same2 = std::is_same< typename std::add_lvalue_reference< T >::type, U >;
+// Test AddLvalueReference type-trait.
+TEST_CASE("AddLvalueReference")
+{
+    CHECK_EQ(AddLvalueReference_Same< int, int & >::value, AddLvalueReference_Same2< int, int & >::value);
+    CHECK_EQ(AddLvalueReference_Same< int &, int & >::value, AddLvalueReference_Same2< int &, int & >::value);
+    CHECK_EQ(AddLvalueReference_Same< int &&, int & >::value, AddLvalueReference_Same2< int &&, int & >::value);
+    CHECK_EQ(AddLvalueReference_Same< void, void >::value, AddLvalueReference_Same2< void, void >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddLvalueReference< int >::type, Urho3D::AddLvalueReference_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddLvalueReference< int & >::type, Urho3D::AddLvalueReference_t< int & > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddLvalueReference< int && >::type, Urho3D::AddLvalueReference_t< int && > >::value);
+}
+
+template < class T, class U > using AddRvalueReference_Same = Urho3D::IsSame< typename Urho3D::AddRvalueReference< T >::type, U >;
+template < class T, class U > using AddRvalueReference_Same2 = std::is_same< typename std::add_rvalue_reference< T >::type, U >;
+// Test AddRvalueReference type-trait.
+TEST_CASE("AddRvalueReference")
+{
+    CHECK_EQ(AddRvalueReference_Same< int, int && >::value, AddRvalueReference_Same2< int, int && >::value);
+    CHECK_EQ(AddRvalueReference_Same< int &, int & >::value, AddRvalueReference_Same2< int &, int & >::value);
+    CHECK_EQ(AddRvalueReference_Same< int &&, int && >::value, AddRvalueReference_Same2< int &&, int && >::value);
+    CHECK_EQ(AddRvalueReference_Same< void, void >::value, AddRvalueReference_Same2< void, void >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddRvalueReference< int >::type, Urho3D::AddRvalueReference_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddRvalueReference< int & >::type, Urho3D::AddRvalueReference_t< int & > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddRvalueReference< int && >::type, Urho3D::AddRvalueReference_t< int && > >::value);
+}
+
 TEST_SUITE_END();
