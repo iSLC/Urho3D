@@ -1891,4 +1891,32 @@ TEST_CASE("MakeUnsigned")
     CHECK(Urho3D::IsSame< typename Urho3D::MakeUnsigned< int long >::type, Urho3D::MakeUnsigned_t< int long > >::value);
 }
 
+template < class T, class U > using RemoveExtent_Same = Urho3D::IsSame< typename Urho3D::RemoveExtent< T >::type, U >;
+template < class T, class U > using RemoveExtent_Same2 = std::is_same< typename std::remove_extent< T >::type, U >;
+// Test RemoveExtent type-trait.
+TEST_CASE("RemoveExtent")
+{
+    CHECK_EQ(RemoveExtent_Same< int, int >::value, RemoveExtent_Same2< int, int >::value);
+    CHECK_EQ(RemoveExtent_Same< int[24], int >::value, RemoveExtent_Same2< int[24], int >::value);
+    CHECK_EQ(RemoveExtent_Same< int[24][60], int[24] >::value, RemoveExtent_Same2< int[24][60], int[24] >::value);
+    CHECK_EQ(RemoveExtent_Same< int[][60], int[60] >::value, RemoveExtent_Same2< int[][60], int[60] >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveExtent< int >::type, Urho3D::RemoveExtent_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveExtent< int[24] >::type, Urho3D::RemoveExtent_t< int[24] > >::value);
+}
+
+template < class T, class U > using RemoveAllExtents_Same = Urho3D::IsSame< typename Urho3D::RemoveAllExtents< T >::type, U >;
+template < class T, class U > using RemoveAllExtents_Same2 = std::is_same< typename std::remove_all_extents< T >::type, U >;
+// Test RemoveAllExtents type-trait.
+TEST_CASE("RemoveAllExtents")
+{
+    CHECK_EQ(RemoveAllExtents_Same< int, int >::value, RemoveAllExtents_Same2< int, int >::value);
+    CHECK_EQ(RemoveAllExtents_Same< int[24], int >::value, RemoveAllExtents_Same2< int[24], int >::value);
+    CHECK_EQ(RemoveAllExtents_Same< int[24][60], int >::value, RemoveAllExtents_Same2< int[24][60], int >::value);
+    CHECK_EQ(RemoveAllExtents_Same< int[][60], int >::value, RemoveAllExtents_Same2< int[][60], int >::value);
+    CHECK_EQ(RemoveAllExtents_Same< const int[10], const int >::value, RemoveAllExtents_Same2< const int[10], const int >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveAllExtents< int >::type, Urho3D::RemoveAllExtents_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveAllExtents< int[24] >::type, Urho3D::RemoveAllExtents_t< int[24] > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveAllExtents< const int[10] >::type, Urho3D::RemoveAllExtents_t< const int[10] > >::value);
+}
+
 TEST_SUITE_END();
