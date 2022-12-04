@@ -17,6 +17,13 @@ TEST_SUITE_BEGIN("TypeTraits");
     using XChar8_t = unsigned char;
 #endif
 
+struct Dummy {
+    int m;
+    int f() { return 0; }
+};
+enum class DummyEnum { E };
+using NullPtr_t = decltype(nullptr);
+
 // Test IntegralConstant type.
 TEST_CASE_TEMPLATE("IntegralConstant", T,
     char,
@@ -107,7 +114,7 @@ TEST_CASE("IsNullPointer")
 
 // Test IsIntegral type-trait.
 TEST_CASE_TEMPLATE("IsIntegral", T,
-    Urho3D::Undefined_t,
+    Dummy,
     bool,
     char,
     signed char,
@@ -126,7 +133,8 @@ TEST_CASE_TEMPLATE("IsIntegral", T,
     float,    
     double,
     long double,
-    XChar8_t
+    XChar8_t,
+    NullPtr_t
 ) {
     CHECK_EQ(Urho3D::IsIntegral< T >::value, std::is_integral< T >::value);
     CHECK_EQ(Urho3D::IsIntegral< T * >::value, std::is_integral< T * >::value);
@@ -137,7 +145,7 @@ TEST_CASE_TEMPLATE("IsIntegral", T,
 
 // Test IsFloatingPoint type-trait.
 TEST_CASE_TEMPLATE("IsFloatingPoint", T,
-    Urho3D::Undefined_t,
+    Dummy,
     bool,
     char,
     signed char,
@@ -156,7 +164,8 @@ TEST_CASE_TEMPLATE("IsFloatingPoint", T,
     float,    
     double,
     long double,
-    XChar8_t
+    XChar8_t,
+    NullPtr_t
 ) {
     CHECK_EQ(Urho3D::IsFloatingPoint< T >::value, std::is_floating_point< T >::value);
     CHECK_EQ(Urho3D::IsFloatingPoint< T * >::value, std::is_floating_point< T * >::value);
@@ -168,7 +177,7 @@ TEST_CASE_TEMPLATE("IsFloatingPoint", T,
 // Test IsArray type-trait.
 TEST_CASE("IsArray")
 {
-    struct A { };
+    using A = Dummy;
 
     CHECK_EQ(Urho3D::IsArray< A >::value, std::is_array< A >::value);
     CHECK_EQ(Urho3D::IsArray< A[] >::value, std::is_array< A[] >::value);
@@ -188,7 +197,7 @@ TEST_CASE("IsArray")
 // Test IsCArray type-trait.
 TEST_CASE("IsCArray")
 {
-    struct A { };
+    using A = Dummy;
 
     CHECK_EQ(Urho3D::IsCArray< A >::value, false);
     CHECK_EQ(Urho3D::IsCArray< A[] >::value, true);
@@ -208,7 +217,7 @@ TEST_CASE("IsCArray")
 // Test IsArrayC type-trait.
 TEST_CASE("IsArrayC")
 {
-    struct A { };
+    using A = Dummy;
 
     CHECK_EQ(Urho3D::IsArrayC< A >::value, false);
     CHECK_EQ(Urho3D::IsArrayC< A[] >::value, false);
@@ -245,7 +254,7 @@ TEST_CASE("IsEnum")
 // Test IsUnion type-trait.
 TEST_CASE("IsUnion")
 {
-    struct A { };
+    using A = Dummy;
     typedef union {
         int a;
         float b;
@@ -285,7 +294,7 @@ TEST_CASE("IsClass")
     CHECK_EQ(Urho3D::IsClass< B >::value, Urho3D::IsClass_v< B >);
 }
 
-int IsFunctin_Test(int i) { return i; } // function
+int IsFunction_Test(int i) { return i; } // function
 template < class > struct IsFunctin_PMT {};
 template < class T, class U > struct IsFunctin_PMT< U T:: * > { using member_type = U; };
 // Test IsFunction type-trait.
@@ -299,14 +308,14 @@ TEST_CASE("IsFunction")
         float fun5() const &;
         static char fun6() { return 'A'; }
     };
-    int(*b)(int) = IsFunctin_Test; // pointer to function
+    int(*b)(int) = IsFunction_Test; // pointer to function
     struct C { int operator()(int i){return i;} } c; // function-like class
     using fun5_t = IsFunctin_PMT< decltype(&A::fun5) >::member_type; // T is int() const &
 
     CHECK_EQ(Urho3D::IsFunction< A >::value, std::is_function< A >::value);
     CHECK_EQ(Urho3D::IsFunction< int(int) >::value, std::is_function< int(int) >::value);
     CHECK_EQ(Urho3D::IsFunction< int(*)(int) >::value, std::is_function< int(*)(int) >::value);
-    CHECK_EQ(Urho3D::IsFunction< decltype(IsFunctin_Test) >::value, std::is_function< decltype(IsFunctin_Test) >::value);
+    CHECK_EQ(Urho3D::IsFunction< decltype(IsFunction_Test) >::value, std::is_function< decltype(IsFunction_Test) >::value);
     CHECK_EQ(Urho3D::IsFunction< int >::value, std::is_function< int >::value);
     CHECK_EQ(Urho3D::IsFunction< fun5_t >::value, std::is_function< fun5_t >::value);
     CHECK_EQ(Urho3D::IsFunction< decltype(&A::fun1) >::value, std::is_function< decltype(&A::fun1) >::value);
@@ -323,7 +332,7 @@ TEST_CASE("IsFunction")
 // Test IsPointer type-trait.
 TEST_CASE("IsPointer")
 {
-    struct A { };
+    using A = Dummy;
 
     CHECK_EQ(Urho3D::IsPointer< A >::value, std::is_pointer< A >::value);
     CHECK_EQ(Urho3D::IsPointer< A * >::value, std::is_pointer< A * >::value);
@@ -344,7 +353,7 @@ TEST_CASE("IsPointer")
 // Test IsLvalueReference type-trait.
 TEST_CASE("IsLvalueReference")
 {
-    struct A { };
+    using A = Dummy;
 
     CHECK_EQ(Urho3D::IsLvalueReference< A >::value, std::is_lvalue_reference< A >::value);
     CHECK_EQ(Urho3D::IsLvalueReference< A & >::value, std::is_lvalue_reference< A & >::value);
@@ -363,7 +372,7 @@ TEST_CASE("IsLvalueReference")
 // Test IsRvalueReference type-trait.
 TEST_CASE("IsRvalueReference")
 {
-    struct A { };
+    using A = Dummy;
 
     CHECK_EQ(Urho3D::IsRvalueReference< A >::value, std::is_rvalue_reference< A >::value);
     CHECK_EQ(Urho3D::IsRvalueReference< A & >::value, std::is_rvalue_reference< A & >::value);
@@ -379,19 +388,16 @@ TEST_CASE("IsRvalueReference")
     CHECK_EQ(Urho3D::IsRvalueReference< A & >::value, Urho3D::IsRvalueReference_v< A & >);
 }
 
-
 // Test IsMemberObjectPointer type-trait.
 TEST_CASE("IsMemberObjectPointer")
 {
-    struct A {
-        int x;
-    };
+    using A = Dummy;
 
     CHECK_EQ(Urho3D::IsMemberObjectPointer< A * >::value, std::is_member_object_pointer< A * >::value);
     CHECK_EQ(Urho3D::IsMemberObjectPointer< int A::* >::value, std::is_member_object_pointer< int A::* >::value);
     CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*) >::value, std::is_member_object_pointer< int(A::*) >::value);
     CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*)() >::value, std::is_member_object_pointer< int(A::*)() >::value);
-    CHECK_EQ(Urho3D::IsMemberObjectPointer< decltype(&A::x) >::value, std::is_member_object_pointer< decltype(&A::x) >::value);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< decltype(&A::m) >::value, std::is_member_object_pointer< decltype(&A::m) >::value);
     CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*) >::value, Urho3D::IsMemberObjectPointer_v< int(A::*) >);
     CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*)() >::value, Urho3D::IsMemberObjectPointer_v< int(A::*)() >);
 }
@@ -399,15 +405,237 @@ TEST_CASE("IsMemberObjectPointer")
 // Test IsMemberFunctionPointer type-trait.
 TEST_CASE("IsMemberFunctionPointer")
 {
-    struct A {
-        void m() { }
-    };
+    using A = Dummy;
 
     CHECK_EQ(Urho3D::IsMemberFunctionPointer< A * >::value, std::is_member_function_pointer< A * >::value);
-    CHECK_EQ(Urho3D::IsMemberFunctionPointer< void(A::*)() >::value, std::is_member_function_pointer< void(A::*)() >::value);
+    CHECK_EQ(Urho3D::IsMemberFunctionPointer< int(A::*)() >::value, std::is_member_function_pointer< int(A::*)() >::value);
     CHECK_EQ(Urho3D::IsMemberFunctionPointer< decltype(&A::m) >::value, std::is_member_function_pointer< decltype(&A::m) >::value);
     CHECK_EQ(Urho3D::IsMemberFunctionPointer< A * >::value, Urho3D::IsMemberFunctionPointer_v< A * >);
-    CHECK_EQ(Urho3D::IsMemberFunctionPointer< void(A::*)() >::value, Urho3D::IsMemberFunctionPointer_v< void(A::*)() >);
+    CHECK_EQ(Urho3D::IsMemberFunctionPointer< int(A::*)() >::value, Urho3D::IsMemberFunctionPointer_v< int(A::*)() >);
+}
+
+// Test IsFundamental type-trait.
+TEST_CASE_TEMPLATE("IsFundamental", T,
+    Dummy,
+    bool,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long,
+    float,    
+    double,
+    long double,
+    XChar8_t,
+    NullPtr_t
+) {
+    CHECK_EQ(Urho3D::IsFundamental< T >::value, std::is_fundamental< T >::value);
+    CHECK_EQ(Urho3D::IsFundamental< T * >::value, std::is_fundamental< T * >::value);
+    CHECK_EQ(Urho3D::IsFundamental< T & >::value, std::is_fundamental< T & >::value);
+    CHECK_EQ(Urho3D::IsFundamental< T && >::value, std::is_fundamental< T && >::value);
+    CHECK_EQ(Urho3D::IsFundamental< const T >::value, std::is_fundamental< const T >::value);
+    CHECK_EQ(Urho3D::IsFundamental< const T * >::value, std::is_fundamental< const T * >::value);
+    CHECK_EQ(Urho3D::IsFundamental< const T & >::value, std::is_fundamental< const T & >::value);
+    CHECK_EQ(Urho3D::IsFundamental< T >::value, Urho3D::IsFundamental_v< T >);
+}
+
+// Test IsArithmetic type-trait.
+TEST_CASE_TEMPLATE("IsArithmetic", T,
+    Dummy,
+    bool,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long,
+    float,    
+    double,
+    long double,
+    XChar8_t,
+    NullPtr_t
+) {
+    CHECK_EQ(Urho3D::IsArithmetic< T >::value, std::is_arithmetic< T >::value);
+    CHECK_EQ(Urho3D::IsArithmetic< T * >::value, std::is_arithmetic< T * >::value);
+    CHECK_EQ(Urho3D::IsArithmetic< T & >::value, std::is_arithmetic< T & >::value);
+    CHECK_EQ(Urho3D::IsArithmetic< T && >::value, std::is_arithmetic< T && >::value);
+    CHECK_EQ(Urho3D::IsArithmetic< const T >::value, std::is_arithmetic< const T >::value);
+    CHECK_EQ(Urho3D::IsArithmetic< const T * >::value, std::is_arithmetic< const T * >::value);
+    CHECK_EQ(Urho3D::IsArithmetic< const T & >::value, std::is_arithmetic< const T & >::value);
+    CHECK_EQ(Urho3D::IsArithmetic< T >::value, Urho3D::IsArithmetic_v< T >);
+}
+
+// Test IsScalar type-trait.
+TEST_CASE_TEMPLATE("IsScalar", T,
+    Dummy,
+    bool,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long,
+    float,    
+    double,
+    long double,
+    XChar8_t,
+    NullPtr_t,
+    decltype(&Dummy::m),
+    decltype(&Dummy::f),
+    decltype(DummyEnum::E)
+) {
+    CHECK_EQ(Urho3D::IsScalar< T >::value, std::is_scalar< T >::value);
+    CHECK_EQ(Urho3D::IsScalar< T * >::value, std::is_scalar< T * >::value);
+    CHECK_EQ(Urho3D::IsScalar< T & >::value, std::is_scalar< T & >::value);
+    CHECK_EQ(Urho3D::IsScalar< T && >::value, std::is_scalar< T && >::value);
+    CHECK_EQ(Urho3D::IsScalar< const T >::value, std::is_scalar< const T >::value);
+    CHECK_EQ(Urho3D::IsScalar< const T * >::value, std::is_scalar< const T * >::value);
+    CHECK_EQ(Urho3D::IsScalar< const T & >::value, std::is_scalar< const T & >::value);
+    CHECK_EQ(Urho3D::IsScalar< T >::value, Urho3D::IsScalar_v< T >);
+}
+
+// Test IsObject type-trait.
+TEST_CASE_TEMPLATE("IsObject", T,
+    Dummy,
+    bool,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long,
+    float,    
+    double,
+    long double,
+    XChar8_t,
+    NullPtr_t
+) {
+    CHECK_EQ(Urho3D::IsObject< T >::value, std::is_object< T >::value);
+    CHECK_EQ(Urho3D::IsObject< T * >::value, std::is_object< T * >::value);
+    CHECK_EQ(Urho3D::IsObject< T & >::value, std::is_object< T & >::value);
+    CHECK_EQ(Urho3D::IsObject< T && >::value, std::is_object< T && >::value);
+    CHECK_EQ(Urho3D::IsObject< const T >::value, std::is_object< const T >::value);
+    CHECK_EQ(Urho3D::IsObject< const T * >::value, std::is_object< const T * >::value);
+    CHECK_EQ(Urho3D::IsObject< const T & >::value, std::is_object< const T & >::value);
+    CHECK_EQ(Urho3D::IsObject< T >::value, Urho3D::IsObject_v< T >);
+}
+
+// Test IsCompound type-trait.
+TEST_CASE_TEMPLATE("IsCompound", T,
+    Dummy,
+    bool,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long,
+    float,    
+    double,
+    long double,
+    XChar8_t,
+    NullPtr_t
+) {
+    CHECK_EQ(Urho3D::IsCompound< T >::value, std::is_compound< T >::value);
+    CHECK_EQ(Urho3D::IsCompound< T * >::value, std::is_compound< T * >::value);
+    CHECK_EQ(Urho3D::IsCompound< T & >::value, std::is_compound< T & >::value);
+    CHECK_EQ(Urho3D::IsCompound< T && >::value, std::is_compound< T && >::value);
+    CHECK_EQ(Urho3D::IsCompound< const T >::value, std::is_compound< const T >::value);
+    CHECK_EQ(Urho3D::IsCompound< const T * >::value, std::is_compound< const T * >::value);
+    CHECK_EQ(Urho3D::IsCompound< const T & >::value, std::is_compound< const T & >::value);
+    CHECK_EQ(Urho3D::IsCompound< T >::value, Urho3D::IsCompound_v< T >);
+}
+
+// Test IsReference type-trait.
+TEST_CASE_TEMPLATE("IsReference", T,
+    Dummy,
+    bool,
+    char,
+    signed char,
+    unsigned char,
+    wchar_t,
+    char16_t,
+    char32_t,
+    short,
+    unsigned short,
+    int,
+    unsigned int,
+    long,
+    unsigned long,
+    long long,
+    unsigned long long,
+    float,    
+    double,
+    long double,
+    XChar8_t,
+    NullPtr_t
+) {
+    CHECK_EQ(Urho3D::IsReference< T >::value, std::is_reference< T >::value);
+    CHECK_EQ(Urho3D::IsReference< T * >::value, std::is_reference< T * >::value);
+    CHECK_EQ(Urho3D::IsReference< T & >::value, std::is_reference< T & >::value);
+    CHECK_EQ(Urho3D::IsReference< T *& >::value, std::is_reference< T *& >::value);
+    CHECK_EQ(Urho3D::IsReference< T *&& >::value, std::is_reference< T *&& >::value);
+    CHECK_EQ(Urho3D::IsReference< const T >::value, std::is_reference< const T >::value);
+    CHECK_EQ(Urho3D::IsReference< const T * >::value, std::is_reference< const T * >::value);
+    CHECK_EQ(Urho3D::IsReference< const T & >::value, std::is_reference< const T & >::value);
+    CHECK_EQ(Urho3D::IsReference< T >::value, Urho3D::IsReference_v< T >);
+}
+
+// Test IsMemberObjectPointer type-trait.
+TEST_CASE("IsMemberObjectPointer")
+{
+    using A = Dummy;
+
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< A * >::value, std::is_member_object_pointer< A * >::value);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< int A::* >::value, std::is_member_object_pointer< int A::* >::value);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*) >::value, std::is_member_object_pointer< int(A::*) >::value);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*)() >::value, std::is_member_object_pointer< int(A::*)() >::value);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< decltype(&A::m) >::value, std::is_member_object_pointer< decltype(&A::m) >::value);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< decltype(&A::f) >::value, std::is_member_object_pointer< decltype(&A::f) >::value);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*) >::value, Urho3D::IsMemberObjectPointer_v< int(A::*) >);
+    CHECK_EQ(Urho3D::IsMemberObjectPointer< int(A::*)() >::value, Urho3D::IsMemberObjectPointer_v< int(A::*)() >);
+    CHECK_EQ(Urho3D::IsMemberFunctionPointer< A * >::value, Urho3D::IsMemberFunctionPointer_v< A * >);
 }
 
 TEST_SUITE_END();
