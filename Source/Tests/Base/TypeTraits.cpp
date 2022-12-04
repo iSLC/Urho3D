@@ -1835,4 +1835,60 @@ TEST_CASE("AddPointer")
     CHECK(Urho3D::IsSame< typename Urho3D::AddPointer< int * >::type, Urho3D::AddPointer_t< int * > >::value);
 }
 
+template < class T, class U > using MakeSigned_Same = Urho3D::IsSame< typename Urho3D::MakeSigned< T >::type, U >;
+template < class T, class U > using MakeSigned_Same2 = std::is_same< typename std::make_signed< T >::type, U >;
+// Test MakeSigned type-trait.
+TEST_CASE("MakeSigned")
+{
+    CHECK_EQ(MakeSigned_Same< char, int8_t >::value, MakeSigned_Same2< char, int8_t >::value);
+    CHECK_EQ(MakeSigned_Same< signed char, int8_t >::value, MakeSigned_Same2< signed char, int8_t >::value);
+    CHECK_EQ(MakeSigned_Same< unsigned char, int8_t >::value, MakeSigned_Same2< unsigned char, int8_t >::value);
+    CHECK_EQ(MakeSigned_Same< signed short, int16_t >::value, MakeSigned_Same2< signed short, int16_t >::value);
+    CHECK_EQ(MakeSigned_Same< unsigned short, int16_t >::value, MakeSigned_Same2< unsigned short, int16_t >::value);
+    CHECK_EQ(MakeSigned_Same< signed int, int32_t >::value, MakeSigned_Same2< signed int, int32_t >::value);
+    CHECK_EQ(MakeSigned_Same< unsigned int, int32_t >::value, MakeSigned_Same2< unsigned int, int32_t >::value);
+    CHECK_EQ(MakeSigned_Same< signed long, signed long >::value, MakeSigned_Same2< signed long, signed long >::value);
+    CHECK_EQ(MakeSigned_Same< unsigned long, signed long >::value, MakeSigned_Same2< unsigned long, signed long >::value);
+    CHECK_EQ(MakeSigned_Same< signed long long, int64_t >::value, MakeSigned_Same2< signed long long, int64_t >::value);
+    CHECK_EQ(MakeSigned_Same< unsigned long long, int64_t >::value, MakeSigned_Same2< unsigned long long, int64_t >::value);
+    CHECK_EQ(MakeSigned_Same< wchar_t, int16_t >::value, MakeSigned_Same2< wchar_t, int16_t >::value);
+    CHECK_EQ(MakeSigned_Same< char16_t, int16_t >::value, MakeSigned_Same2< char16_t, int16_t >::value);
+    CHECK_EQ(MakeSigned_Same< char32_t, int32_t >::value, MakeSigned_Same2< char32_t, int32_t >::value);
+    CHECK_EQ(MakeSigned_Same< const unsigned, const int >::value, MakeSigned_Same2< const unsigned, const int >::value);
+    CHECK_EQ(MakeSigned_Same< volatile unsigned, volatile int >::value, MakeSigned_Same2< volatile unsigned, volatile int >::value);
+    CHECK_EQ(MakeSigned_Same< const volatile unsigned, const volatile int >::value, MakeSigned_Same2< const volatile unsigned, const volatile int >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::MakeSigned< int >::type, Urho3D::MakeSigned_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::MakeSigned< unsigned >::type, Urho3D::MakeSigned_t< unsigned > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::MakeSigned< const unsigned >::type, Urho3D::MakeSigned_t< const unsigned > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::MakeSigned< unsigned long >::type, Urho3D::MakeSigned_t< unsigned long > >::value);
+}
+
+template < class T, class U > using MakeUnsigned_Same = Urho3D::IsSame< typename Urho3D::MakeUnsigned< T >::type, U >;
+template < class T, class U > using MakeUnsigned_Same2 = std::is_same< typename std::make_unsigned< T >::type, U >;
+// Test MakeUnsigned type-trait.
+TEST_CASE("MakeUnsigned")
+{
+    CHECK_EQ(MakeUnsigned_Same< char, uint8_t >::value, MakeUnsigned_Same2< char, uint8_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< signed char, uint8_t >::value, MakeUnsigned_Same2< signed char, uint8_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< unsigned char, uint8_t >::value, MakeUnsigned_Same2< unsigned char, uint8_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< signed short, uint16_t >::value, MakeUnsigned_Same2< signed short, uint16_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< unsigned short, uint16_t >::value, MakeUnsigned_Same2< unsigned short, uint16_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< signed int, uint32_t >::value, MakeUnsigned_Same2< signed int, uint32_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< unsigned int, uint32_t >::value, MakeUnsigned_Same2< unsigned int, uint32_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< signed long, unsigned long >::value, MakeUnsigned_Same2< signed long, unsigned long >::value);
+    CHECK_EQ(MakeUnsigned_Same< unsigned long, unsigned long >::value, MakeUnsigned_Same2< unsigned long, unsigned long >::value);
+    CHECK_EQ(MakeUnsigned_Same< signed long long, uint64_t >::value, MakeUnsigned_Same2< signed long long, uint64_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< unsigned long long, uint64_t >::value, MakeUnsigned_Same2< unsigned long long, uint64_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< wchar_t, uint16_t >::value, MakeUnsigned_Same2< wchar_t, uint16_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< char16_t, uint16_t >::value, MakeUnsigned_Same2< char16_t, uint16_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< char32_t, uint32_t >::value, MakeUnsigned_Same2< char32_t, uint32_t >::value);
+    CHECK_EQ(MakeUnsigned_Same< const int, const unsigned >::value, MakeUnsigned_Same2< const int, const unsigned >::value);
+    CHECK_EQ(MakeUnsigned_Same< volatile int, volatile unsigned >::value, MakeUnsigned_Same2< volatile int, volatile unsigned >::value);
+    CHECK_EQ(MakeUnsigned_Same< const volatile int, const volatile unsigned >::value, MakeUnsigned_Same2< const volatile int, const volatile unsigned >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::MakeUnsigned< unsigned >::type, Urho3D::MakeUnsigned_t< unsigned > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::MakeUnsigned< int >::type, Urho3D::MakeUnsigned_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::MakeUnsigned< const int >::type, Urho3D::MakeUnsigned_t< const int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::MakeUnsigned< int long >::type, Urho3D::MakeUnsigned_t< int long > >::value);
+}
+
 TEST_SUITE_END();
