@@ -1482,10 +1482,72 @@ TEST_CASE("IsSwappableWith")
     //...
 }
 
-// Test IsSwappableWith type-trait.
+// Test IsSwappable type-trait.
 TEST_CASE("IsSwappable")
 {
     //...
+}
+
+// Test AlignmentOf type-trait.
+TEST_CASE("AlignmentOf")
+{
+    struct A {};
+    struct B {
+        std::int8_t p;
+        std::int16_t q;
+    };
+    struct alignas(16) C { };
+    struct alignas(32) D { };
+    struct alignas(64) E { };
+
+    CHECK_EQ(Urho3D::AlignmentOf< A >::value, std::alignment_of< A >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< B >::value, std::alignment_of< B >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< C >::value, std::alignment_of< C >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< D >::value, std::alignment_of< D >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< E >::value, std::alignment_of< E >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< char >::value, std::alignment_of< char >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< int >::value, std::alignment_of< int >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< double >::value, std::alignment_of< double >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< long long int >::value, std::alignment_of< long long int >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< int[20] >::value, std::alignment_of< int[20] >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< C[8] >::value, std::alignment_of< C[8] >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< D[4] >::value, std::alignment_of< D[4] >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< E[2] >::value, std::alignment_of< E[2] >::value);
+    CHECK_EQ(Urho3D::AlignmentOf< A >::value, Urho3D::AlignmentOf_v< A >);
+    CHECK_EQ(Urho3D::AlignmentOf< B >::value, Urho3D::AlignmentOf_v< B >);
+}
+
+// Test Rank type-trait.
+TEST_CASE("Rank")
+{
+    CHECK_EQ(Urho3D::Rank< int >::value, std::rank< int >::value);
+    CHECK_EQ(Urho3D::Rank< int[] >::value, std::rank< int[] >::value);
+    CHECK_EQ(Urho3D::Rank< int[0] >::value, std::rank< int[0] >::value);
+    CHECK_EQ(Urho3D::Rank< int[][10] >::value, std::rank< int[][10] >::value);
+    CHECK_EQ(Urho3D::Rank< int[][10][10] >::value, std::rank< int[][10][10] >::value);
+    CHECK_EQ(Urho3D::Rank< int[10][10]  >::value, std::rank< int[10][10]  >::value);
+    CHECK_EQ(Urho3D::Rank< int >::value, Urho3D::Rank_v< int >);
+    CHECK_EQ(Urho3D::Rank< int[10] >::value, Urho3D::Rank_v< int[10] >);
+    CHECK_EQ(Urho3D::Rank< int[10][10] >::value, Urho3D::Rank_v< int[10][10] >);
+}
+
+
+// Test Extent type-trait.
+TEST_CASE("Extent")
+{
+    CHECK_EQ(Urho3D::Extent< int[3] >::value, std::extent< int[3] >::value);
+    CHECK_EQ(Urho3D::Extent< int[3][4], 0 >::value, std::extent< int[3][4], 0 >::value);
+    CHECK_EQ(Urho3D::Extent< int[3][4], 1 >::value, std::extent< int[3][4], 1 >::value);
+    CHECK_EQ(Urho3D::Extent< int[3][4], 2 >::value, std::extent< int[3][4], 2 >::value);
+    CHECK_EQ(Urho3D::Extent< int[] >::value, std::extent< int[] >::value);
+    CHECK_EQ(Urho3D::Extent< int[3] >::value, std::extent< int[3] >::value);
+    CHECK_EQ(Urho3D::Extent< int[][24][60], 0 >::value, std::extent< int[][24][60], 0 >::value);
+    CHECK_EQ(Urho3D::Extent< int[][24][60], 1 >::value, std::extent< int[][24][60], 1 >::value);
+    CHECK_EQ(Urho3D::Extent< int[][24][60], 2 >::value, std::extent< int[][24][60], 2 >::value);
+    CHECK_EQ(Urho3D::Extent< int[][24][60], 3 >::value, std::extent< int[][24][60], 3 >::value);
+    CHECK_EQ(Urho3D::Extent< int[3] >::value, Urho3D::Extent_v< int[3] >);
+    CHECK_EQ(Urho3D::Extent< int[3][4], 0 >::value, Urho3D::Extent_v< int[3][4], 0 >);
+    CHECK_EQ(Urho3D::Extent< int[3][4], 1 >::value, Urho3D::Extent_v< int[3][4], 1 >);
 }
 
 TEST_SUITE_END();
