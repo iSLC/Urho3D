@@ -660,26 +660,6 @@ template < class T, size_t N > constexpr EnableIf_t<
     IsSwappable_v< T >
 > Swap(T (&a)[N], T (&b)[N]) noexcept(IsNoThrowSwappable_v< T >);
 
-// Helper to select a signed integral type for on the specified size (in bytes).
-template < size_t > struct Helper_SelectSigned;
-template < > struct Helper_SelectSigned< 1 > { typedef int8_t type; };
-template < > struct Helper_SelectSigned< 2 > { typedef int16_t type; };
-template < > struct Helper_SelectSigned< 4 > { typedef int32_t type; };
-template < > struct Helper_SelectSigned< 8 > { typedef int64_t type; };
-#ifdef UH_HAS_INT128_TYPE
-    template < > struct Helper_SelectSigned< 16 > { typedef UH_INT128_TYPE type; };
-#endif
-
-// Helper to select an unsigned integral type for on the specified size (in bytes).
-template < size_t > struct Helper_SelectUnsigned;
-template < > struct Helper_SelectUnsigned< 1 > { typedef uint8_t type; };
-template < > struct Helper_SelectUnsigned< 2 > { typedef uint16_t type; };
-template < > struct Helper_SelectUnsigned< 4 > { typedef uint32_t type; };
-template < > struct Helper_SelectUnsigned< 8 > { typedef uint64_t type; };
-#ifdef UH_HAS_UINT128_TYPE
-    template < > struct Helper_SelectUnsigned< 16 > { typedef UH_UINT128_TYPE type; };
-#endif
-
 // Helper used to check if a signed integral value can fit in a 32-bit integral type.
 template < int64_t V, bool B = (V > INT32_MAX || V < INT32_MIN) > struct Helper_SignedValueFit32 { typedef int32_t type; };
 // Specialization of the %Helper_SignedValueFit32 type for the case where the value needs a type larger than 32-bit.
@@ -962,6 +942,26 @@ template < class T > auto Helper_TryAddRvalueReference(...) -> TypeIdentity< T >
 template < class T > auto Helper_TryAddPointer(int) -> TypeIdentity< RemoveReference_t< T > * >;
 template < class T > auto Helper_TryAddPointer(...) -> TypeIdentity< T >;
 
+// Helper to select a signed integral type for on the specified size (in bytes).
+template < size_t > struct Helper_SelectSigned;
+template < > struct Helper_SelectSigned< 1 > { typedef int8_t type; };
+template < > struct Helper_SelectSigned< 2 > { typedef int16_t type; };
+template < > struct Helper_SelectSigned< 4 > { typedef int32_t type; };
+template < > struct Helper_SelectSigned< 8 > { typedef int64_t type; };
+#ifdef UH_HAS_INT128_TYPE
+    template < > struct Helper_SelectSigned< 16 > { typedef UH_INT128_TYPE type; };
+#endif
+
+// Helper to select an unsigned integral type for on the specified size (in bytes).
+template < size_t > struct Helper_SelectUnsigned;
+template < > struct Helper_SelectUnsigned< 1 > { typedef uint8_t type; };
+template < > struct Helper_SelectUnsigned< 2 > { typedef uint16_t type; };
+template < > struct Helper_SelectUnsigned< 4 > { typedef uint32_t type; };
+template < > struct Helper_SelectUnsigned< 8 > { typedef uint64_t type; };
+#ifdef UH_HAS_UINT128_TYPE
+    template < > struct Helper_SelectUnsigned< 16 > { typedef UH_UINT128_TYPE type; };
+#endif
+
 // Helper used to make the specified type a signed while retaining properties and qualifiers.
 template < class T, class U = RemoveCV_t< T >, bool S = IsSigned_v< T >> struct Helper_MakeUnsigned { typedef T type; };
 template < class T, class U > struct Helper_MakeUnsigned< T, U, true >
@@ -972,6 +972,13 @@ template < class T > struct Helper_MakeUnsigned< T, unsigned long, false > { typ
 // Apparently, you're supposed to return unsigned char regardless of the sign of `char` (no leaving untouched).
 template < class T > struct Helper_MakeUnsigned< T, char, true > { typedef MatchCV_t< T, unsigned char > type;  };
 template < class T > struct Helper_MakeUnsigned< T, char, false > { typedef MatchCV_t< T, unsigned char > type;  };
+// MSVC seems to enforce the `char` trend for wide character types as well
+template < class T > struct Helper_MakeUnsigned< T, wchar_t, true > { typedef MatchCV_t< T, unsigned short > type;  };
+template < class T > struct Helper_MakeUnsigned< T, wchar_t, false > { typedef MatchCV_t< T, unsigned short > type;  };
+template < class T > struct Helper_MakeUnsigned< T, char16_t, true > { typedef MatchCV_t< T, unsigned short > type;  };
+template < class T > struct Helper_MakeUnsigned< T, char16_t, false > { typedef MatchCV_t< T, unsigned short > type;  };
+template < class T > struct Helper_MakeUnsigned< T, char32_t, true > { typedef MatchCV_t< T, unsigned int > type;  };
+template < class T > struct Helper_MakeUnsigned< T, char32_t, false > { typedef MatchCV_t< T, unsigned int > type;  };
 // Leave boolean undefined.
 template < class T, bool S > struct Helper_MakeUnsigned< T, bool, S >;
 
@@ -985,6 +992,13 @@ template < class T > struct Helper_MakeSigned< T, unsigned long, false > { typed
 // Apparently, you're supposed to return signed char regardless of the sign of `char` (no leaving untouched).
 template < class T > struct Helper_MakeSigned< T, char, true > { typedef MatchCV_t< T, signed char > type; };
 template < class T > struct Helper_MakeSigned< T, char, false > { typedef MatchCV_t< T, signed char > type; };
+// MSVC seems to enforce the `char` trend for wide character types as well
+template < class T > struct Helper_MakeSigned< T, wchar_t, true > { typedef MatchCV_t< T, signed short > type; };
+template < class T > struct Helper_MakeSigned< T, wchar_t, false > { typedef MatchCV_t< T, signed short > type; };
+template < class T > struct Helper_MakeSigned< T, char16_t, true > { typedef MatchCV_t< T, signed short > type; };
+template < class T > struct Helper_MakeSigned< T, char16_t, false > { typedef MatchCV_t< T, signed short > type; };
+template < class T > struct Helper_MakeSigned< T, char32_t, true > { typedef MatchCV_t< T, signed int > type; };
+template < class T > struct Helper_MakeSigned< T, char32_t, false > { typedef MatchCV_t< T, signed int > type; };
 // Leave boolean undefined.
 template < class T, bool S > struct Helper_MakeSigned< T, bool, S >;
 
