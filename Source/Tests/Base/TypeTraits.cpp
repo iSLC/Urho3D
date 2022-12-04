@@ -1659,7 +1659,103 @@ TEST_CASE("IsNoThrowConvertible")
 #endif
     CHECK_EQ(Urho3D::IsNoThrowConvertible< A, B >::value, Urho3D::IsNoThrowConvertible_v< A, B >);
     CHECK_EQ(Urho3D::IsNoThrowConvertible< B, A >::value, Urho3D::IsNoThrowConvertible_v< B, A >);
-    
+}
+
+
+template < class T, class U > using RemoveConst_Same = Urho3D::IsSame< typename Urho3D::RemoveConst< T >::type, U >;
+template < class T, class U > using RemoveConst_Same2 = std::is_same< typename std::remove_const< T >::type, U >;
+// Test RemoveConst type-trait.
+TEST_CASE("RemoveConst")
+{
+    CHECK_EQ(RemoveConst_Same< const int, int >::value, RemoveConst_Same2< const int, int >::value);
+    CHECK_EQ(RemoveConst_Same< volatile int, volatile int >::value, RemoveConst_Same2< volatile int, volatile int >::value);
+    CHECK_EQ(RemoveConst_Same< const volatile int, volatile int >::value, RemoveConst_Same2< const volatile int, volatile int >::value);
+    CHECK_EQ(RemoveConst_Same< const volatile int *, volatile int * >::value, RemoveConst_Same2< const volatile int *, volatile int * >::value);
+    CHECK_EQ(RemoveConst_Same< const volatile int *, volatile int * >::value, RemoveConst_Same2< const volatile int *, volatile int * >::value);
+    CHECK_EQ(RemoveConst_Same< int * const volatile, int * volatile >::value, RemoveConst_Same2< int * const volatile, int * volatile >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveConst< const volatile int >::type, Urho3D::RemoveConst_t< const volatile int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveConst< const volatile int * >::type, Urho3D::RemoveConst_t< const volatile int * > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveConst< int * const volatile >::type, Urho3D::RemoveConst_t< int * const volatile > >::value);
+}
+
+template < class T, class U > using RemoveVolatile_Same = Urho3D::IsSame< typename Urho3D::RemoveVolatile< T >::type, U >;
+template < class T, class U > using RemoveVolatile_Same2 = std::is_same< typename std::remove_volatile< T >::type, U >;
+// Test RemoveVolatile type-trait.
+TEST_CASE("RemoveVolatile")
+{
+    CHECK_EQ(RemoveVolatile_Same< const int, const int >::value, RemoveVolatile_Same2< const int, const int >::value);
+    CHECK_EQ(RemoveVolatile_Same< volatile int, int >::value, RemoveVolatile_Same2< volatile int, int >::value);
+    CHECK_EQ(RemoveVolatile_Same< const volatile int, const int >::value, RemoveVolatile_Same2< const volatile int, const int >::value);
+    CHECK_EQ(RemoveVolatile_Same< const volatile int *, const int * >::value, RemoveVolatile_Same2< const volatile int *, const int * >::value);
+    CHECK_EQ(RemoveVolatile_Same< const volatile int *, const int * >::value, RemoveVolatile_Same2< const volatile int *, const int * >::value);
+    CHECK_EQ(RemoveVolatile_Same< int * const volatile, int * const >::value, RemoveVolatile_Same2< int * const volatile, int * const >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveVolatile< const volatile int >::type, Urho3D::RemoveVolatile_t< const volatile int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveVolatile< const volatile int * >::type, Urho3D::RemoveVolatile_t< const volatile int * > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveVolatile< int * const volatile >::type, Urho3D::RemoveVolatile_t< int * const volatile > >::value);
+}
+
+template < class T, class U > using RemoveCV_Same = Urho3D::IsSame< typename Urho3D::RemoveCV< T >::type, U >;
+template < class T, class U > using RemoveCV_Same2 = std::is_same< typename std::remove_cv< T >::type, U >;
+// Test RemoveCV type-trait.
+TEST_CASE("RemoveCV")
+{
+    CHECK_EQ(RemoveCV_Same< const int, int >::value, RemoveCV_Same2< const int, int >::value);
+    CHECK_EQ(RemoveCV_Same< volatile int, int >::value, RemoveCV_Same2< volatile int, int >::value);
+    CHECK_EQ(RemoveCV_Same< const volatile int, int >::value, RemoveCV_Same2< const volatile int, int >::value);
+    CHECK_EQ(RemoveCV_Same< const volatile int *, int * >::value, RemoveCV_Same2< const volatile int *, int * >::value);
+    CHECK_EQ(RemoveCV_Same< const volatile int *, const volatile int * >::value, RemoveCV_Same2< const volatile int *, const volatile int * >::value);
+    CHECK_EQ(RemoveCV_Same< int * const volatile, int * >::value, RemoveCV_Same2< int * const volatile, int * >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveCV< const volatile int >::type, Urho3D::RemoveCV_t< const volatile int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveCV< const volatile int * >::type, Urho3D::RemoveCV_t< const volatile int * > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveCV< int * const volatile >::type, Urho3D::RemoveCV_t< int * const volatile > >::value);
+}
+
+template < class T, class U > using AddConst_Same = Urho3D::IsSame< typename Urho3D::AddConst< T >::type, U >;
+template < class T, class U > using AddConst_Same2 = std::is_same< typename std::add_const< T >::type, U >;
+// Test AddConst type-trait.
+TEST_CASE("AddConst")
+{
+    CHECK_EQ(AddConst_Same< int, const int >::value, AddConst_Same2< int, const int >::value);
+    CHECK_EQ(AddConst_Same< const int, const int >::value, AddConst_Same2< const int, const int >::value);
+    CHECK_EQ(AddConst_Same< volatile int, const volatile int >::value, AddConst_Same2< volatile int, const volatile int >::value);
+    CHECK_EQ(AddConst_Same< const volatile int, const volatile int >::value, AddConst_Same2< const volatile int, const volatile int >::value);
+    CHECK_EQ(AddConst_Same< int *, int * const >::value, AddConst_Same2< int *, int * const >::value);
+    CHECK_EQ(AddConst_Same< const int *, int * const >::value, AddConst_Same2< const int *, int * const >::value);
+    CHECK_EQ(AddConst_Same< volatile int *, int * const volatile >::value, AddConst_Same2< volatile int *, int * const volatile >::value);
+    CHECK_EQ(AddConst_Same< const volatile int *, int * const volatile >::value, AddConst_Same2< const volatile int *, int * const volatile >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddConst< int >::type, Urho3D::AddConst_t< int > >::value);
+}
+
+template < class T, class U > using AddVolatile_Same = Urho3D::IsSame< typename Urho3D::AddVolatile< T >::type, U >;
+template < class T, class U > using AddVolatile_Same2 = std::is_same< typename std::add_volatile< T >::type, U >;
+// Test AddVolatile type-trait.
+TEST_CASE("AddVolatile")
+{
+    CHECK_EQ(AddVolatile_Same< int, volatile int >::value, AddVolatile_Same2< int, volatile int >::value);
+    CHECK_EQ(AddVolatile_Same< const int, const volatile int >::value, AddVolatile_Same2< const int, const volatile int >::value);
+    CHECK_EQ(AddVolatile_Same< volatile int, volatile int >::value, AddVolatile_Same2< volatile int, volatile int >::value);
+    CHECK_EQ(AddVolatile_Same< const volatile int, const volatile int >::value, AddVolatile_Same2< const volatile int, const volatile int >::value);
+    CHECK_EQ(AddVolatile_Same< int *, int * volatile >::value, AddVolatile_Same2< int *, int * volatile >::value);
+    CHECK_EQ(AddVolatile_Same< const int *, int * const volatile >::value, AddVolatile_Same2< const int *, int * const volatile >::value);
+    CHECK_EQ(AddVolatile_Same< volatile int *, int * volatile >::value, AddVolatile_Same2< volatile int *, int * volatile >::value);
+    CHECK_EQ(AddVolatile_Same< const volatile int *, int * const volatile >::value, AddVolatile_Same2< const volatile int *, int * const volatile >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddVolatile< int >::type, Urho3D::AddVolatile_t< int > >::value);
+}
+
+template < class T, class U > using AddCV_Same = Urho3D::IsSame< typename Urho3D::AddCV< T >::type, U >;
+template < class T, class U > using AddCV_Same2 = std::is_same< typename std::add_cv< T >::type, U >;
+// Test AddCV type-trait.
+TEST_CASE("AddCV")
+{
+    CHECK_EQ(AddCV_Same< int, const volatile int >::value, AddCV_Same2< int, const volatile int >::value);
+    CHECK_EQ(AddCV_Same< const int, const volatile int >::value, AddCV_Same2< const int, const volatile int >::value);
+    CHECK_EQ(AddCV_Same< volatile int, const volatile int >::value, AddCV_Same2< volatile int, const volatile int >::value);
+    CHECK_EQ(AddCV_Same< const volatile int, const volatile int >::value, AddCV_Same2< const volatile int, const volatile int >::value);
+    CHECK_EQ(AddCV_Same< int *, int * const volatile >::value, AddCV_Same2< int *, int * const volatile >::value);
+    CHECK_EQ(AddCV_Same< const int *, int * const volatile >::value, AddCV_Same2< const int *, int * const volatile >::value);
+    CHECK_EQ(AddCV_Same< volatile int *, int * const volatile >::value, AddCV_Same2< volatile int *, int * const volatile >::value);
+    CHECK_EQ(AddCV_Same< const volatile int *, int * const volatile >::value, AddCV_Same2< const volatile int *, int * const volatile >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::AddCV< int >::type, Urho3D::AddCV_t< int > >::value);
 }
 
 TEST_SUITE_END();
