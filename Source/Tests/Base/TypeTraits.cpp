@@ -1531,7 +1531,6 @@ TEST_CASE("Rank")
     CHECK_EQ(Urho3D::Rank< int[10][10] >::value, Urho3D::Rank_v< int[10][10] >);
 }
 
-
 // Test Extent type-trait.
 TEST_CASE("Extent")
 {
@@ -1548,6 +1547,119 @@ TEST_CASE("Extent")
     CHECK_EQ(Urho3D::Extent< int[3] >::value, Urho3D::Extent_v< int[3] >);
     CHECK_EQ(Urho3D::Extent< int[3][4], 0 >::value, Urho3D::Extent_v< int[3][4], 0 >);
     CHECK_EQ(Urho3D::Extent< int[3][4], 1 >::value, Urho3D::Extent_v< int[3][4], 1 >);
+}
+
+// Test IsSame type-trait.
+TEST_CASE("IsSame")
+{
+    struct A { int x,y; };
+    struct B { int x,y; };
+    double C = 1.0, D = 2.0;
+
+    CHECK_EQ(Urho3D::IsSame< int, int >::value, std::is_same< int, int >::value);
+    CHECK_EQ(Urho3D::IsSame< int, float >::value, std::is_same< int, float >::value);
+    CHECK_EQ(Urho3D::IsSame< double, int >::value, std::is_same< double, int >::value);
+    CHECK_EQ(Urho3D::IsSame< const int, int >::value, std::is_same< const int, int >::value);
+    CHECK_EQ(Urho3D::IsSame< char, char >::value, std::is_same< char, char >::value);
+    CHECK_EQ(Urho3D::IsSame< char, unsigned char >::value, std::is_same< char, unsigned char>::value);
+    CHECK_EQ(Urho3D::IsSame< char, signed char >::value, std::is_same< char, signed char >::value);
+    CHECK_EQ(Urho3D::IsSame< A, A >::value, std::is_same< A, A >::value);
+    CHECK_EQ(Urho3D::IsSame< B, A >::value, std::is_same< B, A >::value);
+    CHECK_EQ(Urho3D::IsSame< A, B >::value, std::is_same< A, B >::value);
+    CHECK_EQ(Urho3D::IsSame< decltype(C), decltype(D) >::value, std::is_same< decltype(C), decltype(D) >::value);
+    CHECK_EQ(Urho3D::IsSame< int, int >::value, Urho3D::IsSame_v< int, int >);
+    CHECK_EQ(Urho3D::IsSame< int, float >::value, Urho3D::IsSame_v< int, float >);
+
+}
+
+// Test IsBaseOf type-trait.
+TEST_CASE("IsBaseOf")
+{
+    class A { };
+    class B : A { };
+    class C : B { };
+    class D { };
+
+    CHECK_EQ(Urho3D::IsBaseOf< A, A >::value, std::is_base_of< A, A >::value);
+    CHECK_EQ(Urho3D::IsBaseOf< A, B >::value, std::is_base_of< A, B >::value);
+    CHECK_EQ(Urho3D::IsBaseOf< A, C >::value, std::is_base_of< A, C >::value);
+    CHECK_EQ(Urho3D::IsBaseOf< A, D >::value, std::is_base_of< A, D >::value);
+    CHECK_EQ(Urho3D::IsBaseOf< B, A >::value, std::is_base_of< B, A >::value);
+    CHECK_EQ(Urho3D::IsBaseOf< int, int >::value, std::is_base_of< int, int >::value);
+    CHECK_EQ(Urho3D::IsBaseOf< A, A >::value, Urho3D::IsBaseOf_v< A, A >);
+    CHECK_EQ(Urho3D::IsBaseOf< B, A >::value, Urho3D::IsBaseOf_v< B, A >);
+}
+
+struct IsConvertible_Dummy {
+    template < class T > IsConvertible_Dummy(T &&) { }
+};
+// Test IsConvertible type-trait.
+TEST_CASE("IsConvertible")
+{
+    struct A { };
+    struct B : public A { };
+    struct C { };
+    struct D {
+        C c;
+        operator C () { return c; }
+    };
+    using E = IsConvertible_Dummy;
+
+    CHECK_EQ(Urho3D::IsConvertible< int, float >::value, std::is_convertible< int, float >::value);
+    CHECK_EQ(Urho3D::IsConvertible< int, const int >::value, std::is_convertible< int, const int >::value);
+    CHECK_EQ(Urho3D::IsConvertible< B *, A * >::value, std::is_convertible< B *, A * >::value);
+    CHECK_EQ(Urho3D::IsConvertible< A *, B * >::value, std::is_convertible< A *, B * >::value);
+    CHECK_EQ(Urho3D::IsConvertible< D, C >::value, std::is_convertible< D, C >::value);
+    CHECK_EQ(Urho3D::IsConvertible< B *, C * >::value, std::is_convertible< B *, C * >::value);
+    // Perfect Forwarding constructor makes the class E be "convertible" from everything.
+    CHECK_EQ(Urho3D::IsConvertible< A, E >::value, std::is_convertible< A, E >::value);
+    CHECK_EQ(Urho3D::IsConvertible< B, E >::value, std::is_convertible< B, E >::value);
+    CHECK_EQ(Urho3D::IsConvertible< C, E >::value, std::is_convertible< C, E >::value);
+    CHECK_EQ(Urho3D::IsConvertible< D, E >::value, std::is_convertible< D, E >::value);
+    CHECK_EQ(Urho3D::IsConvertible< A, B >::value, Urho3D::IsConvertible_v< A, B >);
+    CHECK_EQ(Urho3D::IsConvertible< B, A >::value, Urho3D::IsConvertible_v< B, A >);
+}
+
+// Test IsNoThrowConvertible type-trait.
+TEST_CASE("IsNoThrowConvertible")
+{
+    struct A { };
+    struct B : public A { };
+    struct C { };
+    struct D {
+        C c;
+        operator C () noexcept { return c; }
+    };
+    using E = IsConvertible_Dummy;
+
+#if UH_CPP_STANDARD >= UH_CPP20_STANDARD
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< int, float >::value, std::is_nothrow_convertible< int, float >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< int, const int >::value, std::is_nothrow_convertible< int,const int >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< B *, A * >::value, std::is_nothrow_convertible< B *, A * >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< A *, B * >::value, std::is_nothrow_convertible< A *, B * >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< D, C >::value, std::is_nothrow_convertible< D, C >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< B *, C * >::value, std::is_nothrow_convertible< B *, C * >::value);
+    // Perfect Forwarding constructor makes the class E be "convertible" from everything. But can't satisfy the noexcept requirement.
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< A, E >::value, std::is_nothrow_convertible< A, E >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< B, E >::value, std::is_nothrow_convertible< B, E >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< C, E >::value, std::is_nothrow_convertible< C, E >::value);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< D, E >::value, std::is_nothrow_convertible< D, E >::value);
+#else
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< int, float >::value, true);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< int, const int >::value, true);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< B *, A * >::value,  true);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< A *, B * >::value, false);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< D, C >::value,  true);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< B *, C * >::value, false);
+    // Perfect Forwarding constructor makes the class E be "convertible" from everything. But can't satisfy the noexcept requirement.
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< A, E >::value, false);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< B, E >::value, false);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< C, E >::value, false);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< D, E >::value, false);
+#endif
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< A, B >::value, Urho3D::IsNoThrowConvertible_v< A, B >);
+    CHECK_EQ(Urho3D::IsNoThrowConvertible< B, A >::value, Urho3D::IsNoThrowConvertible_v< B, A >);
+    
 }
 
 TEST_SUITE_END();
