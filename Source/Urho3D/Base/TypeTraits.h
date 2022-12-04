@@ -1098,6 +1098,10 @@ template < class T > struct IsUnion : public BoolConstant< __is_union(T) > { };
 /// Check whether `T` is a class type. \remark See `std::is_class`
 template < class T > struct IsClass : public BoolConstant< __is_class(T) > { };
 
+// Deal with some MSC specific issues
+#if defined(UH_MSC) && !defined(UH_CLANG)
+    #pragma warning(disable: 4180) // qualifier applied to function type has no meaning; ignored
+#endif
 /// Check whether `T` is a function type. \remark See `std::is_function`
 template < class T > struct IsFunction : public BoolConstant< !IsConst_v< const T > > { };
 // Partial specialization of %IsFunction for lvalue type.
