@@ -1919,4 +1919,57 @@ TEST_CASE("RemoveAllExtents")
     CHECK(Urho3D::IsSame< typename Urho3D::RemoveAllExtents< const int[10] >::type, Urho3D::RemoveAllExtents_t< const int[10] > >::value);
 }
 
+template < class T, class U > using Decay_Same = Urho3D::IsSame< typename Urho3D::Decay< T >::type, U >;
+template < class T, class U > using Decay_Same2 = std::is_same< typename std::decay< T >::type, U >;
+// Test Decay type-trait.
+TEST_CASE("Decay")
+{
+    CHECK_EQ(Decay_Same< int, int >::value, Decay_Same2< int, int >::value);
+    CHECK_EQ(Decay_Same< int &, int >::value, Decay_Same2< int &, int >::value);
+    CHECK_EQ(Decay_Same< int &&, int >::value, Decay_Same2< int &&, int >::value);
+    CHECK_EQ(Decay_Same< const int &, int >::value, Decay_Same2< const int &, int >::value);
+    CHECK_EQ(Decay_Same< int[10], int * >::value, Decay_Same2< int[10], int * >::value);
+    CHECK_EQ(Decay_Same< int[10][5], int(*)[5] >::value, Decay_Same2< int[10][5], int(*)[5] >::value);
+    CHECK_EQ(Decay_Same< int(int), int(*)(int) >::value, Decay_Same2< int(int), int(*)(int) >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::Decay< int >::type, Urho3D::Decay_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::Decay< int & >::type, Urho3D::Decay_t< int & > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::Decay< int && >::type, Urho3D::Decay_t< int && > >::value);
+}
+
+template < class T, class U > using RemoveCvRef_Same = Urho3D::IsSame< typename Urho3D::RemoveCvRef< T >::type, U >;
+#if UH_CPP_STANDARD >= UH_CPP20_STANDARD
+template < class T, class U > using RemoveCvRef_Same2 = std::is_same< typename std::remove_cvref< T >::type, U >;
+#endif
+// Test RemoveCvRef type-trait.
+TEST_CASE("RemoveCvRef")
+{
+#if UH_CPP_STANDARD >= UH_CPP20_STANDARD
+    CHECK_EQ(RemoveCvRef_Same< int, int >::value, RemoveCvRef_Same2< int, int >::value);
+    CHECK_EQ(RemoveCvRef_Same< const int, int >::value, RemoveCvRef_Same2< const int, int >::value);
+    CHECK_EQ(RemoveCvRef_Same< volatile int, int >::value, RemoveCvRef_Same2< volatile int, int >::value);
+    CHECK_EQ(RemoveCvRef_Same< const volatile int, int >::value, RemoveCvRef_Same2< const volatile int, int >::value);
+    CHECK_EQ(RemoveCvRef_Same< int &, int >::value, RemoveCvRef_Same2< int &, int >::value);
+    CHECK_EQ(RemoveCvRef_Same< int &&, int >::value, RemoveCvRef_Same2< int &&, int >::value);
+    CHECK_EQ(RemoveCvRef_Same< const int &, int >::value, RemoveCvRef_Same2< const int &, int >::value);
+    CHECK_EQ(RemoveCvRef_Same< const int[3], int[3] >::value, RemoveCvRef_Same2< const int[3], int[3] >::value);
+    CHECK_EQ(RemoveCvRef_Same< const int(&)[3], int[3] >::value, RemoveCvRef_Same2< const int(&)[3], int[3] >::value);
+    CHECK_EQ(RemoveCvRef_Same< int(int), int(int) >::value, RemoveCvRef_Same2< int(int), int(int) >::value);
+#else
+    CHECK_EQ(RemoveCvRef_Same< int, int >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< const int, int >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< volatile int, int >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< const volatile int, int >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< int &, int >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< int &&, int >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< const int &, int >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< const int[3], int[3] >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< const int(&)[3], int[3] >::value, true);
+    CHECK_EQ(RemoveCvRef_Same< int(int), int(int) >::value, true);
+#endif
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveCvRef< int >::type, Urho3D::RemoveCvRef_t< int > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveCvRef< int & >::type, Urho3D::RemoveCvRef_t< int & > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveCvRef< int && >::type, Urho3D::RemoveCvRef_t< int && > >::value);
+    CHECK(Urho3D::IsSame< typename Urho3D::RemoveCvRef< const int & >::type, Urho3D::RemoveCvRef_t< const int & > >::value);
+}
+
 TEST_SUITE_END();
