@@ -26,7 +26,7 @@
 #include "../Container/ArrayPtr.h"
 #include "../Container/List.h"
 #include "../Core/Mutex.h"
-#include "../Container/Pair.h"
+#include "../Base/Pair.h"
 
 namespace Urho3D
 {

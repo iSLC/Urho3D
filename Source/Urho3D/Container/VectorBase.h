@@ -25,7 +25,7 @@
 #include <Urho3D/Urho3D.h>
 
 #include "../Base/Iter.h"
-#include "../Container/Swap.h"
+#include "../Base/Utility.h"
 
 namespace Urho3D
 {

@@ -23,7 +23,7 @@
 #pragma once
 
 #include "../Container/HashBase.h"
-#include "../Container/Pair.h"
+#include "../Base/Pair.h"
 #include "../Container/Sort.h"
 #include "../Container/Vector.h"
 

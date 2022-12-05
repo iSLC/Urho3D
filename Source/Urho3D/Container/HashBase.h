@@ -26,7 +26,7 @@
 
 #include "../Container/Allocator.h"
 #include "../Container/Hash.h"
-#include "../Container/Swap.h"
+#include "../Base/Utility.h"
 
 namespace Urho3D
 {
