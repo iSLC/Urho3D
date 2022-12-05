@@ -201,7 +201,7 @@ public:
     template < class... Params > constexpr Ret operator() (Params &&... params) const
     {
         // Maybe catch this in debug
-        SQ_ASSERT(exec_)
+        UH_ASSERT(exec_)
         // Do we have to return something?
         if constexpr (IsVoid_v< Ret >)
         {
