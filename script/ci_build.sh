@@ -15,6 +15,51 @@
 ci_action=$1; shift;
 ci_cmake_params_user="$@"
 
+helpFunction()
+{
+   echo ""
+   echo "Usage: $0 -s path -b path -k path"
+   echo -e "\t-s Source directory."
+   echo -e "\t-b Build directory."
+   echo -e "\t-k SDK directory."
+   exit 1 # Exit script after printing help
+}
+
+while getopts "s:b:k:" opt
+do
+   case "$opt" in
+      s ) SourceDir="$OPTARG" ;;
+      b ) BuildDir="$OPTARG" ;;
+      k ) SdkDir="$OPTARG" ;;
+      ? ) helpFunction ;; # Print helpFunction in case parameter is non-existent
+   esac
+done
+
+# Fix parameters automatically if possible
+if [ -z "$SourceDir" ]
+then
+   echo "No source directory specified, using current directory.";
+   export ci_source_dir="$PWD"
+else
+   export ci_source_dir="$SourceDir"
+fi
+
+if [ -z "$BuildDir" ]
+then
+   echo "No build directory specified, using 'cmake-build' sub-directory.";
+   export ci_build_dir="$ci_source_dir/cmake-build"
+else
+   export ci_build_dir="$BuildDir"
+fi
+
+if [ -z "$SdkDir" ]
+then
+   echo "No SDK directory specified, using 'SDK' sub-directory.";
+   export ci_sdk_dir="$ci_source_dir/SDK"
+else
+   export ci_sdk_dir="$SdkDir"
+fi
+
 # default values
 ci_compiler=${ci_compiler:-"default"}
 ci_build_type=${ci_build_type:-"rel"}
@@ -40,7 +85,7 @@ echo "ci_build_dir=$ci_build_dir"
 echo "ci_sdk_dir=$ci_sdk_dir"
 echo "ci_gfx_backend=$ci_gfx_backend"
 
-declare -A types=(
+declare -A build_types=(
     [dbg]='Debug'
     [rel]='Release'
 )
@@ -190,7 +235,7 @@ function action-generate() {
     v="quirks_${ci_platform}[@]";                           ci_cmake_params+=("${!v}")
 
     ci_cmake_params+=(
-        "-DCMAKE_BUILD_TYPE=${types[$ci_build_type]}"
+        "-DCMAKE_BUILD_TYPE=${build_types[$ci_build_type]}"
         "-DCMAKE_INSTALL_PREFIX=$ci_sdk_dir"
     )
 
@@ -228,7 +273,7 @@ function action-build() {
     fi
 
     ccache -s
-    cmake --build $ci_build_dir --parallel $NUMBER_OF_PROCESSORS --config "${types[$ci_build_type]}" && \
+    cmake --build $ci_build_dir --parallel $NUMBER_OF_PROCESSORS --config "${build_types[$ci_build_type]}" && \
     ccache -s
 }
 
@@ -237,7 +282,7 @@ function action-build-msvc() {
     ccache_path=$(realpath /c/ProgramData/chocolatey/lib/ccache/tools/ccache-*)
     cp $ccache_path/ccache.exe $ccache_path/cl.exe  # https://github.com/ccache/ccache/wiki/MS-Visual-Studio
     $ccache_path/ccache.exe -s
-    cmake --build $ci_build_dir --config "${types[$ci_build_type]}" -- -r -maxcpucount:$NUMBER_OF_PROCESSORS -p:TrackFileAccess=false -p:UseMultiToolTask=true -p:CLToolPath=$ccache_path && \
+    cmake --build $ci_build_dir --config "${build_types[$ci_build_type]}" -- -r -maxcpucount:$NUMBER_OF_PROCESSORS -p:TrackFileAccess=false -p:UseMultiToolTask=true -p:CLToolPath=$ccache_path && \
     $ccache_path/ccache.exe -s
 }
 
@@ -255,12 +300,12 @@ function action-build-android() {
 }
 
 function action-install() {
-    cmake --install $ci_build_dir --config "${types[$ci_build_type]}"
+    cmake --install $ci_build_dir --config "${build_types[$ci_build_type]}"
 }
 
 function action-test() {
     cd $ci_build_dir
-    ctest --output-on-failure -C "${types[$ci_build_type]}"
+    ctest --output-on-failure -C "${build_types[$ci_build_type]}"
 }
 
 # Invoke requested action.
