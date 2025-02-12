@@ -79,7 +79,7 @@ if (NOT MINI_URHO)
     endif ()
 
     # Tracy's headers are included even in non-profiled builds in order to provide stub profiler macros.
-    add_subdirectory (tracy)
+    add_subdirectory (Tracy)
 endif ()
 
 if (DESKTOP AND NOT LINUX)
