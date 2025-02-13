@@ -256,7 +256,7 @@ template < > struct NumericLimits< char8_t > : public Impl::BaseIntNumericLimits
     static inline constexpr int Digits = sizeof(char8_t) * 8 - (IsSigned ? 1 : 0);
     static inline constexpr int Digits10 = Impl::NumericLimitsIntDigits10< Digits >;
     static inline constexpr bool IsModulo = true;
-    [[nodiscard]] static constexpr char8_t Min() noexcept { return 0 }
+    [[nodiscard]] static constexpr char8_t Min() noexcept { return 0; }
     [[nodiscard]] static constexpr char8_t Max() noexcept { return UCHAR_MAX; }
     [[nodiscard]] static constexpr char8_t Lowest() noexcept { return Min(); }
     [[nodiscard]] static constexpr char8_t Epsilon() noexcept { return 0; }
