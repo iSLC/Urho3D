@@ -24,6 +24,7 @@ env:
   CCACHE_MAXSIZE: 5G
   CCACHE_LIMIT_MULTIPLE: 0.6
   # paths
+  ci_workspace_dir: ${{ github.workspace }}
   ci_source_dir: ${{ github.workspace }}/source-code
   ci_build_script: ./source-code/script/ci_build.sh
   ci_build_dir: ${{ github.workspace }}/cmake-build
@@ -31,7 +32,7 @@ env:
 
 jobs:
   CheckSkipCI:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     if: |
       !contains(github.event.head_commit.message, '[skip ci]') &&
       !contains(github.event.pull_request.title, '[skip ci]') &&
@@ -43,7 +44,7 @@ jobs:
   Windows:
     name: 🔲
     if: github.event.pull_request.draft == false
-    runs-on: windows-2022
+    runs-on: windows-latest
     needs: [CheckSkipCI]
 
     strategy:
@@ -79,13 +80,13 @@ jobs:
                     }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.ci_source_dir }}
           fetch-depth: 1
 
       - name: Build Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ matrix.ci_gfx_backend }}-${{ github.sha }}
@@ -93,7 +94,7 @@ jobs:
             ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ matrix.ci_gfx_backend }}
 
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.13
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
 
@@ -117,7 +118,7 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} install
 
-      #- uses: actions/upload-artifact@v3
+      #- uses: actions/upload-artifact@v4
       #  if: env.ci_artifacts == 'true'
       #  with:
       #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_gfx_backend }}-${{ github.sha }}'
@@ -126,7 +127,7 @@ jobs:
   MinGW:
     name: 💠
     if: github.event.pull_request.draft == false
-    runs-on: windows-2022
+    runs-on: windows-latest
     needs: [CheckSkipCI]
 
     strategy:
@@ -162,13 +163,13 @@ jobs:
                     }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.ci_source_dir }}
           fetch-depth: 1
 
       - name: Build Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ matrix.ci_gfx_backend }}-${{ github.sha }}
@@ -225,7 +226,7 @@ jobs:
         shell: msys2 {0}
         run: ${{ env.ci_build_script }} install
 
-      #- uses: actions/upload-artifact@v3
+      #- uses: actions/upload-artifact@v4
       #  if: env.ci_artifacts == 'true'
       #  with:
       #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_gfx_backend }}-${{ github.sha }}'
@@ -235,7 +236,7 @@ jobs:
     name: 🐧
     #if: github.event.pull_request.draft == false
     if: false
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [CheckSkipCI]
 
     strategy:
@@ -268,13 +269,13 @@ jobs:
                     }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.ci_source_dir }}
           fetch-depth: 1
 
       - name: Build Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ github.sha }}
@@ -282,7 +283,7 @@ jobs:
             ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}
 
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.13
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
 
@@ -306,7 +307,7 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} install
 
-      #- uses: actions/upload-artifact@v3
+      #- uses: actions/upload-artifact@v4
       #  if: env.ci_artifacts == 'true'
       #  with:
       #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ github.sha }}'
@@ -316,7 +317,7 @@ jobs:
     name: 🍏
     #if: github.event.pull_request.draft == false
     if: false
-    runs-on: macos-11
+    runs-on: macos-latest
     needs: [CheckSkipCI]
 
     strategy:
@@ -348,13 +349,13 @@ jobs:
                     }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.ci_source_dir }}
           fetch-depth: 1
 
       - name: Build Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_arch }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ matrix.ci_compiler }}-${{ github.sha }}
@@ -372,7 +373,7 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.13
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
 
@@ -392,7 +393,7 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} install
 
-      #- uses: actions/upload-artifact@v3
+      #- uses: actions/upload-artifact@v4
       #  if: env.ci_artifacts == 'true'
       #  with:
       #    name: 'urho3d-${{ github.job }}-${{ matrix.ci_arch }}-${{ github.sha }}'
@@ -403,7 +404,7 @@ jobs:
     name: 🤖
     #if: github.event.pull_request.draft == false
     if: false
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     needs: [CheckSkipCI]
 
     strategy:
@@ -422,13 +423,13 @@ jobs:
       ci_artifacts: ${{ (github.ref == 'refs/heads/master') && (matrix.ci_build_type == 'rel') }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.ci_source_dir }}
           fetch-depth: 1
 
       - name: Build Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_build_type }}-${{ github.sha }}
@@ -436,7 +437,7 @@ jobs:
             ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_build_type }}
 
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.13
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
 
@@ -452,7 +453,7 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} build-android
 
-      #- uses: actions/upload-artifact@v3
+      #- uses: actions/upload-artifact@v4
       #  if: env.ci_artifacts == 'true'
       #  with:
       #    name: 'urho3d-${{ github.job }}-${{ github.sha }}'
@@ -462,7 +463,7 @@ jobs:
     name: 🍎
     #if: github.event.pull_request.draft == false
     if: false
-    runs-on: macos-11
+    runs-on: macos-latest
     needs: [CheckSkipCI]
 
     strategy:
@@ -484,13 +485,13 @@ jobs:
       ci_artifacts: ${{ (github.ref == 'refs/heads/master') && (matrix.ci_build_type == 'rel') }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: ${{ env.ci_source_dir }}
           fetch-depth: 1
 
       - name: Build Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ env.CCACHE_DIR }}
           key: ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}-${{ github.sha }}
@@ -498,7 +499,7 @@ jobs:
             ${{ env.ccache_prefix }}-${{ github.job }}-${{ matrix.ci_lib_type }}-${{ matrix.ci_build_type }}
 
       - name: Setup CMake
-        uses: jwlawson/actions-setup-cmake@v1.13
+        uses: jwlawson/actions-setup-cmake@v2
         with:
           cmake-version: '${{ env.CMAKE_VERSION }}'
 
@@ -518,7 +519,7 @@ jobs:
         shell: bash
         run: ${{ env.ci_build_script }} build
 
-      #- uses: actions/upload-artifact@v3
+      #- uses: actions/upload-artifact@v4
       #  if: env.ci_artifacts == 'true'
       #  with:
       #    name: 'urho3d-${{ github.job }}-${{ github.sha }}'

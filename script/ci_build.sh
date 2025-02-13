@@ -8,6 +8,7 @@
 # ci_build_type:   dbg|rel
 # ci_lib_type:     lib|dll
 # ci_gfx_backend:  D3D9|D3D11|OpenGL|GLES2|GLES3
+# ci_workspace_dir:actions workspace directory
 # ci_source_dir:   source code directory
 # ci_build_dir:    cmake cache directory
 # ci_sdk_dir:      sdk installation directory
@@ -36,28 +37,25 @@ do
 done
 
 # Fix parameters automatically if possible
-if [ -z "$SourceDir" ]
-then
-   echo "No source directory specified, using current directory.";
-   export ci_source_dir="$PWD"
-else
-   export ci_source_dir="$SourceDir"
+if [ -z "$SourceDir" ] && [ -z "$ci_source_dir" ] then
+    echo "No source directory specified, using current directory.";
+    export ci_source_dir="$PWD"
+elif [ -z "$ci_source_dir" ] then
+    export ci_source_dir="$SourceDir"
 fi
 
-if [ -z "$BuildDir" ]
-then
-   echo "No build directory specified, using 'cmake-build' sub-directory.";
-   export ci_build_dir="$ci_source_dir/cmake-build"
-else
-   export ci_build_dir="$BuildDir"
+if [ -z "$BuildDir" ] && [ -z "$ci_build_dir" ] then
+    echo "No build directory specified, using 'cmake-build' sub-directory.";
+    export ci_build_dir="$ci_source_dir/cmake-build"
+elif [ -z "$ci_build_dir" ] then
+    export ci_build_dir="$BuildDir"
 fi
 
-if [ -z "$SdkDir" ]
-then
-   echo "No SDK directory specified, using 'SDK' sub-directory.";
-   export ci_sdk_dir="$ci_source_dir/SDK"
-else
-   export ci_sdk_dir="$SdkDir"
+if [ -z "$SdkDir" ] && [ -z "$ci_sdk_dir" ] then
+    echo "No SDK directory specified, using 'SDK' sub-directory.";
+    export ci_sdk_dir="$ci_source_dir/SDK"
+elif [ -z "$ci_sdk_dir" ] then
+    export ci_sdk_dir="$SdkDir"
 fi
 
 # default values
@@ -80,6 +78,7 @@ echo "ci_arch=$ci_arch"
 echo "ci_compiler=$ci_compiler"
 echo "ci_build_type=$ci_build_type"
 echo "ci_lib_type=$ci_lib_type"
+echo "ci_workspace_dir=$ci_workspace_dir"
 echo "ci_source_dir=$ci_source_dir"
 echo "ci_build_dir=$ci_build_dir"
 echo "ci_sdk_dir=$ci_sdk_dir"
