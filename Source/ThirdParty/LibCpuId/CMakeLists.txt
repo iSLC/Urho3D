@@ -22,17 +22,16 @@
 
 # Define source files
 set(SOURCE_FILES
-  src/asm-bits.c
   src/cpuid_main.c
-  src/libcpuid_util.c
-  src/msrdriver.c
-  src/rdcpuid.c
-  src/rdmsr.c
-  src/rdtsc.c
   src/recog_amd.c
   src/recog_arm.c
   src/recog_centaur.c
   src/recog_intel.c
+  src/rdtsc.c
+  src/libcpuid_util.c
+  src/rdmsr.c
+  src/asm-bits.c
+  src/rdcpuid.c
   include/LibCpuId/amd_code_t.h
   include/LibCpuId/asm-bits.h
   include/LibCpuId/centaur_code_t.h
@@ -52,10 +51,22 @@ set(SOURCE_FILES
   include/LibCpuId/recog_intel.h
 )
 
+set(LIBCPUID_CURRENT 17)
+set(LIBCPUID_AGE 0)
+set(LIBCPUID_REVISION 1)
+
+if(MSVC)
+  set(LIBCPUID_SHARED OFF)
+else()
+  set(LIBCPUID_SHARED ON)
+endif()
+
 # Windows specific source files
 if(WIN32)
   list(APPEND SOURCE_FILES src/msrdriver.c)
 endif()
+
+enable_language(C ASM_MASM)
 
 # Define generated source files
 if(MSVC AND URHO3D_64BIT)
@@ -63,10 +74,44 @@ if(MSVC AND URHO3D_64BIT)
   list(APPEND SOURCE_FILES src/masm-x64.asm)
 endif()
 
+#target_compile_definitions(LibCPUID PUBLIC LIBCPUID_DISABLE_DEPRECATED=1)
+
+# pthreads library
+if(${CMAKE_SYSTEM_NAME} STREQUAL "DragonFly" OR ${CMAKE_SYSTEM_NAME} STREQUAL "NetBSD")
+  find_package(Threads REQUIRED)
+endif()
+
 # Create the library
 add_library(LibCPUID STATIC ${SOURCE_FILES})
+set_property(TARGET LibCPUID PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
+target_link_libraries(LibCPUID ${CMAKE_THREAD_LIBS_INIT})
+
+set_property(TARGET LibCPUID PROPERTY C_STANDARD 99)
+set_property(TARGET LibCPUID PROPERTY CXX_STANDARD 11)
+
+# check if popcount64 is available
+include(CheckSymbolExists)
+check_symbol_exists(popcount64 "string.h" HAVE_POPCOUNT64)
+if(HAVE_POPCOUNT64)
+  target_compile_definitions(LibCPUID PRIVATE HAVE_POPCOUNT64=1)
+endif(HAVE_POPCOUNT64)
+
+# check if auxiliary vector is available
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  check_symbol_exists(getauxval "sys/auxv.h" HAVE_GETAUXVAL)
+  if(HAVE_GETAUXVAL)
+    target_compile_definitions(LibCPUID PRIVATE HAVE_GETAUXVAL=1)
+  endif(HAVE_GETAUXVAL)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+  check_symbol_exists(elf_aux_info "sys/auxv.h" HAVE_ELF_AUX_INFO)
+  if(HAVE_ELF_AUX_INFO)
+    target_compile_definitions(LibCPUID PRIVATE HAVE_ELF_AUX_INFO=1)
+  endif(HAVE_ELF_AUX_INFO)
+endif()
+
 # Compile time definitions
 target_compile_definitions(LibCPUID PRIVATE VERSION="0.7.1")
+set_target_properties(LibCPUID PROPERTIES VERSION "${LIBCPUID_CURRENT}.${LIBCPUID_AGE}.${LIBCPUID_REVISION}")
 if (HAVE_STDINT_H)
     target_compile_definitions(LibCPUID PRIVATE HAVE_STDINT_H=1)
 endif ()
