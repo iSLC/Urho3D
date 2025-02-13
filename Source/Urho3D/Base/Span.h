@@ -292,21 +292,21 @@ template < class T, size_t E > struct Span
     }
 
     /// Retrieve a reference to the element at location specified by \p i.
-    [[nodiscard]] constexpr Reference At(SizeType i) const noexcept { storage_.At(i); }
+    [[nodiscard]] constexpr Reference At(SizeType i) const noexcept { return storage_.At(i); }
     /// Retrieve a reference to the element at location specified by \p i.
     [[nodiscard]] constexpr Reference  operator [] (SizeType i) const noexcept { return storage_.At(i); }
 
-    /// Retrieve a iterator to the first element in the span.
+    /// Retrieve an iterator to the first element in the span.
     [[nodiscard]] constexpr Iterator Begin() const noexcept { return ConstIterator(Data()); }
-    /// Retrieve a iterator to the element following the last element in the span.
+    /// Retrieve an iterator to the element following the last element in the span.
     [[nodiscard]] constexpr Iterator End() const noexcept { return ConstIterator(Data() + Size()); }
 
-    /// Retrieve a iterator to the first element in the span. Alias of \ref Begin().
+    /// Retrieve an iterator to the first element in the span. Alias of \ref Begin().
     [[nodiscard]] constexpr Iterator begin() const noexcept { return Begin(); }
-    /// Retrieve a iterator to the element following the last element in the span. Alias of \ref End().
+    /// Retrieve an iterator to the element following the last element in the span. Alias of \ref End().
     [[nodiscard]] constexpr Iterator end() const noexcept { return End(); }
 
-    /// Retrieve a iterator to a specific element in the span.
+    /// Retrieve an iterator to a specific element in the span.
     [[nodiscard]] constexpr Iterator Iat(SizeType i) const noexcept { UH_ASSERT(i <= Size()) return ConstIterator(Data() + i); }
 
     /// Retrieve a reference to the first element in the span.
@@ -332,9 +332,9 @@ template < class T, size_t E > struct Span
     [[nodiscard]] constexpr Pointer DataFrom(SizeType i) const noexcept { UH_ASSERT(Size() >= i) return Data() + i; }
 
     /// Retrieve the number of elements in the span.
-    [[nodiscard]] constexpr SizeType Size() const noexcept { return storage_.Size(); }
+    template < class U = SizeType > [[nodiscard]] constexpr U Size() const noexcept { return static_cast< U >(storage_.Size()); }
     /// Retrieve the number of elements in the span. Alias of \ref Size().
-    [[nodiscard]] constexpr SizeType Length() const noexcept { return storage_.Size(); }
+    template < class U = SizeType > [[nodiscard]] constexpr U Length() const noexcept { return static_cast< U >(storage_.Size()); }
 
     /// Retrieve the size of the sequence in bytes.
     [[nodiscard]] constexpr SizeType SizeBytes() const noexcept { return Size() * sizeof(ElementType); }
@@ -388,7 +388,7 @@ template < class T, size_t E > struct Span
         return {Data() + (Size() - count), count};
     }
 
-    /// Obtains a span that is a view over the \p Count elements of this span starting at offset \p Offset.
+    /// Obtains a span that is a view over the \p Count elements of this span starting at \p Offset.
     /// If Count is DynamicExtent, the number of elements in the sub-span is \ref Size() - \p Offset.
     template < size_t Offset, size_t Count = DynamicExtent > [[nodiscard]] constexpr auto SubSpan() const noexcept
         -> Span< ElementType, Impl::SubSpanExtent< Extent, Offset, Count >() >
@@ -424,7 +424,7 @@ template < class T, size_t E > struct Span
         }
     }
 
-    /// Obtains a span that is a view over the \p count elements of this span starting at offset \p offset.
+    /// Obtains a span that is a view over the \p count elements of this span starting at \p offset.
     /// If count is DynamicExtent, the number of elements in the sub-span is \ref Size() - \p offset.
     [[nodiscard]] constexpr Span< ElementType, DynamicExtent > SubSpan(SizeType offset, SizeType count = DynamicExtent) const noexcept
     {
