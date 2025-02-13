@@ -37,24 +37,24 @@ do
 done
 
 # Fix parameters automatically if possible
-if [ -z "$SourceDir" ] && [ -z "$ci_source_dir" ] then
-    echo "No source directory specified, using current directory.";
+if [ -z "$SourceDir" ] && [ -z "$ci_source_dir" ]; then
+    echo "No source directory specified, using current directory."
     export ci_source_dir="$PWD"
-elif [ -z "$ci_source_dir" ] then
+elif [ -z "$ci_source_dir" ]; then
     export ci_source_dir="$SourceDir"
 fi
 
-if [ -z "$BuildDir" ] && [ -z "$ci_build_dir" ] then
-    echo "No build directory specified, using 'cmake-build' sub-directory.";
+if [ -z "$BuildDir" ] && [ -z "$ci_build_dir" ]; then
+    echo "No build directory specified, using 'cmake-build' sub-directory."
     export ci_build_dir="$ci_source_dir/cmake-build"
-elif [ -z "$ci_build_dir" ] then
+elif [ -z "$ci_build_dir" ]; then
     export ci_build_dir="$BuildDir"
 fi
 
-if [ -z "$SdkDir" ] && [ -z "$ci_sdk_dir" ] then
-    echo "No SDK directory specified, using 'SDK' sub-directory.";
+if [ -z "$SdkDir" ] && [ -z "$ci_sdk_dir" ]; then
+    echo "No SDK directory specified, using 'SDK' sub-directory."
     export ci_sdk_dir="$ci_source_dir/SDK"
-elif [ -z "$ci_sdk_dir" ] then
+elif [ -z "$ci_sdk_dir" ]; then
     export ci_sdk_dir="$SdkDir"
 fi
 
