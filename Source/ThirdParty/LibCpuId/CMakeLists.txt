@@ -22,24 +22,34 @@
 
 # Define source files
 set(SOURCE_FILES
-  src/cpuid_main.c
-  src/recog_intel.c
-  src/recog_amd.c
-  src/rdtsc.c
-  src/libcpuid_util.c
-  src/rdmsr.c
   src/asm-bits.c
-  include/LibCPUID/libcpuid_constants.h
-  include/LibCPUID/libcpuid_internal.h
-  include/LibCPUID/libcpuid_types.h
-  include/LibCPUID/libcpuid_util.h
-  include/LibCPUID/rdtsc.h
-  include/LibCPUID/recog_amd.h
-  include/LibCPUID/recog_intel.h
-  include/LibCPUID/amd_code_t.h
-  include/LibCPUID/asm-bits.h
-  include/LibCPUID/intel_code_t.h
-  include/LibCPUID/libcpuid.h
+  src/cpuid_main.c
+  src/libcpuid_util.c
+  src/msrdriver.c
+  src/rdcpuid.c
+  src/rdmsr.c
+  src/rdtsc.c
+  src/recog_amd.c
+  src/recog_arm.c
+  src/recog_centaur.c
+  src/recog_intel.c
+  include/LibCpuId/amd_code_t.h
+  include/LibCpuId/asm-bits.h
+  include/LibCpuId/centaur_code_t.h
+  include/LibCpuId/intel_code_t.h
+  include/LibCpuId/libcpuid.h
+  include/LibCpuId/libcpuid_arm_driver.h
+  include/LibCpuId/libcpuid_constants.h
+  include/LibCpuId/libcpuid_ctype.h
+  include/LibCpuId/libcpuid_internal.h
+  include/LibCpuId/libcpuid_types.h
+  include/LibCpuId/libcpuid_util.h
+  include/LibCpuId/rdcpuid.h
+  include/LibCpuId/rdtsc.h
+  include/LibCpuId/recog_amd.h
+  include/LibCpuId/recog_arm.h
+  include/LibCpuId/recog_centaur.h
+  include/LibCpuId/recog_intel.h
 )
 
 # Windows specific source files
@@ -56,7 +66,7 @@ endif()
 # Create the library
 add_library(LibCPUID STATIC ${SOURCE_FILES})
 # Compile time definitions
-target_compile_definitions(LibCPUID PRIVATE VERSION="0.6.2")
+target_compile_definitions(LibCPUID PRIVATE VERSION="0.7.1")
 if (HAVE_STDINT_H)
     target_compile_definitions(LibCPUID PRIVATE HAVE_STDINT_H=1)
 endif ()
