@@ -11,7 +11,7 @@ namespace Urho3D {
 struct String;
 
 /// Attempt to determine whether the characters of a NULL-terminated string are known at compile time.
-/// This only works on compilers that provide the means necessary to identify such thing. MSVC is not one of them.
+/// This only works on compilers that provide the means necessary to identify such thing. MSVC is not one of them atm.
 template < class T > [[nodiscard]] UH_INLINE constexpr bool IsConstantString(const T * s [[maybe_unused]]) noexcept
 {
 #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED)
@@ -26,7 +26,7 @@ template < class T > [[nodiscard]] UH_INLINE constexpr bool IsConstantString(con
 }
 
 /// Attempt to determine whether the characters of a character array are known at compile time.
-/// This only works on compilers that provide the means necessary to identify such thing. MSVC is not one of them.
+/// This only works on compilers that provide the means necessary to identify such thing. MSVC is not one of them atm.
 template < class T >
 [[nodiscard]] UH_INLINE constexpr bool IsConstantCharArray(const T * a [[maybe_unused]], size_t n [[maybe_unused]]) noexcept
 {
@@ -67,27 +67,45 @@ struct StrView
     using ConstIterator = const ValueType *;
 
     /// Index outside the range of the largest string possible.
-    static constexpr inline size_t NPOS = ~size_t(0);
+    static constexpr inline SizeType NPOS = ~SizeType(0);
 
     /// Default constructor. Initializes to an empty view.
     /// After construction, \ref Data() is equal to nullptr, and \ref Size() is equal to 0.
     constexpr StrView() noexcept = default;
 
-    /// Explicit constructor. Initializes to a specific view. Behavior is undefined if [\p s, \p s + \p n) is not a valid range.
-    /// After construction, \ref Data() is equal to \p s, and \ref Size() is equal to \p n.
-    constexpr StrView(ConstPointer s, SizeType n) noexcept
-        : data_(s), size_(n)
+    /// Null pointer constructor. Initializes to an empty view.
+    /// After construction, \ref Data() is equal to nullptr, and \ref Size() is equal to 0.
+    constexpr StrView([[maybe_unused]] std::nullptr_t x)
+        : StrView()
     { }
 
     /// C string constructor. Initializes the view to a null terminated array of characters.
-    /// After construction, \ref Data() is equal to \p s, and \ref Size() is equal to position of the null character.
-    constexpr StrView(ConstPointer s) noexcept // NOLINT(google-explicit-constructor)
-        : data_(s), size_(Count(s))
+    /// After construction, \ref Data() is equal to \p str, and \ref Size() is equal to position of the null character.
+    constexpr StrView(ConstPointer str) noexcept // NOLINT(google-explicit-constructor)
+        : data_(str), size_(Count(str))
+    { }
+
+    /// Explicit constructor. Initializes to a specific view. Behavior is undefined if [ \p ptr, \p ptr + \p len ) is not a valid range.
+    /// After construction, \ref Data() is equal to \p ptr, and \ref Size() is equal to \p len.
+    constexpr StrView(ConstPointer ptr, SizeType len) noexcept
+        : data_(ptr), size_(len)
+    { UH_ASSERT((ptr == nullptr && len == 0) || (ptr != nullptr && len >= 0)) }
+
+    /// Iterator constructor. Initializes to a specific view. Behavior is undefined if \p r is not a valid range.
+    /// After construction, \ref Data() is equal to \p p.begin, and \ref Size() is equal to size of the range.
+    constexpr explicit StrView(const Range_t< ValueType * > & r) noexcept
+        : data_(r.begin), size_(r.Size())
+    { }
+
+    /// Iterator constructor. Initializes to a specific view. Behavior is undefined if \p r is not a valid range.
+    /// After construction, \ref Data() is equal to \p p.begin, and \ref Size() is equal to size of the range.
+    constexpr explicit StrView(const Range_t< const ValueType * > & r) noexcept
+        : data_(r.begin), size_(r.Size())
     { }
 
     /// String constructor. Initializes from a dynamic string.
     /// After construction, \ref Data() is equal to `s.Data()`, and \ref Size() is equal to `s.Size()`.
-    explicit StrView(const String & s) noexcept;
+    constexpr explicit StrView(const String & s) noexcept;
 
     /// Copy constructor. Initializes as a copy of another view.
     /// After construction, \ref Data() is equal to `o.Data()`, and \ref Size() is equal to `o.Size()`.
@@ -105,24 +123,24 @@ struct StrView
     /// After assignment, \ref Data() is equal to `o.Data()`, and \ref Size() is equal to `o.Size()`.
     constexpr StrView & operator = (StrView && o) noexcept = default;
 
-    /// Retrieve a constant reference to the character at location specified by \p i.
-    [[nodiscard]] constexpr ConstReference At(SizeType i) const noexcept
+    /// Retrieve a constant reference to the character at location specified by \p idx.
+    [[nodiscard]] constexpr ConstReference At(SizeType idx) const noexcept
     {
-        UH_ASSERT(i < size_)
+        UH_ASSERT(idx < size_)
         UH_ASSERT(size_ > 0)
-        return data_[i];
+        return data_[idx];
     }
 
-    /// Retrieve a constant reference to the character at location specified by \p i.
+    /// Retrieve a constant reference to the character at location specified by \p idx.
     /// Has the same requirements (and assumptions) as the \ref At() member function.
-    [[nodiscard]] constexpr ConstReference  operator [] (SizeType i) const noexcept { return At(i); }
+    [[nodiscard]] constexpr ConstReference  operator [] (SizeType idx) const noexcept { return At(idx); }
 
     /// Retrieve a constant iterator to the first character in the view.
     [[nodiscard]] constexpr ConstIterator Begin() const noexcept { return ConstIterator(data_); }
     /// Retrieve a constant iterator to the character following the last character in the view.
     [[nodiscard]] constexpr ConstIterator End() const noexcept { return ConstIterator(data_ + size_); }
     /// Retrieve a constant iterator to the last character of the string.
-    [[nodiscard]] constexpr ConstIterator Last() const noexcept { UH_ASSERT(length_ > 0) return ConstIterator(data_ + size_ - 1); }
+    [[nodiscard]] constexpr ConstIterator Last() const noexcept { UH_ASSERT(size_ > 0) return ConstIterator(data_ + size_ - 1); }
 
     /// Retrieve a constant iterator to the first character in the view. Alias of \ref Begin().
     [[nodiscard]] constexpr ConstIterator begin() const noexcept { return Begin(); }
@@ -130,10 +148,10 @@ struct StrView
     [[nodiscard]] constexpr ConstIterator end() const noexcept { return End(); }
 
     /// Retrieve a constant iterator to a specific character in the view.
-    [[nodiscard]] constexpr ConstIterator Iat(SizeType i) const noexcept { UH_ASSERT(i <= size_) return ConstIterator(data_ + i); }
+    [[nodiscard]] constexpr ConstIterator Iat(SizeType idx) const noexcept { UH_ASSERT(idx <= size_) return ConstIterator(data_ + idx); }
 
     /// Retrieve a constant reference to the first character in the view.
-    [[nodiscard]] constexpr ConstReference  Front() const noexcept { UH_ASSERT(size_ > 0) return data_[0]; }
+    [[nodiscard]] constexpr ConstReference Front() const noexcept { UH_ASSERT(size_ > 0) return data_[0]; }
 
     /// Retrieve a constant reference to the last character in the view.
     [[nodiscard]] constexpr ConstReference Back() const noexcept { UH_ASSERT(size_ > 0) return data_[size_ - 1]; }
@@ -142,7 +160,7 @@ struct StrView
     [[nodiscard]] constexpr ConstPointer Data() const noexcept { return data_; }
 
     /// Retrieve a constant pointer to the viewed array of characters starting at location specified by \p i.
-    [[nodiscard]] constexpr ConstPointer DataFrom(SizeType i) const noexcept { UH_ASSERT(size_ >= i) return data_ + i; }
+    [[nodiscard]] constexpr ConstPointer DataFrom(SizeType idx) const noexcept { UH_ASSERT(size_ >= idx) return data_ + idx; }
 
     /// Retrieve the number of characters that the view is currently looking at.
     template < class T = SizeType > [[nodiscard]] constexpr T Size() const noexcept { return static_cast< T >(size_); }
@@ -156,17 +174,17 @@ struct StrView
     /// Check if the view has is currently looking at any characters.
     [[nodiscard]] constexpr bool Empty() const noexcept { return size_ == 0; }
 
-    /// Move the start of the view forward by \p n characters. The behavior is undefined if \p n > \ref Size().
-    constexpr void RemovePrefix(SizeType n) noexcept
+    /// Move the start of the view forward by \p num characters. The behavior is undefined if \p num > \ref Size().
+    constexpr void RemovePrefix(SizeType num) noexcept
     {
-        UH_ASSERT(n <= size_)
-        data_ += n, size_ -= n;
+        UH_ASSERT(num <= size_)
+        data_ += num, size_ -= num;
     }
-    /// Move the end of the view back by \p n characters. The behavior is undefined if \p n > \ref Size().
-    constexpr void RemoveSuffix(SizeType n) noexcept
+    /// Move the end of the view back by \p num characters. The behavior is undefined if \p num > \ref Size().
+    constexpr void RemoveSuffix(SizeType num) noexcept
     {
-        UH_ASSERT(n <= size_)
-        size_ -= n;
+        UH_ASSERT(num <= size_)
+        size_ -= num;
     }
 
     /// Exchange the view with that of \p o.
@@ -180,18 +198,18 @@ struct StrView
         o.data_ = d;
     }
 
-    /// Copy the sub-string [ \p pos, \p pos + `rcount` ) to the character string pointed to by \p dest.
-    /// `rcount` is the smaller of \p count and \ref Size() - \p pos.
-    constexpr SizeType Copy(ValueType * dest, SizeType count, SizeType pos = 0) const noexcept
+    /// Copy the sub-string [ \p pos, \p pos + `count` ) to the character string pointed to by \p dest.
+    /// `count` is the smaller of \p len and \ref Size() - \p pos.
+    constexpr SizeType Copy(ValueType * dest, SizeType len = NPOS, SizeType pos = 0) const noexcept
     {
         UH_ASSERT(pos <= size_)
         // Do we need to copy anything?
-        if (count == 0)
+        if (len == 0)
         {
             return 0; // False alarm
         }
         // Number of characters that SHOULD be copied
-        const SizeType rcount = (size_ - pos) >= count ? count : size_ - pos;
+        len = (size_ - pos) >= len ? len : size_ - pos;
         // Where the copying should start at
         ConstPointer source = data_ + pos;
     #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED)
@@ -200,7 +218,7 @@ struct StrView
         {
     #endif
             // Perform a direct character by character copy
-            for (size_t i = 0; i < rcount; ++i)
+            for (size_t i = 0; i < len; ++i)
             {
                 dest[i] = source[i];
             }
@@ -209,107 +227,116 @@ struct StrView
         else
         {
             // Fall back to a built-in "run-time" copy
-            MemCpy(dest, source, rcount);
+            MemCpy(dest, source, len);
         }
     #endif
         // Return the number of copied characters
-        return rcount;
+        return len;
     }
 
-    /// Obtain a view of the sub-string [ \p pos, \p pos + `rcount` ).
-    /// `rcount` is the smaller of \p count and \ref Size() - \p pos.
-    [[nodiscard]] constexpr StrView SubStr(SizeType pos = 0, SizeType count = NPOS) const noexcept
+    /// Obtain a view of the sub-string [ \p pos, \p pos + `count` ).
+    /// `count` is the smaller of \p len and \ref Size() - \p pos.
+    [[nodiscard]] constexpr StrView SubStr(SizeType pos = 0, SizeType len = NPOS) const noexcept
     {
         UH_ASSERT(pos <= size_)
-        return {data_ + pos, (size_ - pos) >= count ? count : (size_ - pos)};
+        return {data_ + pos, (size_ - pos) >= len ? len : (size_ - pos)};
     }
 
-    /// Compare this view against another view \p v.
-    [[nodiscard]] constexpr int Compare(StrView v) const noexcept
+    /// Compare this view against another view \p val.
+    [[nodiscard]] constexpr int Compare(StrView val) const noexcept
     {
-        // Attempt to compare the viewed character sequence first 
-        if (const int r = Compare(data_, v.data_, size_ >= v.size_ ? size_ : v.size_); r != 0)
+        // Are they at least the same size?
+        if (size_ == val.size_)
         {
-            return r;
+            return Compare(data_, val.data_, size_); // Compare the viewed character sequence
         }
-        // Try the view size if previous result was inconclusive 
-        return (size_ == v.size_ ? 0 : (size_ < v.size_ ? -1 : 1));
+        // Use the size of the viewed character sequence to reach a conclusion
+        else if (size_ < val.size_)
+        {
+            return -1;
+        }
+        else
+        {
+            return 1;
+        }
     }
 
-    /// Compare a portion of this view against another view \p v.
-    [[nodiscard]] constexpr int Compare(SizeType pos, SizeType count, StrView v) const noexcept
+    /// Compare a portion of this view against another view \p val.
+    [[nodiscard]] constexpr int Compare(SizeType pos, SizeType len, StrView val) const noexcept
     {
-        return SubStr(pos, count).Compare(v);
+        return SubStr(pos, len).Compare(val);
     }
-    /// Compare a portion of this view against a portion of another view \p v.
-    [[nodiscard]] constexpr int Compare(SizeType pos1, SizeType count1, StrView v, SizeType pos2, SizeType count2) const noexcept
+    /// Compare a portion of this view against a portion of another view \p val.
+    [[nodiscard]] constexpr int Compare(SizeType pos1, SizeType len1, StrView val, SizeType pos2, SizeType len2) const noexcept
     {
-        return SubStr(pos1, count1).Compare(v.SubStr(pos2, count2));
+        return SubStr(pos1, len1).Compare(val.SubStr(pos2, len2));
     }
     /// Compare this view against a null-terminated character string.
-    [[nodiscard]] constexpr int Compare(const ValueType * s) const noexcept
+    /// NOTE: This is inefficient at runtime (atm) as it does a strlen on the string before comparing it.
+    [[nodiscard]] constexpr int Compare(const ValueType * str) const noexcept
     {
-        return Compare(StrView(s));
+        return Compare(StrView(str));
     }
     /// Compare a portion of this view against a null-terminated character string.
-    [[nodiscard]] constexpr int Compare(SizeType pos, SizeType count, const ValueType * s) const noexcept
+    /// NOTE: This is inefficient at runtime (atm) as it does a strlen on the string before comparing it.
+    [[nodiscard]] constexpr int Compare(SizeType pos, SizeType len, const ValueType * str) const noexcept
     {
-        return SubStr(pos, count).Compare(StrView(s));
+        return SubStr(pos, len).Compare(StrView(str));
     }
     /// Compare a portion of this view against a character array.
-    [[nodiscard]] constexpr int Compare(SizeType pos, SizeType count1, const ValueType * s, SizeType count2) const noexcept
+    [[nodiscard]] constexpr int Compare(SizeType pos, SizeType len1, const ValueType * ptr, SizeType len2) const noexcept
     {
-        return SubStr(pos, count1).Compare(StrView(s, count2));
+        return SubStr(pos, len1).Compare(StrView(ptr, len2));
     }
 
     /// Check if the string view begins with the given prefix, where the prefix is another string view.
-    [[nodiscard]] constexpr bool StartsWith(StrView v) const noexcept
+    [[nodiscard]] constexpr bool StartsWith(StrView val) const noexcept
     {
-        return size_ >= v.size_ && Compare(0, v.size_, v) == 0;
+        return size_ >= val.size_ && Compare(0, val.size_, val) == 0;
     }
     /// Check if the string view begins with the given prefix, where the prefix is a single character.
-    [[nodiscard]] constexpr bool StartsWith(ValueType c) const noexcept
+    [[nodiscard]] constexpr bool StartsWith(ValueType chr) const noexcept
     {
-        return size_ > 0 && Locate(data_, size_, c) == data_;
+        return size_ > 0 && data_[0] == chr;
     }
     /// Check if the string view begins with the given prefix, where the prefix is a null-terminated character string.
-    [[nodiscard]] constexpr bool StartsWith(const ValueType * s) const noexcept
+    [[nodiscard]] constexpr bool StartsWith(const ValueType * str) const noexcept
     {
-        return StartsWith(StrView(s));
+        return StartsWith(StrView(str));
     }
 
-    /// Check if the string view ends with the given suffix, where the suffix is another string view \p v.
-    [[nodiscard]] constexpr bool EndsWith(StrView v) const noexcept
+    /// Check if the string view ends with the given suffix, where the suffix is another string view \p val.
+    [[nodiscard]] constexpr bool EndsWith(StrView val) const noexcept
     {
-        return size_ >= v.size_ && Compare(size_ - v.size_, NPOS, v) == 0;
+        return size_ >= val.size_ && Compare(size_ - val.size_, NPOS, val) == 0;
     }
-    /// Check if the string view ends with the given suffix, where the suffix is a single character \p c.
-    [[nodiscard]] constexpr bool EndsWith(ValueType c) const noexcept
+    /// Check if the string view ends with the given suffix, where the suffix is a single character \p chr.
+    [[nodiscard]] constexpr bool EndsWith(ValueType chr) const noexcept
     {
-        return size_ > 0 && Locate(data_, size_, c) == (data_ + size_);
+        return size_ > 0 && data_[size_ - 1] == chr;
     }
-    /// Check if the string view ends with the given suffix, where the suffix is a null-terminated character string \p s.
-    [[nodiscard]] constexpr bool EndsWith(const ValueType * s) const noexcept
+    /// Check if the string view ends with the given suffix, where the suffix is a null-terminated character string \p str.
+    [[nodiscard]] constexpr bool EndsWith(const ValueType * str) const noexcept
     {
-        return EndsWith(StrView(s));
+        return EndsWith(StrView(str));
     }
 
-    /// Find the first occurrence of another string view \p v in this view, starting at position \p pos.
+    /// Find the first occurrence of another string view \p val in this view, starting at position \p pos.
     /// If the string is not found, \ref NPOS is returned.
-    [[nodiscard]] constexpr SizeType Find(StrView v, SizeType pos = 0) const noexcept
+    [[nodiscard]] constexpr SizeType Find(StrView val, SizeType pos = 0) const noexcept
     {
-        return Find(v.data_, pos, v.size_);
+        return Find(val.data_, pos, val.size_);
     }
 
-    /// Find the first occurrence of a single character \p c in this view, starting at position \p pos.
+    /// Find the first occurrence of a single character \p chr in this view, starting at position \p pos.
     /// If the character is not found, \ref NPOS is returned.
-    [[nodiscard]] constexpr SizeType Find(ValueType c, SizeType pos = 0) const noexcept
+    [[nodiscard]] constexpr SizeType Find(ValueType chr, SizeType pos = 0) const noexcept
     {
         // Is the starting point within range?
         if (pos <= size_)
         {
             // Keep looking while there are unchecked characters ranges
-            if (auto p = Locate(data_ + pos, size_ - pos, c); p != nullptr)
+            if (auto p = Locate(data_ + pos, size_ - pos, chr); p != nullptr)
             {
                 return static_cast< SizeType >(p - data_);
             }
@@ -318,12 +345,13 @@ struct StrView
         return NPOS;
     }
 
-    /// Find the first occurrence of null-terminated character string \p s in this view, starting at position \p pos.
+    /// Find the first occurrence of a character array \p ptr in this view, starting at position \p pos.
     /// If the string is not found, \ref NPOS is returned.
-    [[nodiscard]] constexpr SizeType Find(const ValueType * s, SizeType pos, SizeType count) const noexcept
+    [[nodiscard]] constexpr SizeType Find(const ValueType * ptr, SizeType pos, SizeType len) const noexcept
     {
+        UH_ASSERT((ptr == nullptr && len == 0) || (ptr != nullptr && len >= 0))
         // If there's nothing to search for then there's no point in trying
-        if (UH_UNLIKELY(count == 0))
+        if (UH_UNLIKELY(len == 0))
         {
             // Is the starting point within range?
             if (UH_LIKELY(pos <= size_))
@@ -332,12 +360,12 @@ struct StrView
             }
         }
         // Can the sub-string even fit this view?
-        else if (count <= size_)
+        else if (pos < size_ && len <= size_)
         {
-            for (SizeType end = size_ - count; pos <= end; ++pos)
+            for (SizeType end = size_ - len; pos <= end; ++pos)
             {
                 // If one character matches then see if the rest match as well
-                if (data_[pos] == s[0] && Compare(data_ + pos + 1, s + 1, count - 1) == 0)
+                if (data_[pos] == ptr[0] && Compare(data_ + pos + 1, ptr + 1, len - 1) == 0)
                 {
                     return pos; // Sub-string found at this location
                 }
@@ -347,23 +375,23 @@ struct StrView
         return NPOS;
     }
 
-    /// Find the first occurrence of string \p s in this view, starting at position \p pos.
+    /// Find the first occurrence of string \p str in this view, starting at position \p pos.
     /// If the string is not found, \ref NPOS is returned.
-    [[nodiscard]] constexpr SizeType Find(const ValueType * s, SizeType pos = 0) const noexcept
+    [[nodiscard]] constexpr SizeType Find(const ValueType * str, SizeType pos = 0) const noexcept
     {
-        return Find(s, pos, Count(s));
+        return Find(str, pos, Count(str));
     }
 
-    /// Find the last occurrence of another string view \p v in this view, starting at position \p pos.
-    /// If the string is not found, \ref NPOS is returned. 
-    [[nodiscard]] constexpr SizeType RFind(StrView v, SizeType pos = NPOS) const noexcept
+    /// Find the last occurrence of another string view \p val in this view, starting at position \p pos.
+    /// If the string is not found, \ref NPOS is returned.
+    [[nodiscard]] constexpr SizeType RFind(StrView val, SizeType pos = NPOS) const noexcept
     {
-        return RFind(v.data_, pos, v.size_);
+        return RFind(val.data_, pos, val.size_);
     }
 
-    /// Find the last occurrence of a single character \p c in this view, starting at position \p pos.
+    /// Find the last occurrence of a single character \p chr in this view, starting at position \p pos.
     /// If the character is not found, \ref NPOS is returned.
-    [[nodiscard]] constexpr SizeType RFind(ValueType c, SizeType pos = NPOS) const noexcept
+    [[nodiscard]] constexpr SizeType RFind(ValueType chr, SizeType pos = NPOS) const noexcept
     {
         // Is there a string to search into?
         if (SizeType size = size_; UH_LIKELY(size > 0))
@@ -374,10 +402,10 @@ struct StrView
                 size = pos;
             }
             // Keep looking while there are unchecked characters
-            for (++size; size-- > 0; )
+            for (++size; size-- > 0;)
             {
-            // Is this the character we're looking for?
-                if (data_[size] == c)
+                // Is this the character we're looking for?
+                if (data_[size] == chr)
                 {
                     return size; // Character found at this location
                 }
@@ -387,18 +415,19 @@ struct StrView
         return NPOS;
     }
 
-    /// Find the last occurrence of null-terminated character string \p s in this view, starting at position \p pos.
+    /// Find the last occurrence of null-terminated character string \p ptr in this view, starting at position \p pos.
     /// If the string is not found, \ref NPOS is returned.
-    [[nodiscard]] constexpr SizeType RFind(const ValueType * s, SizeType pos, SizeType count) const noexcept
+    [[nodiscard]] constexpr SizeType RFind(const ValueType * ptr, SizeType pos, SizeType len) const noexcept
     {
+        UH_ASSERT((ptr == nullptr && len == 0) || (ptr != nullptr && len >= 0))
         // Can the sub-string even fit this view?
-        if (UH_LIKELY(count <= size_))
+        if (UH_LIKELY(len <= size_))
         {
-            // Rectify starting point, if necessary
-            pos = (size_ - count) >= pos ? pos : (size_ - count);
-            // Look for the sub-string in reverse
+            // Skip checking characters that wouldn't fit in the view anyway
+            pos = Min((size_ - len), pos);
+            // Continuously check for a matching string while going back one character at a time
             do {
-                if (Compare(data_ + pos, s, count) == 0)
+                if (Compare(data_ + pos, ptr, len) == 0)
                 {
                     return pos; // Sub-string found at this location
                 }
@@ -408,35 +437,41 @@ struct StrView
         return NPOS;
     }
 
-    /// Find the last occurrence of string \p s in this view, starting at position \p pos.
+    /// Find the last occurrence of string \p str in this view, starting at position \p pos.
     /// If the string is not found, \ref NPOS is returned.
-    [[nodiscard]] constexpr SizeType RFind(const ValueType * s, SizeType pos = NPOS) const noexcept
+    [[nodiscard]] constexpr SizeType RFind(const ValueType * str, SizeType pos = NPOS) const noexcept
     {
-        return RFind(s, pos, Count(s));
+        return RFind(str, pos, Count(str));
     }
 
-    /// Finds the first occurrence of any of the characters of \p v in this view, starting at position \p pos.
-    [[nodiscard]] constexpr SizeType FindFirstOf(StrView v, SizeType pos = 0) const noexcept
+    /// Finds the first occurrence of any of the characters of \p val in this view, starting at position \p pos.
+    [[nodiscard]] constexpr SizeType FindFirstOf(StrView val, SizeType pos = 0) const noexcept
     {
-        return FindFirstOf(v.data_, pos, v.size_);
+        return FindFirstOf(val.data_, pos, val.size_);
     }
 
     /// Finds the first character equal to the given character.
-    [[nodiscard]] constexpr SizeType FindFirstOf(ValueType c, SizeType pos = 0) const noexcept
+    [[nodiscard]] constexpr SizeType FindFirstOf(ValueType chr, SizeType pos = 0) const noexcept
     {
-        return Find(c, pos);
+        return Find(chr, pos);
     }
 
     /// Finds the first character equal to any of the characters in the given character array.
-    [[nodiscard]] constexpr SizeType FindFirstOf(const ValueType * s, SizeType pos, SizeType count) const noexcept
+    [[nodiscard]] constexpr SizeType FindFirstOf(const ValueType * ptr, SizeType pos, SizeType len) const noexcept
     {
-        // Keep looking while there are unchecked characters ranges
-        for (; count && pos < size_; ++pos)
+        UH_ASSERT((ptr == nullptr && len == 0) || (ptr != nullptr && len >= 0))
+        // Anything to search for?
+        if (UH_LIKELY(len))
         {
-            // Look for the specified sub-string in this range
-            if (Locate(s, count, data_[pos]) != nullptr)
+            // Keep looking while there are unchecked characters ranges
+            for (; pos < size_; ++pos)
             {
-                return pos; // Sub-string found at this location
+                // Perform a reverse search on the needle string instead of the viewed string
+                // Probability of needle being smaller than the viewed string should be higher
+                if (Locate(ptr, len, data_[pos]) != nullptr)
+                {
+                    return pos; // Sub-string found at this location
+                }
             }
         }
         // No such sub-string
@@ -444,38 +479,40 @@ struct StrView
     }
 
     /// Finds the first character equal to any of the characters in the given null-terminated character string.
-    [[nodiscard]] constexpr SizeType FindFirstOf(const ValueType * s, SizeType pos = 0) const noexcept
+    [[nodiscard]] constexpr SizeType FindFirstOf(const ValueType * str, SizeType pos = 0) const noexcept
     {
-        return FindFirstOf(s, pos, Count(s));
+        return FindFirstOf(str, pos, Count(str));
     }
 
-    /// Finds the last occurrence of any of the characters of \p v in this view, ending at position \p pos.
-    [[nodiscard]] constexpr SizeType FindLastOf(StrView v, SizeType pos = NPOS) const noexcept
+    /// Finds the last occurrence of any of the characters of \p val in this view, ending at position \p pos.
+    [[nodiscard]] constexpr SizeType FindLastOf(StrView val, SizeType pos = NPOS) const noexcept
     {
-        return FindLastOf(v.data_, pos, v.size_);
+        return FindLastOf(val.data_, pos, val.size_);
     }
 
     /// Finds the last character equal to the given character.
-    [[nodiscard]] constexpr SizeType FindLastOf(ValueType c, SizeType pos = NPOS) const noexcept
+    [[nodiscard]] constexpr SizeType FindLastOf(ValueType chr, SizeType pos = NPOS) const noexcept
     {
-        return RFind(c, pos);
+        return RFind(chr, pos);
     }
 
     /// Finds the last character equal to one of characters in the given character array.
-    [[nodiscard]] constexpr SizeType FindLastOf(const ValueType * s, SizeType pos, SizeType count) const noexcept
+    [[nodiscard]] constexpr SizeType FindLastOf(const ValueType * ptr, SizeType pos, SizeType len) const noexcept
     {
+        UH_ASSERT((ptr == nullptr && len == 0) || (ptr != nullptr && len >= 0))
         // Is there a string to search into or even search for?
-        if (SizeType size = size_; UH_LIKELY(size && count))
+        if (SizeType size = size_; UH_LIKELY(size && len))
         {
-            // Should we skip some characters?
-            if (--size > pos)
+            // Should we omit some characters?
+            if (--size; size > pos)
             {
                 size = pos;
             }
             // Keep looking while there are unchecked characters ranges
             do {
-                // Look for the specified sub-string in this range
-                if (Locate(s, count, data_[size]) != nullptr)
+                // Perform a reverse search on the needle string instead of the viewed string
+                // Probability of needle being smaller than the viewed string should be higher
+                if (Locate(ptr, len, data_[size]) != nullptr)
                 {
                     return size; // Sub-string found at this location
                 }
@@ -486,25 +523,25 @@ struct StrView
     }
 
     /// Finds the last character equal to one of characters in the given null-terminated character string.
-    [[nodiscard]] constexpr SizeType FindLastOf(const ValueType * s, SizeType pos = NPOS) const noexcept
+    [[nodiscard]] constexpr SizeType FindLastOf(const ValueType * str, SizeType pos = NPOS) const noexcept
     {
-        return FindLastOf(s, pos, Count(s));
+        return FindLastOf(str, pos, Count(str));
     }
 
-    /// Finds the first character not equal to any of the characters of \p v in this view, starting at position \p pos.
-    [[nodiscard]] constexpr SizeType FindFirstNotOf(StrView v, SizeType pos = 0) const noexcept 
+    /// Finds the first character not equal to any of the characters of \p val in this view, starting at position \p pos.
+    [[nodiscard]] constexpr SizeType FindFirstNotOf(StrView val, SizeType pos = 0) const noexcept
     {
-        return FindFirstNotOf(v.data_, pos, v.size_);
+        return FindFirstNotOf(val.data_, pos, val.size_);
     }
 
     /// Finds the first character not equal to the given character.
-    [[nodiscard]] constexpr SizeType FindFirstNotOf(ValueType c, SizeType pos = 0) const noexcept
+    [[nodiscard]] constexpr SizeType FindFirstNotOf(ValueType chr, SizeType pos = 0) const noexcept
     {
         // Keep looking while there are unchecked characters
         for (; pos < size_; ++pos)
         {
             // Is this the character we're looking for?
-            if (data_[pos] != c)
+            if (data_[pos] != chr)
             {
                 return pos; // Character found at this location
             }
@@ -514,13 +551,14 @@ struct StrView
     }
 
     /// Finds the first character not equal to any of the characters in the given character array.
-    [[nodiscard]] constexpr SizeType FindFirstNotOf(const ValueType * s, SizeType pos, SizeType count) const noexcept
+    [[nodiscard]] constexpr SizeType FindFirstNotOf(const ValueType * ptr, SizeType pos, SizeType len) const noexcept
     {
+        UH_ASSERT((ptr == nullptr && len == 0) || (ptr != nullptr && len >= 0))
         // Keep looking while there are unchecked characters ranges
         for (; pos < size_; ++pos)
         {
             // Look for the specified sub-string in this range
-            if (Locate(s, count, data_[pos]) == nullptr)
+            if (Locate(ptr, len, data_[pos]) == nullptr)
             {
                 return pos; // Sub-string found at this location
             }
@@ -530,32 +568,32 @@ struct StrView
     }
 
     /// Finds the first character not equal to any of the characters in the given null-terminated character string.
-    [[nodiscard]] constexpr SizeType FindFirstNotOf(const ValueType * s, SizeType pos = 0) const noexcept
+    [[nodiscard]] constexpr SizeType FindFirstNotOf(const ValueType * str, SizeType pos = 0) const noexcept
     {
-        return FindFirstNotOf(s, pos, Count(s));
+        return FindFirstNotOf(str, pos, Count(str));
     }
 
-    /// Finds the last character not equal to any of the characters of \p v in this view, starting at position \p pos.
-    [[nodiscard]] constexpr SizeType FindLastNotOf(StrView v, SizeType pos = NPOS) const noexcept
+    /// Finds the last character not equal to any of the characters of \p val in this view, starting at position \p pos.
+    [[nodiscard]] constexpr SizeType FindLastNotOf(StrView val, SizeType pos = NPOS) const noexcept
     {
-        return FindLastNotOf(v.data_, pos, v.size_);
+        return FindLastNotOf(val.data_, pos, val.size_);
     }
 
     /// Finds the last character not equal to the given character.
-    [[nodiscard]] constexpr SizeType FindLastNotOf(ValueType c, SizeType pos = NPOS) const noexcept
+    [[nodiscard]] constexpr SizeType FindLastNotOf(ValueType chr, SizeType pos = NPOS) const noexcept
     {
         // Is there a string to search into?
         if (SizeType size = size_; UH_LIKELY(size))
         {
             // Should we skip some characters?
-            if (--size > pos)
+            if (--size; size > pos)
             {
                 size = pos;
             }
             // Keep looking while there are unchecked characters
             do {
                 // Is this the character we're looking for?
-                if (data_[size] != c)
+                if (data_[size] != chr)
                 {
                     return size; // Character found at this location
                 }
@@ -566,10 +604,11 @@ struct StrView
     }
 
     /// Finds the last character not equal to any of the characters in the given character array.
-    [[nodiscard]] constexpr SizeType FindLastNotOf(const ValueType * s, SizeType pos, SizeType count) const noexcept
+    [[nodiscard]] constexpr SizeType FindLastNotOf(const ValueType * ptr, SizeType pos, SizeType len) const noexcept
     {
+        UH_ASSERT((ptr == nullptr && len == 0) || (ptr != nullptr && len >= 0))
         // Is there a string to search into?
-        if (SizeType size = size_; UH_LIKELY(size))
+        if (SizeType size = size_; UH_LIKELY(size > 0))
         {
             // Should we skip some characters?
             if (--size > pos)
@@ -579,7 +618,7 @@ struct StrView
             // Keep looking while there are unchecked characters ranges
             do {
                 // Look for the specified sub-string in this range
-                if (!Locate(s, count, data_[size]))
+                if (!Locate(ptr, len, data_[size]))
                 {
                     return size; // Sub-string found at this location
                 }
@@ -590,31 +629,37 @@ struct StrView
     }
 
     /// Finds the last character not equal to any of the characters in the given null-terminated character string.
-    [[nodiscard]] constexpr SizeType FindLastNotOf(const ValueType * s, SizeType pos = NPOS) const noexcept
+    [[nodiscard]] constexpr SizeType FindLastNotOf(const ValueType * str, SizeType pos = NPOS) const noexcept
     {
-        return FindLastNotOf(s, pos, Count(s));
+        return FindLastNotOf(str, pos, Count(str));
     }
 
     /// Check if the string view contains the given sub-string, where the sub-string is a string view.
-    [[nodiscard]] constexpr bool Contains(StrView v) const noexcept
+    [[nodiscard]] constexpr bool Contains(StrView val) const noexcept
     {
-        return Find(v) != NPOS;
+        return Find(val) != NPOS;
     }
 
     /// Check if the string view contains the given sub-string, where the sub-string is a single character.
-    [[nodiscard]] constexpr bool Contains(ValueType c) const noexcept
+    [[nodiscard]] constexpr bool Contains(ValueType chr) const noexcept
     {
-        return Find(c) != NPOS;
+        return Find(chr) != NPOS;
+    }
+
+    /// Check if the string view contains the given sub-string, where the sub-string is a character array.
+    [[nodiscard]] constexpr bool Contains(const ValueType * ptr, SizeType len) const noexcept
+    {
+        return Find(ptr, 0, len) != NPOS;
     }
 
     /// Check if the string view contains the given sub-string, where the sub-string is a null-terminated character string.
-    [[nodiscard]] constexpr bool Contains(const ValueType * s) const noexcept
+    [[nodiscard]] constexpr bool Contains(const ValueType * str) const noexcept
     {
-        return Find(s) != NPOS;
+        return Find(str) != NPOS;
     }
 
-    /// Trim white-space from the beginning.
-    void TrimLeft() noexcept
+    /// Trim white-space from the beginning of the string view.
+    constexpr void TrimLeft() noexcept
     {
         // Make sure there's something to trim
         if (UH_LIKELY(size_ > 0))
@@ -635,8 +680,8 @@ struct StrView
         }
     }
 
-    /// Trim white-space from the end.
-    void TrimRight() noexcept
+    /// Trim white-space from the end of the string view.
+    constexpr void TrimRight() noexcept
     {
         // Make sure there's something to trim
         if (UH_LIKELY(size_ > 0))
@@ -646,7 +691,7 @@ struct StrView
             while (itr != end)
             {
                 // Is this a space character or should we stop?
-                if (*data_ == ' ' || *data_ == '\t')
+                if (*itr == ' ' || *itr == '\t')
                 {
                     --itr; // Trim this character
                 }
@@ -654,41 +699,135 @@ struct StrView
                 {
                     break; // Stop trimming
                 }
-            } 
+            }
             // Find how many characters were left after trimming
-            size_ = static_cast< size_t >(static_cast< intptr_t >(itr - end));
+            size_ = static_cast< SizeType >(static_cast< intptr_t >(itr - end));
         }
     }
 
-    /// Trim white-space from the beginning and end.
-    void Trim() noexcept { TrimRight(); TrimLeft(); }
+    /// Trim white-space from both sides of the string view.
+    /// \note Right side is trimmed first to not alter the start of the string if the entire string view is white-space only.
+    constexpr void Trim() noexcept { TrimRight(); TrimLeft(); }
 
     /// Trim white-space from the beginning. Returns view with the trimmed white-space characters.
-    [[nodiscard]] StrView TrimmedLeft() const noexcept { StrView s(*this); s.TrimLeft(); return s; }
+    [[nodiscard]] constexpr StrView TrimmedLeft() const noexcept { StrView s(*this); s.TrimLeft(); return s; }
 
     /// Trim white-space from the end. Returns view with the trimmed white-space characters.
-    [[nodiscard]] StrView TrimmedRight() const noexcept { StrView s(*this); s.TrimRight(); return s; }
+    [[nodiscard]] constexpr StrView TrimmedRight() const noexcept { StrView s(*this); s.TrimRight(); return s; }
 
     /// Trim white-space from the beginning and end. Returns view with the trimmed white-space characters.
-    [[nodiscard]] StrView Trimmed() const noexcept { StrView s(*this); s.Trim(); return s; }
+    /// \note Right side is trimmed first to not alter the start of the string if the entire string view is white-space only.
+    [[nodiscard]] constexpr StrView Trimmed() const noexcept { StrView s(*this); s.Trim(); return s; }
+
+    /// Trim characters specified by \p chars from the beginning of the string view.
+    constexpr void TrimLeft(StrView chars) noexcept
+    {
+        // Make sure there's something to trim
+        if (UH_LIKELY(size_ > 0))
+        {
+            // Find the first non-space character
+            do {
+                // Is this a space character or should we stop?
+                if (Locate(chars.data_, chars.size_, *data_) != nullptr)
+                {
+                    ++data_; // Trim this character
+                    --size_; // Update view length
+                }
+                else
+                {
+                    break; // Stop trimming
+                }
+            } while (size_ > 0);
+        }
+    }
+
+    /// Trim characters specified by \p chars from the end of the string view.
+    constexpr void TrimRight(StrView chars) noexcept
+    {
+        // Make sure there's something to trim
+        if (UH_LIKELY(size_ > 0))
+        {
+            auto itr = Last(), end = Begin() - 1;
+            // Find the first non-space character
+            while (itr != end)
+            {
+                // Is this a space character or should we stop?
+                if (Locate(chars.data_, chars.size_, *itr) != nullptr)
+                {
+                    --itr; // Trim this character
+                }
+                else
+                {
+                    break; // Stop trimming
+                }
+            }
+            // Find how many characters were left after trimming
+            size_ = static_cast< SizeType >(static_cast< intptr_t >(itr - end));
+        }
+    }
+
+    /// Trim characters specified by \p chars from the both sides of the string view.
+    constexpr void Trim(StrView chars) noexcept { TrimRight(chars); TrimLeft(chars); }
+
+    /// Trim characters specified by \p chars from the beginning. Returns a view with the specified characters trimmed from start.
+    [[nodiscard]] constexpr StrView TrimmedLeft(StrView chars) const noexcept { StrView s(*this); s.TrimLeft(chars); return s; }
+
+    /// Trim characters specified by \p chars from the end. Returns a view with the specified characters trimmed from back.
+    [[nodiscard]] constexpr StrView TrimmedRight(StrView chars) const noexcept { StrView s(*this); s.TrimRight(chars); return s; }
+
+    /// Trim characters specified by \p chars from the beginning and end. Returns a view with the specified characters trimmed from both ends.
+    [[nodiscard]] constexpr StrView Trimmed(StrView chars) const noexcept { StrView s(*this); s.Trim(chars); return s; }
 
 protected:
 
-    /// Compare two character sequences. Performs the comparison at compile time if possible or efficiently at run-time.
-    [[nodiscard]] static UH_INLINE constexpr int Compare(const ValueType * a, const ValueType * b, size_t n) noexcept
+    /// Retrieve the length of the C string from \p str. The length of a C string is determined by the terminating null-character.
+    /// NOTE: This variant does not check if the specified pointer is null before attempting to access it.
+    [[nodiscard]] static UH_INLINE constexpr SizeType Count(ConstPointer str, IsPure_t) noexcept
     {
-        // Is there anything to be compared?
-        if (UH_UNLIKELY(n == 0))
-        {
-            return 0; // Strings are considered equal
-        }
-    #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) && defined(UH_HAVE_BUILTIN_CONSTANT_P)
-        // Can the comparison be performed at compile time?
-        if (__builtin_constant_p(n) && IsConstantCharArray(a, n) && IsConstantCharArray(b, n))
+        UH_ASSERT(str != nullptr)
+    #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) || defined(UH_HAVE_BUILTIN_CONSTANT_P)
+        // Can the operation be performed at compile time?
+        if (IsConstantString(str))
         {
     #endif
+            size_t i = 0;
+            // Search for the null character
+            while (str[i])
+            {
+                ++i;
+            }
+            return i;
+    #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) || defined(UH_HAVE_BUILTIN_CONSTANT_P)
+        }
+        // Fall back to a built-in run-time comparison
+        return StrLen(str);
+    #endif
+    }
+
+    /// Retrieve the length of the C string from \p str. The length of a C string is determined by the terminating null-character.
+    /// NOTE: This variant does check if the specified pointer is null before attempting to access it.
+    [[nodiscard]] static UH_INLINE constexpr SizeType Count(ConstPointer str) noexcept
+    {
+        return UH_UNLIKELY(str == nullptr) ? 0 : Count(str, IsPure);
+    }
+
+    /// Compare two character sequences. Performs the comparison at compile time if possible or efficiently at run-time.
+    [[nodiscard]] static UH_INLINE constexpr int Compare(ConstPointer a, ConstPointer b, SizeType len) noexcept
+    {
+        UH_ASSERT((a == nullptr && len == 0) || (a != nullptr && len >= 0))
+        UH_ASSERT((b == nullptr && len == 0) || (b != nullptr && len >= 0))
+    #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) && defined(UH_HAVE_BUILTIN_CONSTANT_P)
+        // Can the comparison be performed at compile time?
+        if (__builtin_constant_p(len) && IsConstantCharArray(a, len) && IsConstantCharArray(b, len))
+        {
+    #endif
+            // Is there anything to be compared?
+            if (UH_UNLIKELY(len == 0))
+            {
+                return 0; // Strings are considered equal
+            }
             // Perform a direct character by character comparison
-            for (size_t i = 0; i < n; ++i)
+            for (size_t i = 0; i < len; ++i)
             {
                 if (a[i] < b[i])
                 {
@@ -703,51 +842,32 @@ protected:
             return 0;
     #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) && defined(UH_HAVE_BUILTIN_CONSTANT_P)
         }
-        // Fall back to a built-in "run-time" comparison
-        return MemCmp(a, b, n);
+        // Fall back to a built-in run-time comparison
+        return MemCmp(a, b, len);
     #endif
     }
 
-    /// Count the length of a null-terminated character string.
-    [[nodiscard]] static UH_INLINE constexpr size_t Count(const char * s) noexcept
+    /// Search within the first \p len characters of the character array pointed by \p str for the first occurrence of \p value and return a pointer to it.
+    /// \note It behaves like `memchr` but can identify a constexpr context and perform the search at compile time or fall-back to `memchr` for run-time.
+    [[nodiscard]] static UH_INLINE constexpr ConstPointer Locate(ConstPointer str, SizeType len, ConstReference value) noexcept
     {
-    #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) || defined(UH_HAVE_BUILTIN_CONSTANT_P)
-        // Can the operation be performed at compile time?
-        if (IsConstantString(s))
-        {
-    #endif
-            size_t i = 0;
-            while (s[i])
-            {
-                ++i;
-            }
-            return i;
-    #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) || defined(UH_HAVE_BUILTIN_CONSTANT_P)
-        }
-        // Fall back to a built-in "run-time" comparison
-        return StrLen(s);
-    #endif
-    }
-
-    /// Locate a character in a character array.
-    [[nodiscard]] static UH_INLINE constexpr const char * Locate(const char * s, size_t n, const char & c) noexcept
-    {
-        // Is there anything to search in?
-        if (UH_UNLIKELY(n == 0))
-        {
-            return nullptr; // Lookup aborted
-        }
+        UH_ASSERT((str == nullptr && len == 0) || (str != nullptr && len >= 0))
     #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) && defined(UH_HAVE_BUILTIN_CONSTANT_P)
         // Can the lookup be performed at compile time?
-        if (__builtin_constant_p(n) && __builtin_constant_p(c) && IsConstantCharArray(s, n))
+        if (__builtin_constant_p(len) && __builtin_constant_p(value) && IsConstantCharArray(str, len))
         {
     #endif
-            // Perform a direct character by character lookup
-            for (size_t i = 0; i < n; ++i)
+            // Is there anything to search in?
+            if (UH_UNLIKELY(len == 0))
             {
-                if (s[i] == c)
+                return nullptr; // Leave
+            }
+            // Perform a direct character by character lookup
+            for (size_t i = 0; i < len; ++i)
+            {
+                if (str[i] == value)
                 {
-                    return s + i;
+                    return str + i;
                 }
             }
             // No such character
@@ -755,7 +875,7 @@ protected:
     #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED) && defined(UH_HAVE_BUILTIN_CONSTANT_P)
         }
         // Fall back to a built-in "run-time" comparison
-        return static_cast< const char * >(MemChr(s, c, n));
+        return static_cast< ConstPointer >(MemChr(str, value, len));
     #endif
     }
 
