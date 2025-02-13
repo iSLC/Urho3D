@@ -1,15 +1,15 @@
 /*
  Simple DirectMedia Layer
- Copyright (C) 1997-2022 Sam Lantinga <slouken@libsdl.org>
- 
+ Copyright (C) 1997-2025 Sam Lantinga <slouken@libsdl.org>
+
  This software is provided 'as-is', without any express or implied
  warranty.  In no event will the authors be held liable for any damages
  arising from the use of this software.
- 
+
  Permission is granted to anyone to use this software for any purpose,
  including commercial applications, and to alter it and redistribute it
  freely, subject to the following restrictions:
- 
+
  1. The origin of this software must not be misrepresented; you must not
  claim that you wrote the original software. If you use this software
  in a product, an acknowledgment in the product documentation would be
@@ -28,10 +28,10 @@
 
 #include "../../SDL_internal.h"
 
-// Urho3D: commented out original
-//#if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL)
+// Urho3D: Commented out original
+//#if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL))
 // Urho3D: iOS/tvOS simulator does not have Metal support
-#if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_VULKAN || SDL_VIDEO_METAL) && !defined(TARGET_IPHONE_SIMULATOR)
+#if defined(SDL_VIDEO_DRIVER_UIKIT) && (defined(SDL_VIDEO_VULKAN) || defined(SDL_VIDEO_METAL)) && !defined(TARGET_IPHONE_SIMULATOR)
 
 #include "SDL_syswm.h"
 #include "../SDL_sysvideo.h"
@@ -77,8 +77,7 @@
 
 @end
 
-SDL_MetalView
-UIKit_Metal_CreateView(_THIS, SDL_Window * window)
+SDL_MetalView UIKit_Metal_CreateView(_THIS, SDL_Window * window)
 { @autoreleasepool {
     SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
     CGFloat scale = 1.0;
@@ -95,13 +94,17 @@ UIKit_Metal_CreateView(_THIS, SDL_Window * window)
 
     metalview = [[SDL_uikitmetalview alloc] initWithFrame:data.uiwindow.bounds
                                                     scale:scale];
+    if (metalview == nil) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
     [metalview setSDLWindow:window];
 
     return (void*)CFBridgingRetain(metalview);
 }}
 
-void
-UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
+void UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
 { @autoreleasepool {
     SDL_uikitmetalview *metalview = CFBridgingRelease(view);
 
@@ -110,15 +113,13 @@ UIKit_Metal_DestroyView(_THIS, SDL_MetalView view)
     }
 }}
 
-void *
-UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
+void *UIKit_Metal_GetLayer(_THIS, SDL_MetalView view)
 { @autoreleasepool {
     SDL_uikitview *uiview = (__bridge SDL_uikitview *)view;
     return (__bridge void *)uiview.layer;
 }}
 
-void
-UIKit_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+void UIKit_Metal_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
