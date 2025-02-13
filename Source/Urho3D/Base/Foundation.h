@@ -21,39 +21,10 @@ using namespace Literals;
 
 /// Disambiguation tag that can be passed as argument to indicate that initialization is not necessary.
 struct NoInit_t { } inline constexpr NoInit{ };
-/// Disambiguation tag that can be passed as argument to indicate that no references should be stored.
-struct NoRefs_t { } inline constexpr NoRefs{ };
 /// Disambiguation tag that can be passed as argument to indicate that default initialization is not necessary after releasing something.
 struct NoTidy_t { } inline constexpr NoTidy{ };
-/// Disambiguation tag that can be passed as argument to indicate that free/release of something (i.e. memory) is not necessary.
-struct NoFree_t { } inline constexpr NoFree{ };
-/// Disambiguation tag that can be passed as argument to indicate initialization is actually necessary.
-struct DoInit_t { } inline constexpr DoInit{ };
-/// Disambiguation tag that can be passed as argument to indicate that a transfer of something should be made instead of replicating it.
-struct DoMove_t { } inline constexpr DoMove{ };
-/// Disambiguation tag that can be passed as argument to indicate that a replica of something should be made instead of owning it.
-struct DoCopy_t { } inline constexpr DoCopy{ };
 /// Disambiguation tag that can be passed as argument to indicate that sanity checks should not be performed as they were most likely performed already.
 struct IsPure_t { } inline constexpr IsPure{ };
-/// Disambiguation tag that can be passed as argument to indicate that case insensitivity should be preferred.
-struct NoCase_t { } inline constexpr NoCase{ };
-/// Disambiguation tag that can be passed as argument to indicate that something is static ...
-struct Static_t { } inline constexpr Static{ };
-/// Disambiguation tag that can be passed as argument to indicate that ownership should be taken of something.
-struct OwnIt_t { } inline constexpr OwnIt{ };
-
-/// Disambiguation tag that can be passed as argument to indicate that increment should be performed.
-struct DoIncrement_t { } inline constexpr DoIncrement{ };
-/// Disambiguation tag that can be passed as argument to indicate that decrement should be performed.
-struct DoDecrement_t { } inline constexpr DoDecrement{ };
-/// Disambiguation tag that can be passed as argument to indicate that pre-increment should be performed.
-struct DoPreInc_t { } inline constexpr DoPreInc{ };
-/// Disambiguation tag that can be passed as argument to indicate that pre-decrement should be performed.
-struct DoPreDec_t { } inline constexpr DoPreDec{ };
-/// Disambiguation tag that can be passed as argument to indicate that post-increment should be performed.
-struct DoPostInc_t { } inline constexpr DoPostInc{ };
-/// Disambiguation tag that can be passed as argument to indicate that post-decrement should be performed.
-struct DoPostDec_t { } inline constexpr DoPostDec{ };
 
 /// Helper used to store a NULL terminated C style string associated with a type that represents it's name.
 template < class T > struct BasicTypeName {
@@ -171,6 +142,51 @@ UH_INLINE constexpr bool IsConstantEvaluated() noexcept
     static_assert(false);
 #endif
 }
+
+/// Helper utility meant to represent a beginning and an ending of something.
+/// Almost identical to \ref Pair type but simpler and more limited in scope.
+/// Should only be used with fundamental or small POD types that support less than or equal and subtraction operation.
+/// The purpose of this helper utility was to solve an issue with constructor/method/function overloads
+/// that have both the following signatures f(const T * p, size_t n) and f(const T * a, const T * b).
+/// Because integers are implicitly convertible to pointers. The compiler can't
+/// decide which of those overloads to use if invoked as: f((const T *)(0), 0);
+/// However, it is implemented in a generic way to allow other use cases (some yet to be discovered).
+template < class T > struct Range_t
+{
+    typedef T ValueType;    ///< The bound type.
+
+    T begin{}; ///< A copy of the starting range value.
+    T end{}; ///< A copy of the ending range value.
+    /// Default constructor.
+    constexpr Range_t() noexcept = default;
+    /// Value constructor.
+    constexpr Range_t(T & begin_, T & end_) noexcept : begin(begin_), end(end_) { UH_ASSERT(begin_ <= end) }
+    /// Value constructor.
+    constexpr Range_t(const T & begin_, const T & end_) noexcept : begin(begin_), end(end_) { UH_ASSERT(begin_ <= end) }
+    /// Copy constructor.
+    constexpr Range_t(const Range_t & o) noexcept = default;
+    /// Move constructor.
+    constexpr Range_t(Range_t && o) noexcept = default;
+    /// Copy assignment operator.
+    Range_t & operator = (const Range_t & o) noexcept = default;
+    /// Move assignment operator.
+    Range_t & operator = (Range_t && o) = default;
+    /// Retrieve the size of the range.
+    template < class U = size_t > [[nodiscard]] constexpr U Size() const noexcept { return static_cast< U >(end - begin); }
+};
+
+/// Range_t deduction guide.
+template < class T > Range_t(T, T) -> Range_t< T >;
+
+/// Specialization of \ref begin() for \ref Range_t. Returns `begin` member.
+template < class T > constexpr T begin(Range_t< T > & r) noexcept { return r.begin; }
+/// Specialization of \ref end() for \ref Range_t. Returns `end` member.
+template < class T > constexpr T end(Range_t< T > & r) noexcept { return r.end; }
+
+/// Specialization of \ref begin() for const \ref Range_t. Returns `begin` member.
+template < class T > constexpr T begin(const Range_t< T > & r) noexcept { return r.begin; }
+/// Specialization of \ref end() for const \ref Range_t. Returns `end` member.
+template < class T > constexpr T end(const Range_t< T > & r) noexcept { return r.end; }
 
 /*
  * Character array manipulation.
