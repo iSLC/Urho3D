@@ -7,10 +7,18 @@
 /*
  * Fundamental headers.
 */
-#include <cstddef>
-#include <climits>
-#include <cstdint>
-#include <cfloat>
+
+#ifdef __cplusplus
+    #include <cstddef>
+    #include <climits>
+    #include <cstdint>
+    #include <cfloat>
+#else
+    #include <stddef.h>
+    #include <limits.h>
+    #include <stdint.h>
+    #include <float.h>
+#endif
 
 /*
  * Macro concatenation helpers.
@@ -202,6 +210,19 @@
 #define UH_VERSION_NUMBER(v, r, p) (((v) << 24) + ((r) << 16) + (p))
 // Current compiler version
 #define UH_COMPILER_VERSION UH_VERSION_NUMBER(UH_COMPILER_MAJOR, UH_COMPILER_MINOR, UH_COMPILER_PATCH)
+
+// Allow expressions to be filtered based on available language.
+#ifdef __cplusplus
+    #define UH_C_LANG_ONLY(x)
+    #define UH_CPP_LANG_ONLY(x, y) x
+#else
+    #define UH_C_LANG_ONLY(x) x
+    #define UH_CPP_LANG_ONLY(x, y)
+#endif // __cplusplus
+
+// Select the expression according to the available language.
+#define UH_C_LANG_OR(CV, XV) UH_C_LANG_ONLY(CV)  UH_CPP_LANG_ONLY(XV)
+#define UH_CPP_LANG_OR(XV, CV) UH_CPP_LANG_ONLY(XV) UH_C_LANG_ONLY(CV) 
 
 /*
  * Macros with identifiers of C version. What `__STDC_VERSION__` is defined to be.
@@ -455,12 +476,12 @@
 #endif
 
 /*
- * Make sure C++17 standard is available. Superficial check as it doesn't take into account partial implementations.
+ * Make sure C++20 standard is available. Superficial check as it doesn't take into account partial implementations.
  * Some compilers may cheat on standard support. They will be "blocked" later on in compiler detection.
 */
 
-#if UH_CPP_STANDARD < UH_CPP17_STANDARD
-    #error This compiler does not support or have enabled the C++17 standard.
+#if UH_CPP_STANDARD < UH_CPP20_STANDARD
+    #error This compiler does not support or have enabled the C++20 standard.
 #endif
 
 /*
@@ -1371,15 +1392,14 @@
 
 // GCC 4.8+, Clang, Intel and other compilers compatible with GCC
 #if defined(UH_GNUC) || defined(UH_CLANG)
-    namespace Urho3D {
-        [[noreturn]] inline __attribute__((always_inline)) void Unreachable() { __builtin_unreachable(); }
-    }
+    #ifndef __cplusplus
+        void Urho3D_Unreachable() __attribute__((noreturn));
+    #endif
+    UH_CPP11([[noreturn]]) inline __attribute__((always_inline)) void Urho3D_Unreachable() { __builtin_unreachable(); }
     #define UH_UNREACHABLE Urho3D_Unreachable();
 // MSVC
 #elif defined(UH_MSC)
-    namespace Urho3D {
-        [[noreturn]] __forceinline void Unreachable() { __assume(false); }
-    }
+    UH_CPP11([[noreturn]]) __forceinline __declspec(noreturn) void Urho3D_Unreachable() { __assume(false); }
     #define UH_UNREACHABLE Urho3D_Unreachable();
 // Failsafe
 #else
@@ -1407,6 +1427,15 @@
 #define UH_RELEASE_OR(RV, OV) UH_RELEASE_ONLY(RV) UH_EXCEPT_RELEASE(OV)
 
 /*
+ * Assertion handler. Allow the assert handler to be customized.
+*/
+
+#if !defined(UH_ASSERT_HANDLER)
+    // Expects Urho3D_AssertHandler to be implemented and available.
+    #define UH_ASSERT_HANDLER(MSG_, SRC_, LOC_) Urho3D_AssertHandler(MSG_, SRC_, LOC_)
+#endif
+
+/*
  * Assertion macros, if required and allowed.
 */
 
@@ -1414,18 +1443,18 @@
     // MSVC has only _wassert. MinGW switches between _wassert and _assert when _UNICODE macro definition is present (or not).
     #ifdef UH_MSC
         // Invoke the assert handler only if the expression `e` yields a false value
-        #define UH_ASSERT(e) (void)((!!(e)) || (Urho3D_AssertHandler(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__), 0));
+        #define UH_ASSERT(e) (void)((!!(e)) || (UH_ASSERT_HANDLER(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__), 0));
         // Invoke the assert handler only if both the primary expression `e` and exclusion expression `ex` yield a false value (allows to include an exception case to the primary expression)
-        #define UH_ASSERT_EX(e, ex) (void)((!!((e) || (ex))) || (Urho3D_AssertHandler(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__), 0));
+        #define UH_ASSERT_EX(e, ex) (void)((!!((e) || (ex))) || (UH_ASSERT_HANDLER(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__), 0));
         // Forcefully invoke the assert handler without deppending the expression to trigger it
-        #define UH_ASSERT_NOW(e) Urho3D_AssertHandler(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__);
+        #define UH_ASSERT_NOW(e) UH_ASSERT_HANDLER(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__);
     #else
         // Invoke the assert handler only if the expression `e` yields a false value
-        #define UH_ASSERT(e) (UH_LIKELY(!!(e)) ? void(0) : []() { Urho3D_AssertHandler(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__); }());
+        #define UH_ASSERT(e) (UH_LIKELY(!!(e)) ? void(0) : []() { UH_ASSERT_HANDLER(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__); }());
         // Invoke the assert handler only if both the primary expression `e` and exclusion expression `ex` yield a false value (allows to include an exception case to the primary expression)
-        #define UH_ASSERT_EX(e, ex) (UH_LIKELY(!!((e) || (ex))) ? void(0) : []() { Urho3D_AssertHandler(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__); }());
+        #define UH_ASSERT_EX(e, ex) (UH_LIKELY(!!((e) || (ex))) ? void(0) : []() { UH_ASSERT_HANDLER(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__); }());
         // Forcefully invoke the assert handler without deppending the expression to trigger it
-        #define UH_ASSERT_NOW(e) Urho3D_AssertHandler(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__);
+        #define UH_ASSERT_NOW(e) UH_ASSERT_HANDLER(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__);
     #endif
     // Evaluate the specified expression `e`
     #define UH_ASSERT_ONLY(e) e
@@ -1512,21 +1541,3 @@
    #define UH_STRICMP(a,b) strcasecmp(a,b)
    #define UH_STRNICMP(a,b,n) strncasecmp(a,b,n)
 #endif
-
-
-namespace Urho3D {
-
-static_assert(sizeof(char) == 1, "sizeof(char) != 1");
-static_assert(sizeof(short) == 2, "sizeof(short) != 2");
-static_assert(sizeof(int) == 4, "sizeof(int) != 4");
-static_assert(sizeof(long long) == 8, "sizeof(long long) != 8");
-static_assert(sizeof(long) == UH_LONG_SELECT(4, 8), UH_LONG_SELECT("sizeof(long) != 4", "sizeof(long) != 8"));
-
-/**  */
-typedef uint8_t             Byte;
-/**  */
-typedef UH_CHAR8_TYPE       Char8;
-/**  */
-typedef int                 ErrNo;
-
-} // Namespace:: Urho3D

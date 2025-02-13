@@ -25,7 +25,10 @@ cmake_minimum_required (VERSION 3.21)
 
 # Set C++ standard
 if (NOT DEFINED CMAKE_CXX_STANDARD)
-    set (CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD 20)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+elseif(CMAKE_CXX_STANDARD LESS 20)
+    message( FATAL_ERROR "At least C++20 is required." )
 endif ()
 
 # Set project name and languages
