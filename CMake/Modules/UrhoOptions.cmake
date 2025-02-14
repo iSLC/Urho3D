@@ -107,6 +107,7 @@ option(URHO3D_SAMPLES                           "Build samples"                 
 cmake_dependent_option(URHO3D_MERGE_STATIC_LIBS "Merge third party dependency libs to Urho3D.a"         OFF "NOT BUILD_SHARED_LIBS"                          OFF)
 option(URHO3D_NO_EDITOR_PLAYER_EXE              "Do not build editor or player executables."            OFF)
 option(URHO3D_SSL                               "Enable OpenSSL support"                                OFF)
+option(URHO3D_WITH_CCACHE                       "Enable CCache support"                                 ON)
 
 if (WIN32)
     set(URHO3D_GRAPHICS_API D3D11 CACHE STRING "Graphics API")
