@@ -58,6 +58,26 @@ elif [ -z "$ci_sdk_dir" ]; then
     export ci_sdk_dir="$SdkDir"
 fi
 
+# windows|linux|macos|android|ios
+if [ -z "$ci_platform" ]; then
+    case "$OSTYPE" in
+        cygwin*)    ci_platform="windows" ;;
+        msys*)      ci_platform="windows" ;;
+        win32*)     ci_platform="windows" ;;
+        linux*)     ci_platform="linux" ;;
+        darwin*)    ci_platform="macos" ;;
+    esac
+fi
+
+# x86|x64|arm|arm64
+if [ -z "$ci_arch" ]; then
+    case $(uname -m) in
+        i386 | i686)    ci_arch="x86" ;;
+        x86_64)         ci_arch="x64" ;;
+        arm)            dpkg --print-architecture | grep -q "arm64" && ci_arch="arm64" || ci_arch="arm" ;;
+    esac
+fi
+
 # default values
 ci_compiler=${ci_compiler:-"default"}
 ci_build_type=${ci_build_type:-"rel"}
