@@ -3826,7 +3826,7 @@ if (NOT MINI_URHO)
   # Install headers for building and using the Urho3D library (install dependency for InputEvents.h)
   install (DIRECTORY include/ DESTINATION ${DEST_THIRDPARTY_HEADERS_DIR}/SDL/ FILES_MATCHING PATTERN *.h)    # Note: the trailing slash is significant
   install (FILES
-    "${SDL2_BINARY_DIR}/include/SDL_revision.h"
+    "${SDL2_BINARY_DIR}/include/SDL2/SDL_revision.h"
     #"${SDL2_BINARY_DIR}/include-config-$<LOWER_CASE:$<CONFIG>>/SDL_config.h"
     DESTINATION ${DEST_THIRDPARTY_HEADERS_DIR}/SDL)
 
