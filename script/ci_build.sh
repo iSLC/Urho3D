@@ -12,6 +12,7 @@
 # ci_source_dir:   source code directory
 # ci_build_dir:    cmake cache directory
 # ci_sdk_dir:      sdk installation directory
+# ci_with_ccache:  true|false
 
 ci_action=$1; shift;
 ci_cmake_params_user="$@"
@@ -78,6 +79,11 @@ if [ -z "$ci_arch" ]; then
     esac
 fi
 
+# default with ccache
+if [ -z "$ci_with_ccache" ]; then
+    ci_with_ccache=true
+fi
+
 # default values
 ci_compiler=${ci_compiler:-"default"}
 ci_build_type=${ci_build_type:-"rel"}
@@ -103,6 +109,7 @@ echo "ci_source_dir=$ci_source_dir"
 echo "ci_build_dir=$ci_build_dir"
 echo "ci_sdk_dir=$ci_sdk_dir"
 echo "ci_gfx_backend=$ci_gfx_backend"
+echo "ci_with_ccache=$ci_with_ccache"
 
 declare -A build_types=(
     [dbg]='Debug'
@@ -208,19 +215,34 @@ function action-dependencies() {
 
         # Common dependencies
         sudo apt-get update
-        sudo apt-get install -y ninja-build ccache xvfb "${dev_packages[@]}"
+
+        if [ "$ci_with_ccache" = true ]; then
+            sudo apt-get install -y ninja-build ccache xvfb "${dev_packages[@]}"
+        else
+            sudo apt-get install -y ninja-build xvfb "${dev_packages[@]}"
+        fi
     elif [[ "$ci_platform" == "android" ]];
     then
         # android dependencies
-        sudo apt-get install -y --no-install-recommends uuid-dev ninja-build ccache
+        if [ "$ci_with_ccache" = true ]; then
+            sudo apt-get install -y --no-install-recommends uuid-dev ninja-build ccache
+        else
+            sudo apt-get install -y --no-install-recommends uuid-dev ninja-build
+        fi
     elif [[ "$ci_platform" == "macos" || "$ci_platform" == "ios" ]];
     then
         # iOS/MacOS dependencies
-        brew install pkg-config ccache
+        if [ "$ci_with_ccache" = true ]; then
+            brew install pkg-config ccache
+        else
+            brew install pkg-config
+        fi
     elif [[ "$ci_platform" == "windows" && "$ci_compiler" != "mingw" ]];
     then
         # Windows dependencies
-        choco install -y ccache
+        if [ "$ci_with_ccache" = true ]; then
+            choco install -y ccache
+        fi
     fi
 }
 
@@ -260,10 +282,12 @@ function action-generate() {
 
     if [[ "$ci_compiler" != "msvc" ]];
     then
-        ci_cmake_params+=(
-            "-DCMAKE_C_COMPILER_LAUNCHER=ccache"
-            "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
-        )
+        if [ "$ci_with_ccache" = true ]; then
+            ci_cmake_params+=(
+                "-DCMAKE_C_COMPILER_LAUNCHER=ccache"
+                "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
+            )
+        fi
     fi
 
     # if not specified, let cmake pick the default
@@ -276,6 +300,10 @@ function action-generate() {
 
     ci_cmake_params+=(${ci_cmake_params_user[@]})
     ci_cmake_params+=(-B $ci_build_dir -S "$ci_source_dir")
+
+    ci_cmake_params+=(
+        "-DURHO3D_WITH_CCACHE=${ci_with_ccache}"
+    )
 
     echo "${ci_cmake_params[@]}"
     cmake "${ci_cmake_params[@]}"
@@ -291,18 +319,26 @@ function action-build() {
       NUMBER_OF_PROCESSORS=$(nproc)
     fi
 
-    ccache -s
-    cmake --build $ci_build_dir --parallel $NUMBER_OF_PROCESSORS --config "${build_types[$ci_build_type]}" && \
-    ccache -s
+    if [ "$ci_with_ccache" = true ]; then
+        ccache -s
+        cmake --build $ci_build_dir --parallel $NUMBER_OF_PROCESSORS --config "${build_types[$ci_build_type]}" && \
+        ccache -s
+    else
+        cmake --build $ci_build_dir --parallel $NUMBER_OF_PROCESSORS --config "${build_types[$ci_build_type]}"
+    fi
 }
 
 # Custom compiler build paths used only on windows.
 function action-build-msvc() {
-    ccache_path=$(realpath /c/ProgramData/chocolatey/lib/ccache/tools/ccache-*)
-    cp $ccache_path/ccache.exe $ccache_path/cl.exe  # https://github.com/ccache/ccache/wiki/MS-Visual-Studio
-    $ccache_path/ccache.exe -s
-    cmake --build $ci_build_dir --config "${build_types[$ci_build_type]}" -- -r -maxcpucount:$NUMBER_OF_PROCESSORS -p:TrackFileAccess=false -p:UseMultiToolTask=true -p:CLToolPath=$ccache_path && \
-    $ccache_path/ccache.exe -s
+    if [ "$ci_with_ccache" = true ]; then
+        ccache_path=$(realpath /c/ProgramData/chocolatey/lib/ccache/tools/ccache-*)
+        cp $ccache_path/ccache.exe $ccache_path/cl.exe  # https://github.com/ccache/ccache/wiki/MS-Visual-Studio
+        $ccache_path/ccache.exe -s
+        cmake --build $ci_build_dir --config "${build_types[$ci_build_type]}" -- -r -maxcpucount:$NUMBER_OF_PROCESSORS -p:TrackFileAccess=false -p:UseMultiToolTask=true -p:CLToolPath=$ccache_path && \
+        $ccache_path/ccache.exe -s
+    else
+        cmake --build $ci_build_dir --config "${build_types[$ci_build_type]}" -- -r -maxcpucount:$NUMBER_OF_PROCESSORS -p:TrackFileAccess=false -p:UseMultiToolTask=true
+    fi
 }
 
 function action-build-mingw() {
@@ -312,10 +348,16 @@ function action-build-mingw() {
 # Custom platform build paths used only on android.
 function action-build-android() {
     cd $ci_source_dir/android
-    ccache -s
-    gradle wrapper                                && \
-    ./gradlew "${android_types[$ci_build_type]}"  && \
-    ccache -s
+
+    if [ "$ci_with_ccache" = true ]; then
+        ccache -s
+        gradle wrapper                                && \
+        ./gradlew "${android_types[$ci_build_type]}"  && \
+        ccache -s
+    else
+        gradle wrapper                                && \
+        ./gradlew "${android_types[$ci_build_type]}"
+    fi
 }
 
 function action-install() {
