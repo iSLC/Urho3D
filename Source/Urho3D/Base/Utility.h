@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "../Urho3DBase.h"
+
 #include <utility>
 #include <type_traits>
 
