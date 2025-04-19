@@ -84,9 +84,9 @@ template < class T, size_t N > struct Array
     [[nodiscard]] constexpr bool Empty() const noexcept { return false; }
 
     /// Assigns the given value value to all elements in the container.
-    template < class U = T, EnableIf_t<
-        IsAssignable_v< T &, const U & >
-    , bool > = true > constexpr void Fill(const U & v) noexcept
+    template < class U = T >
+    requires std::assignable_from< T &, const U & >
+    constexpr void Fill(const U & v) noexcept
     {
     #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED)
         // Can we use a built-in MemCpy operation?
@@ -277,9 +277,9 @@ template < class T > struct Array< T, 0 >
     [[nodiscard]] constexpr bool Empty() const noexcept { return true; }
 
     /// Assigns the given value value to all elements in the container. Does nothing for empty arrays.
-    template < class U = T, EnableIf_t<
-        IsAssignable_v< T &, const U & >
-    , bool > = true > constexpr void Fill(const U & v [[maybe_unused]]) noexcept { }
+    template < class U = T >
+    requires std::assignable_from< T &, const U & >
+    constexpr void Fill(const U & v [[maybe_unused]]) noexcept { }
     /// Exchanges the contents of the container with those of other. Does nothing for empty arrays.
     constexpr void Swap(Array & o [[maybe_unused]]) noexcept { }
     /// Exchanges the contents of the container with those of a raw array of the same size. Does nothing for empty arrays.

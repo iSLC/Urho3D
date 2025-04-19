@@ -17,7 +17,6 @@ extern "C" {
 
 #ifdef __cplusplus
   #ifndef UH_SUPPORTS_CPP23
-        #pragma message "Value of __cplusplus is: " UH_STRINGIZEWRAP(__cplusplus)
         #warning This compiler does not support or have enabled the C++23 standard.
   #endif
 #endif
