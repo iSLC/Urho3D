@@ -52,7 +52,7 @@
 #endif
 
 // Urho3D: Custom export logic to facilitate exporting lib API from main engine dll.
-#if _WIN32
+#if defined(_WIN32) && _WIN32 > 0
 #   if defined(SDL_EXPORTS)
 #       define DECLSPEC __declspec(dllexport)
 #   elif defined(SDL_IMPORTS)
@@ -60,7 +60,7 @@
 #	else
 #		define DECLSPEC
 #   endif
-#elif SDL_EXPORTS || SDL_IMPORTS
+#elif (defined(SDL_EXPORTS) && SDL_EXPORTS > 0) || (defined(SDL_IMPORTS) && SDL_IMPORTS > 0)
 #   define DECLSPEC __attribute__((visibility("default")))
 #else
 #   define DECLSPEC
