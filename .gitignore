@@ -115,3 +115,6 @@ CMakeDoxygenDefaults.cmake
 
 # Don't hide the Doctest cmake folder
 !/Source/ThirdParty/Doctest/cmake/*
+
+.stignore
+.stfolder/*
