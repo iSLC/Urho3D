@@ -26,7 +26,11 @@ extern "C" {
 #endif
 
 /// Causes abnormal program termination unless SIGABRT is being caught by a signal handler and the handler does not return.
-void __attribute__((noreturn)) Urho3D_AbortProgram();
+#ifdef _MSC_VER
+void __declspec(noreturn) Urho3D_AbortProgram();
+#else
+    void __attribute__((noreturn)) Urho3D_AbortProgram();
+#endif
 
 /// Custom assert handler fired by the UH_ASSERT... macros. It includes the source and location where it 
 void Urho3D_AssertHandler(const UH_MSC_COMPAT_OR(wchar_t, UH_WINDOWS_UNICODE_OR(wchar_t, char)) * msg, const UH_MSC_COMPAT_OR(wchar_t, UH_WINDOWS_UNICODE_OR(wchar_t, char)) * src, unsigned loc);
