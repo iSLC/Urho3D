@@ -25,11 +25,12 @@ cmake_minimum_required (VERSION 3.21)
 
 # Set C++ standard
 if (NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 20)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-elseif(CMAKE_CXX_STANDARD LESS 20)
-    message( FATAL_ERROR "At least C++20 is required." )
+    set(CMAKE_CXX_STANDARD 23)
+endif()
+if(CMAKE_CXX_STANDARD LESS 23)
+    message( FATAL_ERROR "At least C++23 is required." )
 endif ()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Set project name and languages
 project (Urho3D C CXX)
@@ -42,7 +43,9 @@ endif ()
 set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/CMake/Modules)
 
 # Include file that sets up ccache.
-include(CCache)
+if (URHO3D_WITH_CCACHE)
+    include(CCache)
+endif()
 
 # Include file that sets up all configurable properties
 include(UrhoOptions)
