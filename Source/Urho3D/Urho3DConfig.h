@@ -257,7 +257,7 @@
 */
 
 // C == 89
-#if UH_C_STANDARD == UH_C89_STANDARD
+#if (UH_C_STANDARD == UH_C89_STANDARD)
     #define UH_C89_ONLY(x) x
     #define UH_C99_ONLY(x)
     #define UH_C11_ONLY(x)
@@ -271,7 +271,7 @@
     #define UH_EXCEPT_C23(x) x
     #define UH_EXCEPT_C29(x) x
 // C == 99
-#elif UH_C_STANDARD == UH_C99_STANDARD
+#elif (UH_C_STANDARD > UH_C89_STANDARD) && (UH_C_STANDARD <= UH_C99_STANDARD)
     #define UH_C89_ONLY(x)
     #define UH_C99_ONLY(x) x
     #define UH_C11_ONLY(x)
@@ -285,7 +285,7 @@
     #define UH_EXCEPT_C23(x) x
     #define UH_EXCEPT_C29(x) x
 // C == 11
-#elif UH_C_STANDARD == UH_C11_STANDARD
+#elif (UH_C_STANDARD > UH_C99_STANDARD) && (UH_C_STANDARD <= UH_C11_STANDARD)
     #define UH_C89_ONLY(x)
     #define UH_C99_ONLY(x)
     #define UH_C11_ONLY(x) x
@@ -299,7 +299,7 @@
     #define UH_EXCEPT_C23(x) x
     #define UH_EXCEPT_C29(x) x
 // C == 17
-#elif UH_C_STANDARD == UH_C17_STANDARD
+#elif (UH_C_STANDARD > UH_C11_STANDARD) && (UH_C_STANDARD <= UH_C17_STANDARD)
     #define UH_C89_ONLY(x)
     #define UH_C99_ONLY(x)
     #define UH_C11_ONLY(x)
@@ -313,7 +313,7 @@
     #define UH_EXCEPT_C23(x) x
     #define UH_EXCEPT_C29(x) x
 // C == 23
-#elif UH_C_STANDARD == UH_C23_STANDARD
+#elif (UH_C_STANDARD > UH_C17_STANDARD) && (UH_C_STANDARD <= UH_C23_STANDARD)
     #define UH_C89_ONLY(x)
     #define UH_C99_ONLY(x)
     #define UH_C11_ONLY(x)
@@ -327,7 +327,7 @@
     #define UH_EXCEPT_C23(x)
     #define UH_EXCEPT_C29(x) x
 // C == 29
-#elif UH_C_STANDARD == UH_C29_STANDARD
+#elif (UH_C_STANDARD > UH_C23_STANDARD) && (UH_C_STANDARD <= UH_C29_STANDARD)
     #define UH_C89_ONLY(x)
     #define UH_C99_ONLY(x)
     #define UH_C11_ONLY(x)
@@ -348,7 +348,7 @@
 #endif
 
 // C >= 89/99/11/17/23/29+
-#if UH_C_STANDARD >= UH_C29_STANDARD
+#if UH_C_STANDARD > UH_C23_STANDARD
     #define UH_LEAST_C89(x) x
     #define UH_LEAST_C99(x) x
     #define UH_LEAST_C11(x) x
@@ -361,8 +361,14 @@
     #define UH_LEAST_C17_OR(x, y) x
     #define UH_LEAST_C23_OR(x, y) x
     #define UH_LEAST_C29_OR(x, y) x
+    #define UH_SUPPORTS_C89 1
+    #define UH_SUPPORTS_C99 1
+    #define UH_SUPPORTS_C11 1
+    #define UH_SUPPORTS_C17 1
+    #define UH_SUPPORTS_C23 1
+    #define UH_SUPPORTS_C29 1
 // C >= 89/99/11/17/23+
-#elif UH_C_STANDARD >= UH_C23_STANDARD
+#elif UH_C_STANDARD > UH_C17_STANDARD
     #define UH_LEAST_C89(x) x
     #define UH_LEAST_C99(x) x
     #define UH_LEAST_C11(x) x
@@ -375,8 +381,13 @@
     #define UH_LEAST_C17_OR(x, y) x
     #define UH_LEAST_C23_OR(x, y) x
     #define UH_LEAST_C29_OR(x, y) y
+    #define UH_SUPPORTS_C89 1
+    #define UH_SUPPORTS_C99 1
+    #define UH_SUPPORTS_C11 1
+    #define UH_SUPPORTS_C17 1
+    #define UH_SUPPORTS_C23 1
 // C >= 89/99/11/17+
-#elif UH_C_STANDARD >= UH_C17_STANDARD
+#elif UH_C_STANDARD > UH_C11_STANDARD
     #define UH_LEAST_C89(x) x
     #define UH_LEAST_C99(x) x
     #define UH_LEAST_C11(x) x
@@ -389,8 +400,12 @@
     #define UH_LEAST_C17_OR(x, y) x
     #define UH_LEAST_C23_OR(x, y) y
     #define UH_LEAST_C29_OR(x, y) y
+    #define UH_SUPPORTS_C89 1
+    #define UH_SUPPORTS_C99 1
+    #define UH_SUPPORTS_C11 1
+    #define UH_SUPPORTS_C17 1
 // C >= 89/99/11+
-#elif UH_C_STANDARD >= UH_C11_STANDARD
+#elif UH_C_STANDARD > UH_C99_STANDARD
     #define UH_LEAST_C89(x) x
     #define UH_LEAST_C99(x) x
     #define UH_LEAST_C11(x) x
@@ -403,8 +418,11 @@
     #define UH_LEAST_C17_OR(x, y) y
     #define UH_LEAST_C23_OR(x, y) y
     #define UH_LEAST_C29_OR(x, y) y
+    #define UH_SUPPORTS_C89 1
+    #define UH_SUPPORTS_C99 1
+    #define UH_SUPPORTS_C11 1
 // C >= 89/99+
-#elif UH_C_STANDARD >= UH_C99_STANDARD
+#elif UH_C_STANDARD > UH_C89_STANDARD
     #define UH_LEAST_C89(x) x
     #define UH_LEAST_C99(x) x
     #define UH_LEAST_C11(x)
@@ -417,8 +435,10 @@
     #define UH_LEAST_C17_OR(x, y) y
     #define UH_LEAST_C23_OR(x, y) y
     #define UH_LEAST_C29_OR(x, y) y
+    #define UH_SUPPORTS_C89 1
+    #define UH_SUPPORTS_C99 1
 // C >= 89+
-#elif UH_C_STANDARD >= UH_C89_STANDARD
+#elif UH_C_STANDARD == UH_C89_STANDARD
     #define UH_LEAST_C89(x) x
     #define UH_LEAST_C99(x)
     #define UH_LEAST_C11(x)
@@ -431,6 +451,7 @@
     #define UH_LEAST_C17_OR(x, y) y
     #define UH_LEAST_C23_OR(x, y) y
     #define UH_LEAST_C29_OR(x, y) y
+    #define UH_SUPPORTS_C89 1
 // C < 89 (realistically, can't go lower than this!)
 #else
     #error Unknown or unsupported C standard.
@@ -452,7 +473,7 @@
 
 /*
  * Macros with identifiers of C++ version. What `__cplusplus` is defined to be.
- * Don't really need anything lower than C++20, but they're added for consistency.
+ * Don't really need anything lower than C++23, but they're added for consistency.
 */
 
 #define UH_CPP98_STANDARD (199711L) // GCC/Clang: -std=c++98, -std=c++03
@@ -476,20 +497,11 @@
 #endif
 
 /*
- * Make sure C++20 standard is available. Superficial check as it doesn't take into account partial implementations.
- * Some compilers may cheat on standard support. They will be "blocked" later on in compiler detection.
-*/
-
-#if UH_CPP_STANDARD < UH_CPP20_STANDARD
-    #error This compiler does not support or have enabled the C++20 standard.
-#endif
-
-/*
  * Expression selection based on available C++ standard.
 */
 
 // C++ == 98/03
-#if UH_CPP_STANDARD == UH_CPP98_STANDARD
+#if (UH_CPP_STANDARD == UH_CPP98_STANDARD)
     #define UH_CPP98_ONLY(x) x
     #define UH_CPP11_ONLY(x)
     #define UH_CPP14_ONLY(x)
@@ -505,7 +517,7 @@
     #define UH_EXCEPT_CPP23(x) x
     #define UH_EXCEPT_CPP26(x) x
 // C++ == 11
-#elif UH_CPP_STANDARD == UH_CPP11_STANDARD
+#elif (UH_CPP_STANDARD > UH_CPP98_STANDARD) && (UH_CPP_STANDARD <= UH_CPP11_STANDARD)
     #define UH_CPP98_ONLY(x)
     #define UH_CPP11_ONLY(x) x
     #define UH_CPP14_ONLY(x)
@@ -521,7 +533,7 @@
     #define UH_EXCEPT_CPP23(x) x
     #define UH_EXCEPT_CPP26(x) x
 // C++ == 14
-#elif UH_CPP_STANDARD == UH_CPP14_STANDARD
+#elif (UH_CPP_STANDARD > UH_CPP11_STANDARD) && (UH_CPP_STANDARD <= UH_CPP14_STANDARD)
     #define UH_CPP98_ONLY(x)
     #define UH_CPP11_ONLY(x)
     #define UH_CPP14_ONLY(x) x
@@ -537,7 +549,7 @@
     #define UH_EXCEPT_CPP23(x) x
     #define UH_EXCEPT_CPP26(x) x
 // C++ == 17
-#elif UH_CPP_STANDARD == UH_CPP17_STANDARD
+#elif (UH_CPP_STANDARD > UH_CPP14_STANDARD) && (UH_CPP_STANDARD <= UH_CPP17_STANDARD)
     #define UH_CPP98_ONLY(x)
     #define UH_CPP11_ONLY(x)
     #define UH_CPP14_ONLY(x)
@@ -553,7 +565,7 @@
     #define UH_EXCEPT_CPP23(x) x
     #define UH_EXCEPT_CPP26(x) x
 // C++ == 20
-#elif UH_CPP_STANDARD == UH_CPP20_STANDARD
+#elif (UH_CPP_STANDARD > UH_CPP17_STANDARD) && (UH_CPP_STANDARD <= UH_CPP20_STANDARD)
     #define UH_CPP98_ONLY(x)
     #define UH_CPP11_ONLY(x)
     #define UH_CPP14_ONLY(x)
@@ -569,7 +581,7 @@
     #define UH_EXCEPT_CPP23(x) x
     #define UH_EXCEPT_CPP26(x) x
 // C++ == 23
-#elif UH_CPP_STANDARD == UH_CPP23_STANDARD
+#elif (UH_CPP_STANDARD > UH_CPP20_STANDARD) && (UH_CPP_STANDARD <= UH_CPP23_STANDARD)
     #define UH_CPP98_ONLY(x)
     #define UH_CPP11_ONLY(x)
     #define UH_CPP14_ONLY(x)
@@ -585,7 +597,7 @@
     #define UH_EXCEPT_CPP23(x)
     #define UH_EXCEPT_CPP26(x) x
 // C++ == 26
-#elif UH_CPP_STANDARD == UH_CPP26_STANDARD
+#elif (UH_CPP_STANDARD > UH_CPP23_STANDARD) && (UH_CPP_STANDARD <= UH_CPP26_STANDARD)
     #define UH_CPP98_ONLY(x)
     #define UH_CPP11_ONLY(x)
     #define UH_CPP14_ONLY(x)
@@ -601,14 +613,14 @@
     #define UH_EXCEPT_CPP23(x) x
     #define UH_EXCEPT_CPP26(x)
 // C++ != 98/11/14/17/20/23/26
-#else
+#elif defined(__cplusplus)
     // This will blow up whenever the standard goes above what we know atm.
     // And needs to have values and macros updated to account for newer C++ standards.
     #error Unknown or unsupported C++ standard.
 #endif
 
 // C++ >= 11/14/17/20/23/26+
-#if UH_CPP_STANDARD >= UH_CPP26_STANDARD
+#if UH_CPP_STANDARD > UH_CPP23_STANDARD
     #define UH_LEAST_CPP98(x) x
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x) x
@@ -623,8 +635,15 @@
     #define UH_LEAST_CPP20_OR(x, y) x
     #define UH_LEAST_CPP23_OR(x, y) x
     #define UH_LEAST_CPP26_OR(x, y) x
+    #define UH_SUPPORTS_CPP98 1
+    #define UH_SUPPORTS_CPP11 1
+    #define UH_SUPPORTS_CPP14 1
+    #define UH_SUPPORTS_CPP17 1
+    #define UH_SUPPORTS_CPP20 1
+    #define UH_SUPPORTS_CPP23 1
+    #define UH_SUPPORTS_CPP26 1
 // C++ >= 11/14/17/20/23~
-#elif UH_CPP_STANDARD >= UH_CPP23_STANDARD
+#elif UH_CPP_STANDARD > UH_CPP20_STANDARD
     #define UH_LEAST_CPP98(x) x
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x) x
@@ -639,8 +658,14 @@
     #define UH_LEAST_CPP20_OR(x, y) x
     #define UH_LEAST_CPP23_OR(x, y) x
     #define UH_LEAST_CPP26_OR(x, y) y
+    #define UH_SUPPORTS_CPP98 1
+    #define UH_SUPPORTS_CPP11 1
+    #define UH_SUPPORTS_CPP14 1
+    #define UH_SUPPORTS_CPP17 1
+    #define UH_SUPPORTS_CPP20 1
+    #define UH_SUPPORTS_CPP23 1
 // C++ >= 11/14/17/20~
-#elif UH_CPP_STANDARD >= UH_CPP20_STANDARD
+#elif UH_CPP_STANDARD > UH_CPP17_STANDARD
     #define UH_LEAST_CPP98(x) x
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x) x
@@ -655,8 +680,13 @@
     #define UH_LEAST_CPP20_OR(x, y) x
     #define UH_LEAST_CPP23_OR(x, y) y
     #define UH_LEAST_CPP26_OR(x, y) y
+    #define UH_SUPPORTS_CPP98 1
+    #define UH_SUPPORTS_CPP11 1
+    #define UH_SUPPORTS_CPP14 1
+    #define UH_SUPPORTS_CPP17 1
+    #define UH_SUPPORTS_CPP20 1
 // C++ >= 11/14/17~
-#elif UH_CPP_STANDARD >= UH_CPP17_STANDARD
+#elif UH_CPP_STANDARD > UH_CPP14_STANDARD
     #define UH_LEAST_CPP98(x) x
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x) x
@@ -671,8 +701,12 @@
     #define UH_LEAST_CPP20_OR(x, y) y
     #define UH_LEAST_CPP23_OR(x, y) y
     #define UH_LEAST_CPP26_OR(x, y) y
+    #define UH_SUPPORTS_CPP98 1
+    #define UH_SUPPORTS_CPP11 1
+    #define UH_SUPPORTS_CPP14 1
+    #define UH_SUPPORTS_CPP17 1
 // C++ >= 11/14~
-#elif UH_CPP_STANDARD >= UH_CPP14_STANDARD
+#elif UH_CPP_STANDARD > UH_CPP11_STANDARD
     #define UH_LEAST_CPP98(x) x
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x) x
@@ -687,8 +721,11 @@
     #define UH_LEAST_CPP20_OR(x, y) y
     #define UH_LEAST_CPP23_OR(x, y) y
     #define UH_LEAST_CPP26_OR(x, y) y
+    #define UH_SUPPORTS_CPP98 1
+    #define UH_SUPPORTS_CPP11 1
+    #define UH_SUPPORTS_CPP14 1
 // C++ >= 11~
-#elif UH_CPP_STANDARD >= UH_CPP11_STANDARD
+#elif UH_CPP_STANDARD > UH_CPP98_STANDARD
     #define UH_LEAST_CPP98(x) x
     #define UH_LEAST_CPP11(x) x
     #define UH_LEAST_CPP14(x)
@@ -703,6 +740,8 @@
     #define UH_LEAST_CPP20_OR(x, y) y
     #define UH_LEAST_CPP23_OR(x, y) y
     #define UH_LEAST_CPP26_OR(x, y) y
+    #define UH_SUPPORTS_CPP98 1
+    #define UH_SUPPORTS_CPP11 1
 // C++ >= 98~
 #elif UH_CPP_STANDARD >= UH_CPP98_STANDARD
     #define UH_LEAST_CPP98(x)
@@ -719,8 +758,9 @@
     #define UH_LEAST_CPP20_OR(x, y) y
     #define UH_LEAST_CPP23_OR(x, y) y
     #define UH_LEAST_CPP26_OR(x, y) y
+    #define UH_SUPPORTS_CPP98 1
 // C++ < 98 (realistically, can't go lower than this!)
-#else
+#elif defined(__cplusplus)
     #error Unknown or unsupported C++ standard.
 #endif
 
@@ -1182,60 +1222,55 @@
     #define UH_CHAR8_SELECT(CV, OV) OV
 #endif
 
+// GNUC attribute support matching and non-matching selection macros
+// i.e.: __attribute__((...))
+#if defined(UH_GNUC) || defined(UH_CLANG)
+    #define UH_HAS_GNUC_ATTR 1
+    #define UH_GNUC_ATTR(VALUE) VALUE
+    #define UH_GNUC_ATTR_ONLY(VALUE) VALUE
+    #define UH_EXCEPT_GNUC_ATTR(VALUE)
+#else
+    #define UH_GNUC_ATTR(VALUE)
+    #define UH_GNUC_ATTR_ONLY(VALUE)
+    #define UH_EXCEPT_GNUC_ATTR(VALUE) VALUE
+#endif
+
+// Select the value according to the available GNUC attribute support.
+#define UH_GNUC_ATTR_OR(AV, OV) UH_GNUC_ATTR_ONLY(AV) UH_EXCEPT_GNUC_ATTR(OV)
+
 /*
- * Addition rounds to 0: zero, 1: nearest, 2: +inf, 3: -inf, -1: unknown.
+ * Debug or release mode code selection.
 */
-// ??? This is supposed to change with calls to fesetround in <fenv.h>.
-#ifndef UH_FLT_ROUNDS
-    #define UH_FLT_ROUNDS 1
-#endif
-// Whether `float` type can represent the special value "positive infinity"
-#ifdef __FLT_HAS_INFINITY__
-    #define UH_FLT_HAS_INFINITY __FLT_HAS_INFINITY__
-#elif defined(UH_MSC)
-    #define UH_FLT_HAS_INFINITY true
+
+#ifdef UH_IS_DEBUG
+    #define UH_DEBUG_ONLY(VALUE) VALUE
+    #define UH_EXCEPT_DEBUG(VALUE)
+    #define UH_RELEASE_ONLY(VALUE)
+    #define UH_EXCEPT_RELEASE(VALUE) VALUE
 #else
-    #error UH_FLT_HAS_INFINITY not implemented.
+    #define UH_DEBUG_ONLY(VALUE)
+    #define UH_EXCEPT_DEBUG(VALUE) VALUE
+    #define UH_RELEASE_ONLY(VALUE) VALUE
+    #define UH_EXCEPT_RELEASE(VALUE)
 #endif
-// Whether `double` type can represent the special value "positive infinity"
-#ifdef __DBL_HAS_INFINITY__
-    #define UH_DBL_HAS_INFINITY __DBL_HAS_INFINITY__
-#elif defined(UH_MSC)
-    #define UH_DBL_HAS_INFINITY true
+
+// Select the value according to the current build mode.
+#define UH_DEBUG_OR(DV, OV) UH_DEBUG_ONLY(DV) UH_EXCEPT_DEBUG(OV)
+#define UH_RELEASE_OR(RV, OV) UH_RELEASE_ONLY(RV) UH_EXCEPT_RELEASE(OV)
+
+/*
+ * Inline helpers.
+*/
+
+#if defined(UH_MSC)
+    #define UH_INLINE __forceinline
+    #define UH_NOINLINE
+#elif defined(UH_GNUC) || defined(UH_CLANG)
+    #define UH_INLINE __attribute__((always_inline))
+    #define UH_NOINLINE __attribute__((noinline))
 #else
-    #error UH_DBL_HAS_INFINITY not implemented.
-#endif
-// Whether `long double` type can represent the special value "positive infinity"
-#ifdef __LDBL_HAS_INFINITY__
-    #define UH_LDBL_HAS_INFINITY __LDBL_HAS_INFINITY__
-#elif defined(UH_MSC)
-    #define UH_LDBL_HAS_INFINITY true
-#else
-    #error UH_LDBL_HAS_INFINITY not implemented.
-#endif
-// Whether `float` type can represent the special value "quiet not-a-number" (NaN)
-#ifdef __FLT_HAS_QUIET_NAN__
-    #define UH_FLT_HAS_QUIET_NAN __FLT_HAS_QUIET_NAN__
-#elif defined(UH_MSC)
-    #define UH_FLT_HAS_QUIET_NAN true
-#else
-    #error UH_FLT_HAS_QUIET_NAN not implemented.
-#endif
-// Whether `double` type can represent the special value "quiet not-a-number" (NaN)
-#ifdef __DBL_HAS_QUIET_NAN__
-    #define UH_DBL_HAS_QUIET_NAN __DBL_HAS_QUIET_NAN__
-#elif defined(UH_MSC)
-    #define UH_DBL_HAS_QUIET_NAN true
-#else
-    #error UH_DBL_HAS_QUIET_NAN not implemented.
-#endif
-// Whether `long double` type can represent the special value "quiet not-a-number" (NaN)
-#ifdef __LDBL_HAS_QUIET_NAN__
-    #define UH_LDBL_HAS_QUIET_NAN __LDBL_HAS_QUIET_NAN__
-#elif defined(UH_MSC)
-    #define UH_LDBL_HAS_QUIET_NAN true
-#else
-    #error UH_LDBL_HAS_QUIET_NAN not implemented.
+    #define UH_INLINE inline
+    #define UH_NOINLINE
 #endif
 
 /*
@@ -1266,21 +1301,6 @@
         // This is the minimum possible value
         #define UH_CACHELINE_SIZE 64
     #endif
-#endif
-
-/*
- * Inline helpers.
-*/
-
-#if defined(UH_MSC)
-    #define UH_INLINE __forceinline
-    #define UH_NOINLINE
-#elif defined(UH_GNUC) || defined(UH_CLANG)
-    #define UH_INLINE __attribute__((always_inline))
-    #define UH_NOINLINE __attribute__((noinline))
-#else
-    #define UH_INLINE inline
-    #define UH_NOINLINE
 #endif
 
 /*
@@ -1364,180 +1384,4 @@
     #define UH_HAVE_MSVC_INTRINSIC 1
 #else
     #define UH_MSVC_INTRINSIC
-#endif
-
-/*
- * String small size optimization [SSO].
-*/
-
-// If not explicitly enabled then enable it by default on x64
-#if !defined(UH_STRING_SSO_OPTIMIZATION) && defined(UH64)
-    #define UH_STRING_SSO_OPTIMIZATION 1
-#endif
-
-#ifdef UH_STRING_SSO_OPTIMIZATION
-    #define UH_STRING_SSO_ONLY(VALUE) VALUE
-    #define UH_EXCEPT_STRING_SSO(VALUE)
-#else
-    #define UH_STRING_SSO_ONLY(VALUE)
-    #define UH_EXCEPT_STRING_SSO(VALUE) VALUE
-#endif
-
-// Select the value according to the selected string implementation.
-#define UH_STRING_SSO_OR(SV, HV) UH_STRING_SSO_ONLY(SV) UH_EXCEPT_STRING_SSO(HV)
-
-/*
- * Unreachable code. Mark code paths that are known to not be reached.
-*/
-
-// GCC 4.8+, Clang, Intel and other compilers compatible with GCC
-#if defined(UH_GNUC) || defined(UH_CLANG)
-    #ifndef __cplusplus
-        void Urho3D_Unreachable() __attribute__((noreturn));
-    #endif
-    UH_CPP11([[noreturn]]) inline __attribute__((always_inline)) void Urho3D_Unreachable() { __builtin_unreachable(); }
-    #define UH_UNREACHABLE Urho3D_Unreachable();
-// MSVC
-#elif defined(UH_MSC)
-    UH_CPP11([[noreturn]]) __forceinline __declspec(noreturn) void Urho3D_Unreachable() { __assume(false); }
-    #define UH_UNREACHABLE Urho3D_Unreachable();
-// Failsafe
-#else
-    #define UH_UNREACHABLE UH_ASSERT(0) // TODO: do a better job that works in release mode as well
-#endif
-
-/*
- * Debug or release mode code selection.
-*/
-
-#ifdef UH_IS_DEBUG
-    #define UH_DEBUG_ONLY(VALUE) VALUE
-    #define UH_EXCEPT_DEBUG(VALUE)
-    #define UH_RELEASE_ONLY(VALUE)
-    #define UH_EXCEPT_RELEASE(VALUE) VALUE
-#else
-    #define UH_DEBUG_ONLY(VALUE)
-    #define UH_EXCEPT_DEBUG(VALUE) VALUE
-    #define UH_RELEASE_ONLY(VALUE) VALUE
-    #define UH_EXCEPT_RELEASE(VALUE)
-#endif
-
-// Select the value according to the current build mode.
-#define UH_DEBUG_OR(DV, OV) UH_DEBUG_ONLY(DV) UH_EXCEPT_DEBUG(OV)
-#define UH_RELEASE_OR(RV, OV) UH_RELEASE_ONLY(RV) UH_EXCEPT_RELEASE(OV)
-
-/*
- * Assertion handler. Allow the assert handler to be customized.
-*/
-
-#if !defined(UH_ASSERT_HANDLER)
-    // Expects Urho3D_AssertHandler to be implemented and available.
-    #define UH_ASSERT_HANDLER(MSG_, SRC_, LOC_) Urho3D_AssertHandler(MSG_, SRC_, LOC_)
-#endif
-
-/*
- * Assertion macros, if required and allowed.
-*/
-
-#if defined(UH_IS_DEBUG) && !defined(UH_NO_ASSERT)
-    // MSVC has only _wassert. MinGW switches between _wassert and _assert when _UNICODE macro definition is present (or not).
-    #ifdef UH_MSC
-        // Invoke the assert handler only if the expression `e` yields a false value
-        #define UH_ASSERT(e) (void)((!!(e)) || (UH_ASSERT_HANDLER(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__), 0));
-        // Invoke the assert handler only if both the primary expression `e` and exclusion expression `ex` yield a false value (allows to include an exception case to the primary expression)
-        #define UH_ASSERT_EX(e, ex) (void)((!!((e) || (ex))) || (UH_ASSERT_HANDLER(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__), 0));
-        // Forcefully invoke the assert handler without deppending the expression to trigger it
-        #define UH_ASSERT_NOW(e) UH_ASSERT_HANDLER(UH_CONCAT_(L, #e), UH_CONCAT_(L, __FILE__), __LINE__);
-    #else
-        // Invoke the assert handler only if the expression `e` yields a false value
-        #define UH_ASSERT(e) (UH_LIKELY(!!(e)) ? void(0) : []() { UH_ASSERT_HANDLER(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__); }());
-        // Invoke the assert handler only if both the primary expression `e` and exclusion expression `ex` yield a false value (allows to include an exception case to the primary expression)
-        #define UH_ASSERT_EX(e, ex) (UH_LIKELY(!!((e) || (ex))) ? void(0) : []() { UH_ASSERT_HANDLER(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__); }());
-        // Forcefully invoke the assert handler without deppending the expression to trigger it
-        #define UH_ASSERT_NOW(e) UH_ASSERT_HANDLER(UH_WAPIS(#e), UH_WAPIS(__FILE__), __LINE__);
-    #endif
-    // Evaluate the specified expression `e`
-    #define UH_ASSERT_ONLY(e) e
-    // Does nothing
-    #define UH_EXCEPT_ASSERT(e)
-    // Indicates that assert is enabled
-    #define UH_ASSERT_ENABLED 1
-    // Create the variable `x` of type `t`
-    #define UH_ASSERT_VAR_DEFINE(t, x) t x;
-    // Create the variable `x` of type `t` and store the value from `v` into it
-    #define UH_ASSERT_VAR_CREATE(t, x, v) t x [[maybe_unused]] = v;
-    // Invoke the constructor of a variable `x` of type `t` with the specified arguments.
-    #define UH_ASSERT_VAR_CONSTRUCT(t, x, ...) t x(##__VA_ARGS__) [[maybe_unused]];
-    // Generate the value `v` then create and store it in the specified variable `x` of type `t`
-    // Difference between this and UH_ASSERT_VAR_CREATE is that this one generates the value in non-debug mode.
-    #define UH_ASSERT_VALUE(t, x, v) UH_ASSERT_VAR_CREATE(t, x, v)
-    // Generate the value `v` and store it in the specified variable `x`
-    #define UH_ASSERT_STORE(x, v) x = v;
-    // Create an isolated scope for the following operations to not worry about naming conflicts
-    // Generate the value `v` then create and store it in the specified variable `x` of type `t`
-    // Finally, run the specified assert expression `e` and assert on the result
-    #define UH_ASSERT_SCOPE(t, x, e, v) { UH_ASSERT_VAR_CREATE(t, x, v) UH_ASSERT(e) }
-    // Provide the statement `s`. Closing semicolon added automatically.
-    #define UH_ASSERT_STMT(s) s;
-    // Assert on the specified expression `e`
-    #define UH_ASSERT_OR(e, s) UH_ASSERT(e)
-    // Assert on the specified expression `e`
-    #define UH_ASSERT_OR_LEAVE(e, v) UH_ASSERT(e)
-    // Assert on the specified expression `e`
-    #define UH_ASSERT_OR_YIELD(e, v) UH_ASSERT(e)
-    // Assert on the specified expression `e`
-    #define UH_ASSERT_OR_ABORT(e) UH_ASSERT(e)
-    // Generate the value `v` then create and store it in the specified variable `x` of type `t`
-    // Run the specified assert expression `e` and assert on the result
-    // If the expression `e` did not trigger an assert, return the value stored in `x` and returned
-    #define UH_ASSERT_AND_RETURN(t, x, e, v) UH_ASSERT_VALUE(t, x, v) UH_ASSERT(e) return x;
-#else
-    // Does nothing
-    #define UH_ASSERT(e)
-    // Does nothing
-    #define UH_ASSERT_EX(e, ex)
-    // Does nothing
-    #define UH_ASSERT_NOW(e)
-    // Does nothing
-    #define UH_ASSERT_ONLY(e)
-    // Evaluate the specified expression `e`
-    #define UH_EXCEPT_ASSERT(e) e
-    // Indicates that assert is disabled
-    #undef UH_ASSERT_ENABLED
-    // Does nothing
-    #define UH_ASSERT_VAR_DEFINE(t, x)
-    // Does nothing
-    #define UH_ASSERT_VAR_CREATE(t, x, v)
-    // Does nothing
-    #define UH_ASSERT_VAR_CONSTRUCT(t, x, ...)
-    // Only generate the value `v` but do not bother storing it in anything
-    #define UH_ASSERT_VALUE(t, x, v) v;
-    // Only generate the value `v` but do not bother storing it in anything
-    #define UH_ASSERT_STORE(x, v) v;
-    // Only generate the value `v` but do not bother storing it in anything
-    #define UH_ASSERT_SCOPE(t, x, e, v) v;
-    // Don't provide the specified statement `s`
-    #define UH_ASSERT_STMT(s)
-    // Process the statement `s` if the expression `s` would've triggered an assertion
-    #define UH_ASSERT_OR(e, s) if (UH_UNLIKELY(!(e))) s;
-    // Return from the current function if the expression `s` would've triggered an assertion
-    #define UH_ASSERT_OR_LEAVE(e) if (UH_UNLIKELY(!(e))) return;
-    // Return a value from the current function if the expression `s` would've triggered an assertion
-    #define UH_ASSERT_OR_YIELD(e, v) if (UH_UNLIKELY(!(e))) return v;
-    // Abort the program if the expression `s` would've triggered an assertion
-    #define UH_ASSERT_OR_ABORT(e) if (UH_UNLIKELY(!(e))) AbortProgram();
-    // Simply return a value from the current function.
-    #define UH_ASSERT_AND_RETURN(t, x, e, v) return v;
-#endif
-
-/*
- * Case-insensitive string comparison. This may differ in name depending on the platform.
-*/
-
-#ifdef UH_WINDOWS
-   #define UH_STRICMP(a,b) stricmp(a,b)
-   #define UH_STRNICMP(a,b,n) strnicmp(a,b,n)
-#else
-   #define UH_STRICMP(a,b) strcasecmp(a,b)
-   #define UH_STRNICMP(a,b,n) strncasecmp(a,b,n)
 #endif

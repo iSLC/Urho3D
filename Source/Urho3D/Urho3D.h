@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "Urho3DConfig.h"
+#include "Urho3DBase.h"
 
 // @URHO3D_ENGINE_CONFIG@
 
