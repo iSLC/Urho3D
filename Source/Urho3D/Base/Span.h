@@ -6,6 +6,7 @@
 
 #include "../Base/Utility.h"
 #include "../Base/Iterator.h"
+#include "../Base/TypeUtils.h"
 
 namespace Urho3D {
 
@@ -90,17 +91,6 @@ template < class T > struct SpanStorage< T, DynamicExtent >
     }
 };
 
-/// Used to check if elements of a contiguous container are convertible to a specific type.
-template < class, class, class = void > struct IsContainerElementTypeCompatible : FalseType { };
-/// Specialization of \ref IsContainerElementTypeCompatible which recognizes if elements of two arrays are compatible.
-template < class T, class E > struct IsContainerElementTypeCompatible< T, E, std:::void_t< decltype(Data(declval< T >())) > >
-    : std::is_convertible< std::remove_pointer_t< decltype(Data(declval< T >())) > (*)[], E (*)[]> { };
-/// Utility used to check if a container does not have a specialized \ref Span constructor but can still be used with.
-/// For a container to be unspecialized it must not be a \ref Span or \ref Array type.
-/// For a container to be valid, `Data(declval< C >())` and `Size(declval< C >())` must be well-formed expressions.
-template < class C, class U = std::remove_cv_t< std::remove_reference_t< C > > > struct IsUnspecializedSpanContainer
-    : public BoolConstant< (!std::is_same_v< Span< U > > && !std::is_same_v< Array< U > > && UH_MSC_ONLY(!!)HasSizeAndData_v< C >) > { };
-
 /// Utility used to select the proper extent for the span returned from \ref SubSpan methods.
 template < size_t Extent, size_t Offset, size_t Count > [[nodiscard]] static constexpr size_t SubSpanExtent() noexcept
 {
@@ -120,6 +110,27 @@ template < size_t Extent, size_t Offset, size_t Count > [[nodiscard]] static con
 
 } // Namespace:: Impl
 
+namespace Concept {
+
+    /// Used to check if elements of a contiguous iterator are convertible to a specific type.
+    template < class T, class E >
+    concept ContainerElementTypeCompatible = std::contiguous_iterator < T > && std::is_convertible_v< std::iter_value_t< T > (*)[], E (*)[] >;
+
+    /// Used to check if elements of a contiguous container are convertible to a specific type.
+    template < class T, class E >
+    concept ContainerDataTypeCompatible = requires(T a)
+    {
+        { Data(a) } -> ContainerElementTypeCompatible< E >;
+    };
+
+    /// Utility used to check if a container does not have a specialized \ref Span constructor but can still be used with.
+    /// For a container to be unspecialized it must not be a \ref Span or \ref Array type.
+    /// For a container to be valid, `Data(declval< C >())` and `Size(declval< C >())` must be well-formed expressions.
+    template < class C >
+    concept UnspecializedSpanContainer = !DataView< C > && !ArrayContainer< C > && DataAndSize< C >;
+
+} // Namespace:: Concept
+
 /// Class template %Span describes an object that can refer to a contiguous sequence of objects with the first element
 /// of the sequence at position zero. A span can either have a static extent, in which case the number of elements
 /// in the sequence is known and encoded in the type, or a dynamic extent.
@@ -136,7 +147,7 @@ template < class T, size_t E > struct Span
     /// Whatever was given via template parameter \p T.
     using ElementType = T;
     /// Same as \ref ElementType but const or volatile qualifiers stripped away.
-    using ValueType = RemoveCV_t< T >;
+    using ValueType = std::remove_cv_t< T >;
     /// Same as \ref ElementType but with a pointer qualifier.
     using Pointer = ElementType *;
     /// Same as \ref Pointer but with a const qualifier.
@@ -157,16 +168,11 @@ template < class T, size_t E > struct Span
     ///  Whatever was given via template parameter \p E.
     static inline constexpr SizeType Extent = E;
 
-    /// Utility used in SFINAE checks to make sure this span has a dynamic extent.
-    using IsDynamic = BoolConstant< (E == DynamicExtent) >;
-    /// Utility used in SFINAE checks to make sure this span has a specific extent or is dynamic.
-    template < size_t Ex > using IsExtentOrDynamic = BoolConstant< (Extent == Ex || Extent == DynamicExtent) >;
-
     /// Default constructor. Initializes to an empty span.
     /// After construction, \ref Data() is equal to nullptr, and \ref Size() is equal to 0.
-    template < size_t Ex = Extent, std::enable_if_t<
-        ((Ex + 1u) <= 1u), int
-    > = 0 > constexpr Span() noexcept
+    template < size_t Ex = Extent >
+    requires ((Ex + 1u) <= 1u)
+    constexpr Span() noexcept
         : storage_()
     {
     }
@@ -195,45 +201,41 @@ template < class T, size_t E > struct Span
 
     /// Constructs a span that is a view over the array \p arr.
     /// After construction, \ref Data() is equal to \ref Data(arr), and \ref Size() is equal to \p N.
-    template < size_t N, EnableIf_t<
-        IsExtentOrDynamic< N >::value && std::is_convertible< ValueType(*)[], ElementType(*)[] >::value
-    , int > = 0 > constexpr Span(ElementType (&arr)[N]) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    template < size_t N >
+    requires (Extent == N || Extent == DynamicExtent) && std::convertible_to< ValueType(*)[], ElementType(*)[] >
+    constexpr Span(ElementType (&arr)[N]) noexcept
         : storage_(static_cast< Pointer >(arr), static_cast< SizeType >(N))
     { }
 
     /// Constructs a span that is a view over the array \p arr.
     /// After construction, \ref Data() is equal to \ref Data(arr), and \ref Size() is equal to \p N.
-    template < size_t N, EnableIf_t<
-        IsExtentOrDynamic< N >::value && std::is_convertible< ValueType(*)[], ElementType(*)[] >::value
-    , int > = 0 > constexpr Span(Array< ValueType, N > & arr) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    template < size_t N >
+    requires (Extent == N || Extent == DynamicExtent) && std::convertible_to< ValueType(*)[], ElementType(*)[] >
+    constexpr Span(Array< ValueType, N > & arr) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
         : storage_(static_cast< Pointer >(arr.Data()), static_cast< SizeType >(N))
     { }
 
     /// Constructs a span that is a view over the array \p arr.
     /// After construction, \ref Data() is equal to \ref Data(arr), and \ref Size() is equal to \p N.
-    template < size_t N, EnableIf_t<
-        IsExtentOrDynamic< N >::value && std::is_convertible< ValueType(*)[], ElementType(*)[] >::value
-    , int > = 0 > constexpr Span(const Array< ValueType, N > & arr) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    template < size_t N >
+    requires (Extent == N || Extent == DynamicExtent) && std::convertible_to< ValueType(*)[], ElementType(*)[] >
+    constexpr Span(const Array< ValueType, N > & arr) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
         : storage_(static_cast< Pointer >(arr.Data()), static_cast< SizeType >(N))
     { }
 
     /// Constructs a span that is a view over the container \p c.
     /// After construction, \ref Data() is equal to \ref Data(c), and \ref Size() is equal to \ref Size(c).
-    template < class C, EnableIf_t<
-        IsDynamic::value &&
-        Impl::IsUnspecializedSpanContainer< C >::value &&
-        Impl::IsContainerElementTypeCompatible< C &, ElementType >::value
-    , int > = 0 > constexpr Span(C & c) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    template < class C >
+    requires (E == DynamicExtent) && Concept::UnspecializedSpanContainer< C > && Concept::ContainerDataTypeCompatible< C &, ElementType >
+    constexpr Span(C & c) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
         : storage_(static_cast< Pointer >(Data(c)), static_cast< SizeType >(Size(c)))
     { }
 
     /// Constructs a span that is a view over the container \p c.
     /// After construction, \ref Data() is equal to \ref Data(c), and \ref Size() is equal to \ref Size(c).
-    template < class C, EnableIf_t<
-        IsDynamic::value &&
-        Impl::IsUnspecializedSpanContainer< C >::value &&
-        Impl::IsContainerElementTypeCompatible< const C &, ElementType >::value
-    , int > = 0 > constexpr Span(const C & c) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    template < class C >
+    requires (E == DynamicExtent) && Concept::UnspecializedSpanContainer< C > && Concept::ContainerDataTypeCompatible< const C &, ElementType >
+    constexpr Span(const C & c) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
         : storage_(static_cast< Pointer >(Data(c)), static_cast< SizeType >(Size(c)))
     { }
 
@@ -247,9 +249,9 @@ template < class T, size_t E > struct Span
 
     /// Construct a span from another span \p o.
     /// After construction, \ref Data() is equal to `o.Data()`, and \ref Size() is equal t `o.Size()`.
-    template < class OT, size_t OE, EnableIf_t<
-        IsExtentOrDynamic< OE >::value && IsConvertible_v< OT (*)[], ElementType (*)[] >
-    , int > = 0 > constexpr Span(Span< OT, OE > & o) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    template < class OT, size_t OE >
+    requires (Extent == OE || Extent == DynamicExtent) && std::convertible_to< OT (*)[], ElementType (*)[] >
+    constexpr Span(Span< OT, OE > & o) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
         : storage_(static_cast< Pointer >(o.Data()), o.Size())
     {
         if constexpr (Extent != DynamicExtent)
@@ -260,9 +262,9 @@ template < class T, size_t E > struct Span
 
     /// Construct a span from another span \p o.
     /// After construction, \ref Data() is equal to `o.Data()`, and \ref Size() is equal t `o.Size()`.
-    template < class OT, size_t OE, EnableIf_t<
-        IsExtentOrDynamic< OE >::value && IsConvertible_v< OT (*)[], ElementType (*)[] >
-    , int > = 0 > constexpr Span(const Span< OT, OE > & o) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+    template < class OT, size_t OE >
+    requires (Extent == OE || Extent == DynamicExtent) && std::convertible_to< OT (*)[], ElementType (*)[] >
+    constexpr Span(const Span< OT, OE > & o) noexcept // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
         : storage_(static_cast< Pointer >(o.Data()), o.Size())
     {
         if constexpr (Extent != DynamicExtent)
@@ -280,8 +282,9 @@ template < class T, size_t E > struct Span
 
     /// Assign a span that is a copy of another span \p o.
     /// After assignment, \ref Data() is equal to `o.Data()`, and \ref Size() is equal t `o.Size()`.
-    template < class OT, size_t OE > constexpr auto operator = (const Span< OT, OE > & o) noexcept // NOLINT(misc-unconventional-assign-operator)
-        -> EnableIf_t< IsExtentOrDynamic< OE >::value && IsConvertible_v< OT (*)[], ElementType (*)[] >, Span< T, E > > &
+    template < class OT, size_t OE >
+    requires (Extent == OE || Extent == DynamicExtent) && std::convertible_to< OT (*)[], ElementType (*)[] >
+    constexpr Span< T, E > operator = (const Span< OT, OE > & o) noexcept // NOLINT(misc-unconventional-assign-operator)
     {
         if constexpr (Extent != DynamicExtent)
         {
