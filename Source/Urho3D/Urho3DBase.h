@@ -17,7 +17,11 @@ extern "C" {
 
 #ifdef __cplusplus
   #ifndef UH_SUPPORTS_CPP23
-        #warning This compiler does not support or have enabled the C++23 standard.
+        #ifdef _MSC_VER
+            #pragma message("Compiler does not support or have enabled the C++23 standard.")
+        #else
+            #warning Compiler does not support or have enabled the C++23 standard.
+        #endif
   #endif
 #endif
 
