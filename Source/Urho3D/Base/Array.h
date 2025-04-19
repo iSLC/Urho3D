@@ -90,7 +90,7 @@ template < class T, size_t N > struct Array
     {
     #if defined(UH_HAVE_BUILTIN_IS_CONSTANT_EVALUATED)
         // Can we use a built-in MemCpy operation?
-        if constexpr (IsBinaryCompatible_v< T, U > && sizeof(T) == 1)
+        if constexpr (std::is_trivially_copyable_v< U > && sizeof(T) == 1)
         {
             // Can we do this at compile-time?
             if (__builtin_is_constant_evaluated())
@@ -131,7 +131,7 @@ namespace Impl {
 template < class T, size_t N > [[nodiscard]] constexpr bool ArrayEqual(const T (&a)[N], const T (&b)[N]) noexcept
 {
     // Can we get away with a bit-wise memory comparison?
-    if constexpr (IsIntegralPrimitive_v< T >)
+    if constexpr (std::is_integral_v< T > || std::is_pointer_v< T >)
     {
         return MemCmp(a, b, N) == 0;
     }
@@ -149,7 +149,7 @@ template < class T, size_t N > [[nodiscard]] constexpr bool ArrayEqual(const T (
 template < class T, size_t N > [[nodiscard]] constexpr bool ArrayLess(const T (&a)[N], const T (&b)[N]) noexcept
 {
     // Can we get away with a bit-wise memory comparison?
-    if constexpr (sizeof(T) == 1 && IsIntegral_v< T >)
+    if constexpr (sizeof(T) == 1 && std::is_integral_v< T >)
     {
         return MemCmp(a, b, N) < 0;
     }
