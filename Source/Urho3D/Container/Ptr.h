@@ -161,7 +161,7 @@ public:
     operator T*() const { return ptr_; }    // NOLINT(google-explicit-constructor)
 
     /// Swap with another SharedPtr.
-    void Swap(SharedPtr<T>& rhs) { Urho3D::Swap(ptr_, rhs.ptr_); }
+    void Swap(SharedPtr<T>& rhs) { std::swap(ptr_, rhs.ptr_); }
 
     /// Reset with another pointer.
     void Reset(T* ptr = nullptr)
@@ -441,8 +441,8 @@ public:
     /// Swap with another WeakPtr.
     void Swap(WeakPtr<T>& rhs)
     {
-        Urho3D::Swap(ptr_, rhs.ptr_);
-        Urho3D::Swap(refCount_, rhs.refCount_);
+        std::swap(ptr_, rhs.ptr_);
+        std::swap(refCount_, rhs.refCount_);
     }
 
     /// Reset with another pointer.
@@ -629,7 +629,7 @@ public:
     operator bool() const { return !!ptr_; }    // NOLINT(google-explicit-constructor)
 
     /// Swap with another UniquePtr.
-    void Swap(UniquePtr& up) { Urho3D::Swap(ptr_, up.ptr_); }
+    void Swap(UniquePtr& up) { std::swap(ptr_, up.ptr_); }
 
     /// Detach pointer from UniquePtr without destroying.
     T* Detach()
@@ -670,10 +670,10 @@ private:
 };
 
 /// Swap two UniquePtr-s.
-template <class T> void Swap(UniquePtr<T>& first, UniquePtr<T>& second)
-{
-    first.Swap(second);
-}
+// template <class T> void Swap(UniquePtr<T>& first, UniquePtr<T>& second)
+// {
+//     first.Swap(second);
+// }
 
 /// Construct UniquePtr.
 template <class T, class ... Args> UniquePtr<T> MakeUnique(Args && ... args)

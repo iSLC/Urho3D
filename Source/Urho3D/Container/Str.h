@@ -47,8 +47,8 @@ using StringMap = HashMap<StringHash, String>;
 class URHO3D_API String
 {
 public:
-    using Iterator = RandomAccessIterator<char>;
-    using ConstIterator = RandomAccessConstIterator<char>;
+    using Iterator = char *;
+    using ConstIterator = const char *;
 
     /// Construct empty.
     String() noexcept :
@@ -336,7 +336,7 @@ public:
     /// Replace a substring with a C string.
     void Replace(unsigned pos, unsigned length, const char* replaceWith);
     /// Replace a substring by iterators.
-    Iterator Replace(const Iterator& start, const Iterator& end, const String& replaceWith);
+    Iterator Replace(Iterator start, Iterator end, const String& replaceWith);
     /// Return a string with all occurrences of a character replaced.
     String Replaced(char replaceThis, char replaceWith, bool caseSensitive = true) const;
     /// Return a string with all occurrences of a string replaced.
@@ -354,17 +354,17 @@ public:
     /// Insert a character.
     void Insert(unsigned pos, char c);
     /// Insert a string by iterator.
-    Iterator Insert(const Iterator& dest, const String& str);
+    Iterator Insert(Iterator dest, const String& str);
     /// Insert a string partially by iterators.
-    Iterator Insert(const Iterator& dest, const Iterator& start, const Iterator& end);
+    Iterator Insert(Iterator dest, Iterator start, Iterator end);
     /// Insert a character by iterator.
-    Iterator Insert(const Iterator& dest, char c);
+    Iterator Insert(Iterator dest, char c);
     /// Erase a substring.
     void Erase(unsigned pos, unsigned length = 1);
     /// Erase a character by iterator.
-    Iterator Erase(const Iterator& it);
+    Iterator Erase(Iterator it);
     /// Erase a substring by iterators.
-    Iterator Erase(const Iterator& start, const Iterator& end);
+    Iterator Erase(Iterator start, Iterator end);
     /// Resize the string.
     void Resize(unsigned newLength);
     /// Set new capacity.

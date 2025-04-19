@@ -294,7 +294,7 @@ void String::Replace(unsigned pos, unsigned length, const char* replaceWith)
     Replace(pos, length, replaceWith, CStringLength(replaceWith));
 }
 
-String::Iterator String::Replace(const String::Iterator& start, const String::Iterator& end, const String& replaceWith)
+String::Iterator String::Replace(String::Iterator start, String::Iterator end, const String& replaceWith)
 {
     unsigned pos = (unsigned)(start - Begin());
     if (pos >= length_)
@@ -372,7 +372,7 @@ void String::Insert(unsigned pos, char c)
     }
 }
 
-String::Iterator String::Insert(const String::Iterator& dest, const String& str)
+String::Iterator String::Insert(String::Iterator dest, const String& str)
 {
     unsigned pos = (unsigned)(dest - Begin());
     if (pos > length_)
@@ -382,7 +382,7 @@ String::Iterator String::Insert(const String::Iterator& dest, const String& str)
     return Begin() + pos;
 }
 
-String::Iterator String::Insert(const String::Iterator& dest, const String::Iterator& start, const String::Iterator& end)
+String::Iterator String::Insert(String::Iterator dest, String::Iterator start, String::Iterator end)
 {
     unsigned pos = (unsigned)(dest - Begin());
     if (pos > length_)
@@ -393,7 +393,7 @@ String::Iterator String::Insert(const String::Iterator& dest, const String::Iter
     return Begin() + pos;
 }
 
-String::Iterator String::Insert(const String::Iterator& dest, char c)
+String::Iterator String::Insert(String::Iterator dest, char c)
 {
     unsigned pos = (unsigned)(dest - Begin());
     if (pos > length_)
@@ -408,7 +408,7 @@ void String::Erase(unsigned pos, unsigned length)
     Replace(pos, length, String::EMPTY);
 }
 
-String::Iterator String::Erase(const String::Iterator& it)
+String::Iterator String::Erase(String::Iterator it)
 {
     unsigned pos = (unsigned)(it - Begin());
     if (pos >= length_)
@@ -418,7 +418,7 @@ String::Iterator String::Erase(const String::Iterator& it)
     return Begin() + pos;
 }
 
-String::Iterator String::Erase(const String::Iterator& start, const String::Iterator& end)
+String::Iterator String::Erase(String::Iterator start, String::Iterator end)
 {
     unsigned pos = (unsigned)(start - Begin());
     if (pos >= length_)
@@ -496,9 +496,9 @@ void String::Clear()
 
 void String::Swap(String& str)
 {
-    Urho3D::Swap(length_, str.length_);
-    Urho3D::Swap(capacity_, str.capacity_);
-    Urho3D::Swap(buffer_, str.buffer_);
+    std::swap(length_, str.length_);
+    std::swap(capacity_, str.capacity_);
+    std::swap(buffer_, str.buffer_);
 }
 
 String String::Substring(unsigned pos) const

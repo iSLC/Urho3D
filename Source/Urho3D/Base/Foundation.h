@@ -253,9 +253,3 @@ inline char * StrCat(char * d, const char * s, size_t n) noexcept { return UH_GN
 [[nodiscard]] inline const char * StrStr(const char * s, const char * t) noexcept { return UH_GNUC_COMPAT_OR(__builtin_strstr, strstr)(s, t); }
 
 } // Namespace:: Urho3D
-
-/// Causes abnormal program termination unless SIGABRT is being caught by a signal handler and the handler does not return.
-[[noreturn]] inline void Urho3D_AbortProgram() noexcept;
-
-/// Custom assert handler fired by the UH_ASSERT... macros. It includes the source and location where it 
-void Urho3D_AssertHandler(const UH_MSC_COMPAT_OR(wchar_t, UH_WINDOWS_UNICODE_OR(wchar_t, char)) * msg, const UH_MSC_COMPAT_OR(wchar_t, UH_WINDOWS_UNICODE_OR(wchar_t, char)) * src, unsigned loc);

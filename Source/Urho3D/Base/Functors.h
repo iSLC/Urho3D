@@ -118,7 +118,7 @@ template < class T = void, class U = void > struct GreaterEqual
         return a >= b;
     }
 };
-// --------------------------------------------------------------------------------------------------------------------
+
 /// Fixed type function object for performing bitwise AND.
 /// Unless specialized, invokes `operator&` on types `T` and `U`.
 template < class T = void, class U = void > struct BitAND
@@ -152,7 +152,7 @@ template < class T = void, class U = void > struct BitXOR
         return a ^ b;
     }
 };
-// --------------------------------------------------------------------------------------------------------------------
+
 /// Fixed type function object for performing addition.
 /// Unless specialized, invokes `operator+` on types `T` and `U`.
 template < class T = void, class U = void > struct Addition
@@ -275,7 +275,7 @@ template < class T > struct GreaterEqual< T, void >
         return a >= b;
     }
 };
-// --------------------------------------------------------------------------------------------------------------------
+
 /// Partially (right) type agnostic function object for performing bitwise AND.
 /// Unless specialized, invokes `operator&` on type `T` and any other given type.
 template < class T > struct BitAND< T, void >
@@ -309,7 +309,7 @@ template < class T > struct BitXOR< T, void >
         return a ^ b;
     }
 };
-// --------------------------------------------------------------------------------------------------------------------
+
 /// Partially (right) type agnostic function object for performing addition.
 /// Unless specialized, invokes `operator+` on type `T` and any other given type.
 template < class T > struct Addition< T, void >
@@ -432,7 +432,7 @@ template < class T > struct GreaterEqual< void, T >
         return a >= b;
     }
 };
-// --------------------------------------------------------------------------------------------------------------------
+
 /// Partially (left) type agnostic function object for performing bitwise AND.
 /// Unless specialized, invokes `operator&` on any given type and `T`.
 template < class T > struct BitAND< void, T >
@@ -466,7 +466,7 @@ template < class T > struct BitXOR< void, T >
         return a ^ b;
     }
 };
-// --------------------------------------------------------------------------------------------------------------------
+
 /// Partially (left) type agnostic function object for performing addition.
 /// Unless specialized, invokes `operator+` on any given type and `T`.
 template < class T > struct Addition< void, T >
@@ -590,7 +590,7 @@ template < > struct GreaterEqual< void, void >
         return a >= b;
     }
 };
-// --------------------------------------------------------------------------------------------------------------------
+
 /// Fully type agnostic function object for performing bitwise AND.
 /// Specialization that invokes `operator&` on any given type combination.
 template < > struct BitAND< void, void >
@@ -624,7 +624,7 @@ template < > struct BitXOR< void, void >
         return a ^ b;
     }
 };
-// --------------------------------------------------------------------------------------------------------------------
+
 /// Fully type agnostic function object for performing addition.
 /// Specialization that invokes `operator+` on any given type combination.
 template < > struct Addition< void, void >
@@ -711,7 +711,7 @@ template < class T = void > struct LogicalNOT
         return !v;
     }
 };
-/// --------------------------------------------------------------------------------------------------------------------
+
 /// Logical AND functor for values of different types.
 template < > struct LogicalAND< void >
 {

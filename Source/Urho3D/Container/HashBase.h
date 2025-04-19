@@ -113,10 +113,10 @@ public:
     /// Swap with another hash set or map.
     void Swap(HashBase& rhs)
     {
-        Urho3D::Swap(head_, rhs.head_);
-        Urho3D::Swap(tail_, rhs.tail_);
-        Urho3D::Swap(ptrs_, rhs.ptrs_);
-        Urho3D::Swap(allocator_, rhs.allocator_);
+        std::swap(head_, rhs.head_);
+        std::swap(tail_, rhs.tail_);
+        std::swap(ptrs_, rhs.ptrs_);
+        std::swap(allocator_, rhs.allocator_);
     }
 
     /// Return number of elements.

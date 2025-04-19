@@ -475,7 +475,7 @@ String Variant::ToString() const
         {
             const PODVector<unsigned char>& buffer = value_.buffer_;
             String ret;
-            BufferToString(ret, buffer.Begin().ptr_, buffer.Size());
+            BufferToString(ret, buffer.Begin(), buffer.Size());
             return ret;
         }
 

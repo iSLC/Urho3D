@@ -24,7 +24,7 @@
 
 #include <Urho3D/Urho3D.h>
 
-#include "../Base/Iter.h"
+#include "../Base/Iterator.h"
 #include "../Base/Utility.h"
 
 namespace Urho3D
@@ -48,9 +48,9 @@ public:
     /// Swap with another vector.
     void Swap(VectorBase& rhs)
     {
-        Urho3D::Swap(size_, rhs.size_);
-        Urho3D::Swap(capacity_, rhs.capacity_);
-        Urho3D::Swap(buffer_, rhs.buffer_);
+        std::swap(size_, rhs.size_);
+        std::swap(capacity_, rhs.capacity_);
+        std::swap(buffer_, rhs.buffer_);
     }
 
 protected:

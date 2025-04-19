@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "../Base/Utility.h"
+#include <utility>
 
 namespace Urho3D {
 namespace Impl
@@ -31,7 +31,7 @@ template < size_t I, class T > struct TupleStorage
     /// Construct by taking ownership of the specified value.
     template < class U = T, EnableIf_t< IsConstructible_v< T, U && >, bool > = true >
     constexpr explicit TupleStorage(U && v) noexcept // NOLINT(bugprone-forwarding-reference-overload)
-        : value_(Move(v))
+        : value_(std::move(v))
     {
     }
 
@@ -50,7 +50,7 @@ template < size_t I, class T > struct TupleStorage
     /// Move assignment operator.
     constexpr TupleStorage & operator = (Conditional_t< IsMoveAssignable_v< T >, TupleStorage &&, NoneSuch && > o)
     {
-        value_ = Forward< T >(o.value_);
+        value_ = std::forward< T >(o.value_);
         return *this;
     }
 
@@ -89,7 +89,7 @@ template < size_t I, class... Ts > struct TupleBase
     /// Invoke the specified callback with the current parameter pack.
     template < class F, class... Args > constexpr auto Apply(F && fn, Args &&... args)
     {
-        return fn(Forward< Args >(args)...);
+        return fn(std::forward< Args >(args)...);
     }
 };
 
@@ -107,14 +107,14 @@ template < size_t I, class T, class... Ts > struct TupleBase< I, T, Ts... >
     template < class U, class... Args, EnableIf_t<
         IsConstructible_v< T, const U & >
     , bool > = true > constexpr TupleBase(const U & arg, Args &&... args) // NOLINT(google-explicit-constructor)
-        : Storage(arg), Next(Forward< Args >(args)...)
+        : Storage(arg), Next(std::forward< Args >(args)...)
     {
     }
 
     /// Construct by taking ownership of the current value.
     template < class U, class... Args, EnableIf_t< IsConstructible_v< T, U && >, bool > = true >
     constexpr TupleBase(U && arg, Args &&... args) // NOLINT(google-explicit-constructor)
-        : Storage(Move(arg)), Next(Forward< Args >(args)...)
+        : Storage(std::move(arg)), Next(std::forward< Args >(args)...)
     {
     }
 
@@ -131,7 +131,7 @@ template < size_t I, class T, class... Ts > struct TupleBase< I, T, Ts... >
     /// Invoke the specified callback with the current parameter pack.
     template < class F, class... Args > constexpr auto Apply(F && fn, Args &&... args)
     {
-        return Next::Apply(Forward< F >(fn), Forward< Args >(args)..., Storage::Get());
+        return Next::Apply(std::forward< F >(fn), std::forward< Args >(args)..., Storage::Get());
     }
 };
 
@@ -146,7 +146,7 @@ template < class T, class... Ts > struct Tuple : public Impl::TupleBase< 0, T, T
 
     /// Base constructor.
     template < class... Args > constexpr Tuple(Args &&... args) // NOLINT(google-explicit-constructor)
-        : Base(Forward<Args>(args)...)
+        : Base(std::forward<Args>(args)...)
     {
     }
 

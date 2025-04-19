@@ -253,8 +253,8 @@ void Console::SetFocusOnShow(bool enable)
 void Console::AddAutoComplete(const String& option)
 {
     // Sorted insertion
-    Vector<String>::Iterator iter = UpperBound(autoComplete_.Begin(), autoComplete_.End(), option);
-    if (!iter.ptr_)
+    Vector<String>::Iterator iter = std::upper_bound(autoComplete_.Begin(), autoComplete_.End(), option);
+    if (!iter)
         autoComplete_.Push(option);
     // Make sure it isn't a duplicate
     else if (iter == autoComplete_.Begin() || *(iter - 1) != option)
@@ -264,7 +264,7 @@ void Console::AddAutoComplete(const String& option)
 void Console::RemoveAutoComplete(const String& option)
 {
     // Erase and keep ordered
-    autoComplete_.Erase(LowerBound(autoComplete_.Begin(), autoComplete_.End(), option));
+    autoComplete_.Erase(std::lower_bound(autoComplete_.Begin(), autoComplete_.End(), option));
     if (autoCompletePosition_ > autoComplete_.Size())
         autoCompletePosition_ = autoComplete_.Size();
 }

@@ -423,7 +423,7 @@ public:
             ptr = ptr->Next();
         }
 
-        Urho3D::Sort(RandomAccessIterator<Node*>(ptrs), RandomAccessIterator<Node*>(ptrs + numKeys), CompareNodes);
+        Urho3D::Sort(ptrs, ptrs + numKeys, CompareNodes);
 
         head_ = ptrs[0];
         ptrs[0]->prev_ = 0;

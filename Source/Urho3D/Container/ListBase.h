@@ -101,10 +101,10 @@ public:
     /// Swap with another linked list.
     void Swap(ListBase& rhs)
     {
-        Urho3D::Swap(head_, rhs.head_);
-        Urho3D::Swap(tail_, rhs.tail_);
-        Urho3D::Swap(allocator_, rhs.allocator_);
-        Urho3D::Swap(size_, rhs.size_);
+        std::swap(head_, rhs.head_);
+        std::swap(tail_, rhs.tail_);
+        std::swap(allocator_, rhs.allocator_);
+        std::swap(size_, rhs.size_);
     }
 
 protected:

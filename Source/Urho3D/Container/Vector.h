@@ -47,8 +47,8 @@ template <class T> class Vector : public VectorBase
 
 public:
     using ValueType = T;
-    using Iterator = RandomAccessIterator<T>;
-    using ConstIterator = RandomAccessConstIterator<T>;
+    using Iterator = T *;
+    using ConstIterator = const T *;
 
     /// Construct empty.
     Vector() noexcept = default;
@@ -300,35 +300,28 @@ public:
     }
 
     /// Insert an element by iterator.
-    Iterator Insert(const Iterator& dest, const T& value)
+    Iterator Insert(std::contiguous_iterator auto dest, const T& value)
     {
         auto pos = (unsigned)(dest - Begin());
         return DoInsertElements(pos, &value, &value + 1, CopyTag{});
     }
 
     /// Move-insert an element by iterator.
-    Iterator Insert(const Iterator& dest, T && value)
+    Iterator Insert(std::contiguous_iterator auto dest, T && value)
     {
         auto pos = (unsigned)(dest - Begin());
         return DoInsertElements(pos, &value, &value + 1, MoveTag{});
     }
 
     /// Insert a vector by iterator.
-    Iterator Insert(const Iterator& dest, const Vector<T>& vector)
+    Iterator Insert(std::contiguous_iterator auto dest, const Vector<T>& vector)
     {
         auto pos = (unsigned)(dest - Begin());
         return DoInsertElements(pos, vector.Begin(), vector.End(), CopyTag{});
     }
 
     /// Insert a vector partially by iterators.
-    Iterator Insert(const Iterator& dest, const ConstIterator& start, const ConstIterator& end)
-    {
-        auto pos = (unsigned)(dest - Begin());
-        return DoInsertElements(pos, start, end, CopyTag{});
-    }
-
-    /// Insert elements.
-    Iterator Insert(const Iterator& dest, const T* start, const T* end)
+    Iterator Insert(std::contiguous_iterator auto dest, ConstIterator start, ConstIterator end)
     {
         auto pos = (unsigned)(dest - Begin());
         return DoInsertElements(pos, start, end, CopyTag{});
@@ -369,7 +362,7 @@ public:
     }
 
     /// Erase an element by iterator. Return iterator to the next element.
-    Iterator Erase(const Iterator& it)
+    Iterator Erase(std::contiguous_iterator auto it)
     {
         auto pos = (unsigned)(it - Begin());
         if (pos >= size_)
@@ -380,7 +373,7 @@ public:
     }
 
     /// Erase a range by iterators. Return iterator to the next element.
-    Iterator Erase(const Iterator& start, const Iterator& end)
+    Iterator Erase(std::contiguous_iterator auto start, std::contiguous_iterator auto end)
     {
         auto pos = (unsigned)(start - Begin());
         if (pos >= size_)
@@ -686,8 +679,8 @@ template <class T> class PODVector : public VectorBase
 {
 public:
     using ValueType = T;
-    using Iterator = RandomAccessIterator<T>;
-    using ConstIterator = RandomAccessConstIterator<T>;
+    using Iterator = T *;
+    using ConstIterator = const T *;
 
     /// Construct empty.
     PODVector() noexcept = default;
@@ -888,7 +881,7 @@ public:
     }
 
     /// Insert an element by iterator.
-    Iterator Insert(const Iterator& dest, const T& value)
+    Iterator Insert(std::contiguous_iterator auto dest, const T& value)
     {
         auto pos = (unsigned)(dest - Begin());
         if (pos > size_)
@@ -899,7 +892,7 @@ public:
     }
 
     /// Insert a vector by iterator.
-    Iterator Insert(const Iterator& dest, const PODVector<T>& vector)
+    Iterator Insert(std::contiguous_iterator auto dest, const PODVector<T>& vector)
     {
         auto pos = (unsigned)(dest - Begin());
         if (pos > size_)
@@ -910,7 +903,7 @@ public:
     }
 
     /// Insert a vector partially by iterators.
-    Iterator Insert(const Iterator& dest, const ConstIterator& start, const ConstIterator& end)
+    Iterator Insert(std::contiguous_iterator auto dest, ConstIterator start, ConstIterator end)
     {
         auto pos = (unsigned)(dest - Begin());
         if (pos > size_)
@@ -918,24 +911,13 @@ public:
         auto length = (unsigned)(end - start);
         Resize(size_ + length);
         MoveRange(pos + length, pos, size_ - pos - length);
-        CopyElements(Buffer() + pos, &(*start), length);
-
-        return Begin() + pos;
-    }
-
-    /// Insert elements.
-    Iterator Insert(const Iterator& dest, const T* start, const T* end)
-    {
-        auto pos = (unsigned)(dest - Begin());
-        if (pos > size_)
-            pos = size_;
-        auto length = (unsigned)(end - start);
-        Resize(size_ + length);
-        MoveRange(pos + length, pos, size_ - pos - length);
-
-        T* destPtr = Buffer() + pos;
-        for (const T* i = start; i != end; ++i)
-            *destPtr++ = *i;
+        if constexpr (std::is_trivially_copyable_v<T>) {
+            CopyElements(Buffer() + pos, &(*start), length);
+        } else {
+            T* destPtr = Buffer() + pos;
+            for (const T* i = start; i != end; ++i)
+                *destPtr++ = *i;
+        }
 
         return Begin() + pos;
     }
@@ -952,7 +934,7 @@ public:
     }
 
     /// Erase an element by iterator. Return iterator to the next element.
-    Iterator Erase(const Iterator& it)
+    Iterator Erase(std::contiguous_iterator auto it)
     {
         auto pos = (unsigned)(it - Begin());
         if (pos >= size_)
@@ -963,7 +945,7 @@ public:
     }
 
     /// Erase a range by iterators. Return iterator to the next element.
-    Iterator Erase(const Iterator& start, const Iterator& end)
+    Iterator Erase(std::contiguous_iterator auto start, ConstIterator end)
     {
         auto pos = (unsigned)(start - Begin());
         if (pos >= size_)

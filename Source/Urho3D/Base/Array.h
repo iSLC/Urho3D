@@ -117,13 +117,13 @@ template < class T, size_t N > struct Array
     #endif
     }
     /// Exchanges the contents of the container with those of other.
-    constexpr void Swap(Array & o) noexcept { ::Urho3D::Swap(data_, o.data_); }
+    constexpr void Swap(Array & o) noexcept { std::swap(data_, o.data_); }
     /// Exchanges the contents of the container with those of a raw array of the same size.
-    constexpr void Swap(T (&o)[N]) noexcept { ::Urho3D::Swap(data_, o); }
+    constexpr void Swap(T (&o)[N]) noexcept { std::swap(data_, o); }
 };
 
 /// Deduction guide.
-template < class T, class... U > Array(T, U...) -> Array< EnableIf_t< (IsSame_v< T, U > && ...), T >, 1 + sizeof...(U) >;
+template < class T, class... U > Array(T, U...) -> Array< std::enable_if_t< (std::is_same_v< T, U > && ...), T >, 1 + sizeof...(U) >;
 
 namespace Impl {
 

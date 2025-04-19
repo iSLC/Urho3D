@@ -168,7 +168,7 @@ bool Graphics::SetMode(int width, int height)
 
 bool Graphics::ToggleFullscreen()
 {
-    Swap(primaryWindowMode_, secondaryWindowMode_);
+    std::swap(primaryWindowMode_, secondaryWindowMode_);
     return SetScreenMode(primaryWindowMode_.width_, primaryWindowMode_.height_, primaryWindowMode_.screenParams_);
 }
 

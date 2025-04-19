@@ -1791,7 +1791,7 @@ void UIElement::SortChildren()
     {
         // Only sort when there is no layout
         if (layoutMode_ == LM_FREE)
-            std::stable_sort(children_.Begin().ptr_, children_.End().ptr_, CompareUIElements);
+            std::stable_sort(children_.Begin(), children_.End(), CompareUIElements);
         sortOrderDirty_ = false;
     }
 }
