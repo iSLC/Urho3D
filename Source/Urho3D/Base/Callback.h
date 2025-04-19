@@ -203,7 +203,7 @@ public:
         // Maybe catch this in debug
         UH_ASSERT(exec_)
         // Do we have to return something?
-        if constexpr (IsVoid_v< Ret >)
+        if constexpr (std::is_void_v< Ret >)
         {
             // Is there an executor available?
             if (exec_)
@@ -213,7 +213,7 @@ public:
         }
         else
         {
-            static_assert(IsDefaultConstructible_v< Ret >);
+            static_assert(std::is_default_constructible_v< Ret >);
             // Is there an executor available?
             if (exec_)
             {
